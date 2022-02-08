@@ -27,3 +27,10 @@ if args.load:
     application.mode(simulation.MANUAL)
 
 application.boot()
+
+# TODO: Button object
+# TODO: menu bars: CREATOR, SIMULATION, MANUAL
+# TODO: modes: CREATOR
+# TODO: save and load
+# TODO: manual
+# TODO: simulation
