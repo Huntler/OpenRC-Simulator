@@ -1,16 +1,23 @@
 from typing import Tuple
 import pygame as py
 
+from graphics.objects.sprite import Sprite
+
 
 class BaseWindow:
 
     QUIT = py.QUIT
 
     def __init__(self, window_size: Tuple[int, int], draw_area: Tuple[int, int] = None, frame_rate: int = 60, flags: int = 0) -> None:
-        """
-        This class structurizes a game and the corresponding GUI for 
+        """This class structurizes a game and the corresponding GUI for 
         it. The main loop will block the main thread, so be sure to 
         specify all callbacks before.
+
+        Args:
+            window_size (Tuple[int, int]): The size of the window in pixels (width, height)
+            draw_area (Tuple[int, int], optional): The area in which sprites are drawn. Defaults to None.
+            frame_rate (int, optional): The framerate at which the scene is rendered. Defaults to 60.
+            flags (int, optional): Flags like fullscreen or hardware acceleration. Defaults to 0.
         """
         py.init()
 
@@ -32,15 +39,24 @@ class BaseWindow:
         self._running = False
         self._callbacks = dict()
 
-        self.sprites()
+        # sprite containers
+        self._sprites = {}
+        self._sprite_list = []
     
-    def sprites(self):
+    def get_surface(self) -> py.Surface:
+        """Returns the surface which is used to create sprites.
+
+        Returns:
+            py.Surface: The pygames surface of this window.
         """
-        This method is used to initial sprites, which are used later on.
-        """
-        pass
+        return self._screen
     
     def get_window_size(self) -> Tuple[int, int]:
+        """The window's size.
+
+        Returns:
+            Tuple[int, int]: width and height in pixels.
+        """
         return self._window_size
   
     def get_flags(self):
@@ -56,6 +72,37 @@ class BaseWindow:
             raise ValueError("The frame rate has to be between 1 and 60.")
         self._frame_rate = frame_rate
     
+    def add_sprite(self, name: str, sprite: Sprite, zindex: int = 0) -> None:
+        """This method adds a sprite to the window. For easier handling, give a name to the sprite.
+
+        Args:
+            name (str): Name of the sprite.
+            sprite (Sprite): The sprite object.
+            zindex (int, optional): Layering the sprites (higher values = send to back). Defaults to 0.
+        """
+        self._sprites[name] = (zindex, sprite)
+
+        # convert to list and sort
+        self._update_sprite_list()
+
+    def remove_sprite(self, name: str) -> None:
+        """This method removes a registered sprite based on the name.
+
+        Args:
+            name (str): The name of the sprite to remove.
+        """
+        self._sprites.pop(name, "")
+
+        # convert to list and sort
+        self._update_sprite_list()
+    
+    def _update_sprite_list(self) -> None:
+        # the sprite list is used to sort sprites corresponding to their 
+        # zindex value.
+        comp = lambda sprite: sprite[0]
+        self._sprite_list = list(self._sprites.values())
+        self._sprite_list.sort(key=comp, reverse=True)
+
     def on_callback(self, type, func) -> None:
         """
         Using this method, callbacks can be registered. If the 
@@ -73,6 +120,10 @@ class BaseWindow:
             for event in py.event.get():
                 self.event(event)
             
+            # draw all registered sprites first
+            for _, sprite in self._sprite_list:
+                sprite.draw()
+                
             self.draw()
         
             # cap at the given frame rate

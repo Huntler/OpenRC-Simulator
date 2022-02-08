@@ -1,6 +1,8 @@
 from multiprocessing.spawn import freeze_support
 from threading import Thread
 
+from graphics.window import BaseWindow
+
 
 class BaseController(Thread):
     def __init__(self) -> None:
@@ -11,21 +13,16 @@ class BaseController(Thread):
         super(BaseController, self).__init__(group=None, target=None, name="ControllerThread")
         
         self._running = False
-        self._game = None
-        self._init_game_visuals()
+        self._window = None
     
-    def _init_game_visuals(self) -> None:
-        """
-        This method defines the game in this controller and sets the pygame quit event. 
-        """
-        raise NotImplemented
-    
-    def start_game(self) -> None:
+    def boot(self) -> None:
         """
         This method is important, because with this, the controller and GUI will be started.
         """
         self.start()
-        self._game.start()
+
+        self._window.on_callback(BaseWindow.QUIT, self.stop)
+        self._window.start()
     
     def is_alive(self) -> bool:
         """

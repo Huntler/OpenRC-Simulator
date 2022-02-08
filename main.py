@@ -1,7 +1,7 @@
 import argparse
 import pygame as py
-
-from simulation.window import SimulationWindow
+import simulation
+from simulation.controller import SimulationController
 
 
 # add program arguments for configuring the run
@@ -18,10 +18,12 @@ if not args.name:
     quit()
 
 # create the visuals
-game = SimulationWindow(window_size=(1200, 900), flags=py.HWSURFACE)
+application = SimulationController(window_size=(1200, 900), flags=py.HWSURFACE)
 
 if args.create:
-    game.start()
+    application.mode(simulation.CREATOR)
 
 if args.load:
-    pass
+    application.mode(simulation.MANUAL)
+
+application.boot()
