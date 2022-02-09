@@ -3,7 +3,10 @@ import pygame as py
 
 
 MOUSE_CLICK = "mouse_click"
-CREATOR_TOGGLE_ROBOT = "creator_robot_toggle"
+SHORTCUTS_UNTOGGLE = "untoggle_all"
+
+CREATOR_PLACE_ROBOT = "creator_place_robot"
+CREATOR_PLACE_GOAL = "creator_place_goal"
 CREATOR_PLACE_WALL= "creator_place_wall"
 CREATOR_SAVE_MAP = "creato_save_map"
 
@@ -31,7 +34,7 @@ class SimulationWindow(BaseWindow):
             # events when creator mode enabled
             # roboter movement
             if event.key == py.K_r:
-                self._execute_callback(CREATOR_TOGGLE_ROBOT)
+                self._execute_callback(CREATOR_PLACE_ROBOT)
 
             # wall placement
             if event.key == py.K_p:
@@ -40,6 +43,10 @@ class SimulationWindow(BaseWindow):
             # save map
             if event.key == py.K_s:
                 self._execute_callback(CREATOR_SAVE_MAP)
+            
+            # untoggle all
+            if event.key == py.K_ESCAPE:
+                self._execute_callback(SHORTCUTS_UNTOGGLE)
         
         if mouse_buttons[0]:
             func = self._callbacks.get(MOUSE_CLICK, None)

@@ -5,7 +5,7 @@ from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from simulation import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from simulation.window import CREATOR_TOGGLE_ROBOT, MOUSE_CLICK, SimulationWindow
+from simulation.window import CREATOR_PLACE_ROBOT, MOUSE_CLICK, SimulationWindow
 
 
 ROBOT_COLOR = (160, 160, 200)
@@ -23,15 +23,15 @@ class RobotController(BaseSubController):
         self._surface = window.get_surface()
 
         # robot sprite
-        self._robot = Robot(self._surface, 0, 0, ROBOT_SIZE, ROBOT_COLOR)
+        self._robot = Robot(self._surface, -ROBOT_SIZE * 2, -ROBOT_SIZE * 2, ROBOT_SIZE, ROBOT_COLOR)
         self._window.add_sprite("sprite_robot", self._robot)
 
         # robot placement shortcuts
         if app_mode == CREATOR:
-            self._text_robot = Text(self._surface, "'R' Move the Robot", 0, 0, 30, SHORTCUT_TEXT_COLOR)
-            self._text_robot.set_position((20, self._wh - 100), ANCHOR_TOP_LEFT)
+            self._text_robot = Text(self._surface, "'R' Place the robot", 0, 0, 30, SHORTCUT_TEXT_COLOR)
+            self._text_robot.set_position((20, self._wh - 130), ANCHOR_TOP_LEFT)
             self._window.add_sprite("text_robot", self._text_robot, zindex=98)
-            self._window.on_callback(CREATOR_TOGGLE_ROBOT, self.toggle)
+            self._window.on_callback(CREATOR_PLACE_ROBOT, self.toggle)
 
     def toggle(self, call: bool = True) -> None:
         """This method toggles a special mode for this controller. In CREATOR mode, the robot's 

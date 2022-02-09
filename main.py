@@ -28,7 +28,6 @@ if args.load:
 application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
 application.boot()
 
-# TODO: wall
 # TODO: save and load
 # TODO: manual
 # TODO: simulation

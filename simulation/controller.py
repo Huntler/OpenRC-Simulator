@@ -5,9 +5,10 @@ from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from simulation import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from simulation.robot_controller import RobotController
-from simulation.wall_controller import WallController
-from simulation.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SimulationWindow
+from simulation.sub_controller.goal_controller import GoalController
+from simulation.sub_controller.robot_controller import RobotController
+from simulation.sub_controller.wall_controller import WallController
+from simulation.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SHORTCUTS_UNTOGGLE, SimulationWindow
 
 
 class SimulationController(BaseController):
@@ -45,6 +46,12 @@ class SimulationController(BaseController):
         self._wall = WallController(self._window, mode)
         self._wall.on_toggle(self._sub_controller_toggled)
 
+        # create the goal controller
+        self._goal = GoalController(self._window, mode)
+        self._goal.on_toggle(self._sub_controller_toggled)
+
+        self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
+
         #keys = py.key.get_pressed()
         #print(keys)
         self.mode(mode)
@@ -65,7 +72,11 @@ class SimulationController(BaseController):
         
         if sub_controller.is_toggled():
             self._active_sub_controller = sub_controller
-        
+    
+    def _untoggle_all_sub_controller(self) -> None:
+        if self._active_sub_controller:
+            self._active_sub_controller.toggle(call=False)
+            self._active_sub_controller = None
     
     def mode(self, mode: int) -> None:
         """The applications mode (CREATOR, SIMULATION, MANUAL)
@@ -83,10 +94,12 @@ class SimulationController(BaseController):
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
         # show shortcut info for CREATOR mode
+        shortcuts_height = [80, 180, 80]
         text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
-        text_shortcuts.set_position((20, self._height - 150), ANCHOR_TOP_LEFT)
+        text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_shortcuts_title", text_shortcuts, zindex=98)
     
     def loop(self) -> None:
         self._robot.loop()
         self._wall.loop()
+        self._goal.loop()
