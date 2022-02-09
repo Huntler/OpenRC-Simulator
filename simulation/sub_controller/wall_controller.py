@@ -20,6 +20,7 @@ class WallController(BaseSubController):
     def __init__(self, window: SimulationWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
+        self.dict_name = "walls"
         
         # window and surface information
         self._window = window
@@ -121,7 +122,7 @@ class WallController(BaseSubController):
             if self._active_wall:
                 self._active_wall.set_end(snap_pos)
     
-    def dict(self) -> Dict:
+    def to_dict(self) -> Dict:
         dict_file = {}
         
         for i, wall in enumerate(self._walls):
@@ -137,3 +138,13 @@ class WallController(BaseSubController):
         final_dict = {}
         final_dict["walls"] = dict_file
         return final_dict
+    
+    def from_dict(self, d: Dict) -> None:
+        for wall_name in d.keys():
+            wall_dict = d[wall_name]
+            start_pos = (wall_dict["start_x"], wall_dict["start_y"])
+            end_pos = (wall_dict["end_x"], wall_dict["end_y"])
+
+            wall = Wall(self._surface, start_pos, end_pos, WALL_COLOR, WALL_THICKNESS)
+            self._walls.append(wall)
+            self._window.add_sprite(wall_name, wall)

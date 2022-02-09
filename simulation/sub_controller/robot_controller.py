@@ -16,6 +16,7 @@ class RobotController(BaseSubController):
     def __init__(self, window: SimulationWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
+        self.dict_name = "robot"
         
         # window and surface information
         self._window = window
@@ -66,7 +67,7 @@ class RobotController(BaseSubController):
             mouse_pos = py.mouse.get_pos()
             self._robot.set_position(mouse_pos)
     
-    def dict(self) -> Dict:
+    def to_dict(self) -> Dict:
         x, y = self._robot.get_position()
         dict_file = {}
         dict_file["robot"] = {}
@@ -74,3 +75,9 @@ class RobotController(BaseSubController):
         dict_file["robot"]["y"] = y
         dict_file["robot"]["direction"] = self._robot.get_direction()
         return dict_file
+    
+    def from_dict(self, d: Dict) -> None:
+        pos = (d["x"], d["y"])
+        dir = d["direction"]
+        self._robot.set_position(pos)
+        self._robot.set_direction(dir)

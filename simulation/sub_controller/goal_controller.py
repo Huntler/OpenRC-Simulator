@@ -9,6 +9,7 @@ class GoalController(BaseSubController):
     def __init__(self, window: SimulationWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
+        self.dict_name = "goal"
         
         # window and surface information
         self._window = window
@@ -31,5 +32,8 @@ class GoalController(BaseSubController):
     def loop(self) -> None:
         pass
 
-    def dict(self) -> Dict:
+    def to_dict(self) -> Dict:
         return {}
+
+    def to_dict(self) -> None:
+        pass

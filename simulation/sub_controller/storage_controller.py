@@ -48,12 +48,30 @@ class StorageController(BaseSubController):
         dict_file["app"]["height"] = self._wh
 
         for controller in controllers:
-            dict_file = dict_file | controller.dict()
+            dict_file = dict_file | controller.to_dict()
         
         with open(f"{file_name}.yaml", "w") as file:
             documents = yaml.dump(dict_file, file)
         
         self.changes(False)
+    
+    def load(self, file_name: str, controllers: List[BaseSubController]) -> None:
+        """This method loads a yaml file into all given subcontrollers.
+
+        Args:
+            file_name (str): the yaml file name.
+            controllers (List[BaseSubController]): The list of sub controllers.
+        """
+        with open(f"{file_name}.yaml", "r") as file:
+            dict_file = yaml.load(file, Loader=yaml.FullLoader)
+
+        # load the dict into each sub controller
+        for controller in controllers:
+            controller_dict = dict_file.get(controller.dict_name, None)
+            if controller_dict:
+                controller.from_dict(controller_dict)
+            else:
+                print("Unable to load:", controller.dict_name)
     
     def loop(self) -> None:
         pass

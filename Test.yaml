@@ -3,6 +3,46 @@ app:
   width: 1200
 robot:
   direction: 90.0
-  x: 171
-  y: 434
-walls: {}
+  x: 197
+  y: 447
+walls:
+  sprite_wall_1:
+    end_x: 486
+    end_y: 296
+    start_x: 490
+    start_y: 243
+  sprite_wall_2:
+    end_x: 574
+    end_y: 295
+    start_x: 486
+    start_y: 296
+  sprite_wall_3:
+    end_x: 567
+    end_y: 426
+    start_x: 574
+    start_y: 295
+  sprite_wall_4:
+    end_x: 472
+    end_y: 529
+    start_x: 567
+    start_y: 426
+  sprite_wall_5:
+    end_x: 470
+    end_y: 610
+    start_x: 472
+    start_y: 529
+  sprite_wall_6:
+    end_x: 669
+    end_y: 609
+    start_x: 470
+    start_y: 610
+  sprite_wall_7:
+    end_x: 687
+    end_y: 228
+    start_x: 669
+    start_y: 609
+  sprite_wall_8:
+    end_x: 490
+    end_y: 243
+    start_x: 687
+    start_y: 228

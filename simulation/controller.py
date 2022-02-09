@@ -79,9 +79,12 @@ class SimulationController(BaseController):
             self._active_sub_controller = sub_controller
     
     def _untoggle_all_sub_controller(self) -> None:
+        """This method untoggles all controller.
+        """
         if self._active_sub_controller:
             self._active_sub_controller.toggle(call=False)
             self._active_sub_controller = None
+            self._storage.changes(True)
     
     def mode(self, mode: int) -> None:
         """The applications mode (CREATOR, SIMULATION, MANUAL)
@@ -89,6 +92,7 @@ class SimulationController(BaseController):
         Args:
             mode (int): The mode.
         """
+        self._mode = mode
         cx, cy = self._center
 
         # show background text
@@ -98,7 +102,7 @@ class SimulationController(BaseController):
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
         # show shortcut info for CREATOR mode
-        shortcuts_height = [80, 180, 80]
+        shortcuts_height = [80, 180, 110]
         text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
         text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_shortcuts_title", text_shortcuts, zindex=98)
@@ -108,6 +112,9 @@ class SimulationController(BaseController):
 
     def file(self, name: str) -> None:
         self._file_name = name
+
+        if self._mode != CREATOR:
+            self._storage.load(name, [self._robot, self._goal, self._wall])
 
     def loop(self) -> None:
         self._robot.loop()

@@ -3,6 +3,8 @@ from typing import Dict
 
 class BaseSubController:
     def __init__(self) -> None:
+        self.dict_name = None
+
         self._toggle_callback = False
         self._toggled = False
 
@@ -18,5 +20,8 @@ class BaseSubController:
         if self._toggle_callback and call:
             self._toggle_callback(self)
     
-    def dict(self) -> Dict:
+    def to_dict(self) -> Dict:
+        raise NotImplementedError
+    
+    def from_dict(self, d: Dict) -> None:
         raise NotImplementedError

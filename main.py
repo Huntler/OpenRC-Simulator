@@ -8,7 +8,8 @@ from simulation.controller import SimulationController
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--create", help="Starts Creation tool. Make sure to provide a name to store the map.", action="store_true")
-parser.add_argument("--load", help="Loads the manual control mode. Make sure to provide a name to load a map", action="store_true")
+parser.add_argument("--manual", help="Loads the manual control mode. Make sure to provide a name to load a map", action="store_true")
+parser.add_argument("--simulation", help="Loads the simulation mode. Make sure to provide a name to load a map", action="store_true")
 parser.add_argument("--name", help="The name of a map (needed to create or load a map).")
 
 args = parser.parse_args()
@@ -21,7 +22,7 @@ mode = simulation.SIMULATION
 if args.create:
     mode = simulation.CREATOR
 
-if args.load:
+if args.manual:
     mode = simulation.MANUAL
 
 # create the visuals
