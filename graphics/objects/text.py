@@ -1,3 +1,4 @@
+import random
 from typing import Tuple
 
 import pygame as py
@@ -16,7 +17,11 @@ class Text(Sprite):
         self._text = text
         self._size = size
         
-        self._font = py.font.SysFont(py.font.get_default_font(), size)
+        try:
+            self._font = py.font.SysFont("ptsansnarrow", size)
+        except:
+            self._font = py.font.SysFont(py.font.get_default_font(), size)
+            
         self._text_surface = self._font.render(text, False, c)
 
         self.set_position((x, y))
