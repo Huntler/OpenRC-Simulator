@@ -23,7 +23,7 @@ class GoalController(BaseSubController):
         if app_mode == CREATOR:
             self._text_goal = Text(self._surface, "'G' Place the goal", 0, 0, 30, SHORTCUT_TEXT_COLOR)
             self._text_goal.set_position((20, self._wh - 70), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_goal", self._text_goal, zindex=98)
+            self._window.add_sprite("text_goal", self._text_goal)
             self._window.on_callback(CREATOR_PLACE_GOAL, self.toggle)
     
     def toggle(self, call: bool = True) -> None:
@@ -35,5 +35,5 @@ class GoalController(BaseSubController):
     def to_dict(self) -> Dict:
         return {}
 
-    def to_dict(self) -> None:
+    def from_dict(self) -> None:
         pass

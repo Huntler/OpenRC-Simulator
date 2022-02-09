@@ -105,7 +105,7 @@ class SimulationController(BaseController):
         shortcuts_height = [80, 180, 110]
         text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
         text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
-        self._window.add_sprite("text_shortcuts_title", text_shortcuts, zindex=98)
+        self._window.add_sprite("text_shortcuts_title", text_shortcuts)
     
     def _save(self) -> None:
         self._storage.save(self._file_name, [self._robot, self._goal, self._wall])

@@ -31,7 +31,7 @@ class RobotController(BaseSubController):
         if app_mode == CREATOR:
             self._text_robot = Text(self._surface, "'R' Place the robot", 0, 0, 30, SHORTCUT_TEXT_COLOR)
             self._text_robot.set_position((20, self._wh - 130), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_robot", self._text_robot, zindex=98)
+            self._window.add_sprite("text_robot", self._text_robot)
             self._window.on_callback(CREATOR_PLACE_ROBOT, self.toggle)
 
     def toggle(self, call: bool = True) -> None:

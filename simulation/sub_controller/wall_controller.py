@@ -36,7 +36,7 @@ class WallController(BaseSubController):
             self._text_wall = Text(self._surface, "'P' Start drawing a wall", 0, 0, 30, SHORTCUT_TEXT_COLOR)
             self._text_wall.set_position((20, self._wh - 100), ANCHOR_TOP_LEFT)
 
-            self._window.add_sprite("text_wall", self._text_wall, zindex=98)
+            self._window.add_sprite("text_wall", self._text_wall)
             self._window.on_callback(CREATOR_PLACE_WALL, self.toggle)
 
     def toggle(self, call: bool = True) -> None:
@@ -63,7 +63,7 @@ class WallController(BaseSubController):
         """
         wall = Wall(self._surface, pos, pos, WALL_COLOR, WALL_THICKNESS)
         self._walls.append(wall)
-        self._window.add_sprite(f"sprite_wall_{len(self._walls)}", wall)
+        self._window.add_sprite(f"sprite_wall_{len(self._walls)}", wall, zindex=2)
 
         self._active_wall = wall
         
@@ -147,4 +147,4 @@ class WallController(BaseSubController):
 
             wall = Wall(self._surface, start_pos, end_pos, WALL_COLOR, WALL_THICKNESS)
             self._walls.append(wall)
-            self._window.add_sprite(wall_name, wall)
+            self._window.add_sprite(wall_name, wall, zindex=2)

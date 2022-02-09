@@ -21,7 +21,7 @@ class StorageController(BaseSubController):
         if app_mode == CREATOR:
             self._text_storage = Text(self._surface, "'S' Save the map", 0, 0, 30, SHORTCUT_TEXT_COLOR)
             self._text_storage.set_position((20, self._wh - 40), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_storage", self._text_storage, zindex=98)
+            self._window.add_sprite("text_storage", self._text_storage)
             self._window.on_callback(CREATOR_SAVE_MAP, self.toggle)
 
             self._text_status = Text(self._surface, self._changes, 0, 0, 30, SHORTCUT_TEXT_COLOR)
