@@ -7,6 +7,7 @@ from graphics.sub_controller import BaseSubController
 from simulation import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
 from simulation.sub_controller.goal_controller import GoalController
 from simulation.sub_controller.robot_controller import RobotController
+from simulation.sub_controller.storage_controller import StorageController
 from simulation.sub_controller.wall_controller import WallController
 from simulation.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SHORTCUTS_UNTOGGLE, SimulationWindow
 
@@ -28,6 +29,7 @@ class SimulationController(BaseController):
 
         # create the window visuals
         self._window = SimulationWindow(window_size=window_size, flags=flags)
+        self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
         self._surface = self._window.get_surface()
 
         # create the sprites we want to use
@@ -50,7 +52,9 @@ class SimulationController(BaseController):
         self._goal = GoalController(self._window, mode)
         self._goal.on_toggle(self._sub_controller_toggled)
 
-        self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
+        # create the storage controller
+        self._storage = StorageController(self._window, mode)
+        self._storage.on_toggle(self._save)
 
         #keys = py.key.get_pressed()
         #print(keys)
@@ -63,6 +67,7 @@ class SimulationController(BaseController):
         # if the active sub controller was toggled again, then just unregister it
         if self._active_sub_controller == sub_controller:
             self._active_sub_controller = None
+            self._storage.changes(True)
             return
 
         # if there was an active sub controller, then toggle it again
@@ -84,7 +89,6 @@ class SimulationController(BaseController):
         Args:
             mode (int): The mode.
         """
-        # TODO: if creator mode, then add edit bar
         cx, cy = self._center
 
         # show background text
@@ -99,6 +103,12 @@ class SimulationController(BaseController):
         text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_shortcuts_title", text_shortcuts, zindex=98)
     
+    def _save(self) -> None:
+        self._storage.save(self._file_name, [self._robot, self._goal, self._wall])
+
+    def file(self, name: str) -> None:
+        self._file_name = name
+
     def loop(self) -> None:
         self._robot.loop()
         self._wall.loop()

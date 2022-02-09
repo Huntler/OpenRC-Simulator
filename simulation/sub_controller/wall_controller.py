@@ -1,6 +1,6 @@
 import math
 import pygame as py
-from typing import Tuple
+from typing import Dict, Tuple
 from pygame import Surface
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
@@ -120,3 +120,20 @@ class WallController(BaseSubController):
             snap_pos = self._snap(mouse_pos)
             if self._active_wall:
                 self._active_wall.set_end(snap_pos)
+    
+    def dict(self) -> Dict:
+        dict_file = {}
+        
+        for i, wall in enumerate(self._walls):
+            sx, sy = wall.get_start()
+            ex, ey = wall.get_end()
+            name = f"sprite_wall_{i + 1}"
+            dict_file[name] = {}
+            dict_file[name]["start_x"] = sx
+            dict_file[name]["start_y"] = sy
+            dict_file[name]["end_x"] = ex
+            dict_file[name]["end_y"] = ey
+        
+        final_dict = {}
+        final_dict["walls"] = dict_file
+        return final_dict

@@ -1,5 +1,5 @@
 import pygame as py
-from typing import Tuple
+from typing import Dict, Tuple
 from pygame import Surface
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
@@ -65,3 +65,12 @@ class RobotController(BaseSubController):
         if self.is_toggled():
             mouse_pos = py.mouse.get_pos()
             self._robot.set_position(mouse_pos)
+    
+    def dict(self) -> Dict:
+        x, y = self._robot.get_position()
+        dict_file = {}
+        dict_file["robot"] = {}
+        dict_file["robot"]["x"] = x
+        dict_file["robot"]["y"] = y
+        dict_file["robot"]["direction"] = self._robot.get_direction()
+        return dict_file

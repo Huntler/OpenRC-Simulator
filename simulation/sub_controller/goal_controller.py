@@ -1,3 +1,4 @@
+from typing import Dict
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from simulation import CREATOR, SHORTCUT_TEXT_COLOR
@@ -29,3 +30,6 @@ class GoalController(BaseSubController):
     
     def loop(self) -> None:
         pass
+
+    def dict(self) -> Dict:
+        return {}

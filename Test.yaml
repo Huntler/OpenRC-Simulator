@@ -1,0 +1,8 @@
+app:
+  height: 900
+  width: 1200
+robot:
+  direction: 90.0
+  x: 171
+  y: 434
+walls: {}

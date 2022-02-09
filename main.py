@@ -26,6 +26,7 @@ if args.load:
 
 # create the visuals
 application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
+application.file(args.name)
 application.boot()
 
 # TODO: save and load
