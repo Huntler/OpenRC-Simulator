@@ -34,6 +34,12 @@ class RobotController(BaseSubController):
             self._window.on_callback(CREATOR_TOGGLE_ROBOT, self.toggle)
 
     def toggle(self, call: bool = True) -> None:
+        """This method toggles a special mode for this controller. In CREATOR mode, the robot's 
+        position can be changed.
+
+        Args:
+            call (bool, optional): If false, then the registered callback is not executed. Defaults to True.
+        """
         super().toggle(call)
 
         if self._toggled:                
@@ -45,13 +51,17 @@ class RobotController(BaseSubController):
             self._text_robot.set_color(SHORTCUT_TEXT_COLOR)
     
     def _on_mouse_click(self, pos: Tuple[int, int]) -> None:
+        """This method is executed, if the event was registered from inside this controller.
+
+        Args:
+            pos (Tuple[int, int]): The mouse position.
+        """
         self._robot.set_position(pos)
         self.toggle()
 
-    def app_mode(self, mode: int) -> None:
-        self._app_mode = mode
-    
     def loop(self) -> None:
+        """This loop is always executed by the main controller.
+        """
         if self.is_toggled():
             mouse_pos = py.mouse.get_pos()
             self._robot.set_position(mouse_pos)

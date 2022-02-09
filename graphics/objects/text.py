@@ -29,12 +29,23 @@ class Text(Sprite):
         self._c = c
     
     def set_color(self, c: Tuple[int, int, int]) -> None:
+        """Changes the text color
+
+        Args:
+            c (Tuple[int, int, int]): RGB values.
+        """
         self._c = c
         self._text_surface = self._font.render(self._text, False, self._c)
     
     def set_text(self, text: str) -> None:
+        """Changes the text of this sprite.
+
+        Args:
+            text (str): The text.
+        """
         self._text = text
         self._text_surface = self._font.render(text, False, self._c)
+        # TODO: change psoition may be needed
 
     def get_text(self) -> str:
         return self._text
@@ -64,6 +75,7 @@ class Text(Sprite):
         raise RuntimeError("Wrong anchor point provided.")
     
     def get_position(self) -> Tuple[int, int]:
+        # TODO: depends on anchor
         return (self._x, self._y)
     
     def draw(self) -> None:

@@ -89,3 +89,4 @@ class SimulationController(BaseController):
     
     def loop(self) -> None:
         self._robot.loop()
+        self._wall.loop()
