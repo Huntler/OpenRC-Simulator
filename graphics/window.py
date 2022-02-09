@@ -110,6 +110,12 @@ class BaseWindow:
         defined event occurs, then the given function is executed.
         """
         self._callbacks[type] = func
+    
+    def remove_callback(self, type) -> None:
+        """
+        This method removes a registered callback
+        """
+        del self._callbacks[type]
 
     def start(self) -> None:
         """

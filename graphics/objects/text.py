@@ -28,6 +28,10 @@ class Text(Sprite):
 
         self._c = c
     
+    def set_color(self, c: Tuple[int, int, int]) -> None:
+        self._c = c
+        self._text_surface = self._font.render(self._text, False, self._c)
+    
     def set_text(self, text: str) -> None:
         self._text = text
         self._text_surface = self._font.render(text, False, self._c)

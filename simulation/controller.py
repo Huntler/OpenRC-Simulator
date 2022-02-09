@@ -3,17 +3,11 @@ from graphics.controller import BaseController
 from graphics.objects.rectangle import Rectangle
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
-from simulation import CREATOR, MANUAL, SIMULATION
-from simulation.window import SimulationWindow
-import pygame as py
-import time
-
-
-BACKGROUND_COLOR = (30, 35, 35)
-MODE_TEXT_COLOR = (40, 45, 45)
-SHORTCUT_TEXT_COLOR = (70, 75, 75)
-ROBOT_COLOR = (160, 160, 200)
-ROBOT_SIZE = 50
+from graphics.sub_controller import BaseSubController
+from simulation import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
+from simulation.robot_controller import RobotController
+from simulation.wall_controller import WallController
+from simulation.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SimulationWindow
 
 
 class SimulationController(BaseController):
@@ -40,12 +34,38 @@ class SimulationController(BaseController):
         background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
 
-        self._robot = Robot(self._surface, ROBOT_SIZE * 2, self._height / 2 - ROBOT_SIZE, ROBOT_SIZE, ROBOT_COLOR)
-        self._window.add_sprite("robot", self._robot)
+        # create sub controllers
+        self._active_sub_controller = None
+
+        # create the robot controller
+        self._robot = RobotController(self._window, mode)
+        self._robot.on_toggle(self._sub_controller_toggled)
+
+        # create the wall controller
+        self._wall = WallController(self._window, mode)
+        self._wall.on_toggle(self._sub_controller_toggled)
 
         #keys = py.key.get_pressed()
         #print(keys)
         self.mode(mode)
+    
+    def _sub_controller_toggled(self, sub_controller: BaseSubController) -> None:
+        """This method executes if a subcontroller was toggled. In this case, this method 
+        disables all other subcontrollers.
+        """
+        # if the active sub controller was toggled again, then just unregister it
+        if self._active_sub_controller == sub_controller:
+            self._active_sub_controller = None
+            return
+
+        # if there was an active sub controller, then toggle it again
+        if self._active_sub_controller:
+            self._active_sub_controller.toggle(call=False)
+            self._active_sub_controller = None
+        
+        if sub_controller.is_toggled():
+            self._active_sub_controller = sub_controller
+        
     
     def mode(self, mode: int) -> None:
         """The applications mode (CREATOR, SIMULATION, MANUAL)
@@ -62,32 +82,10 @@ class SimulationController(BaseController):
         text_mode = Text(self._surface, mode_text[mode], cx, cy, 120, MODE_TEXT_COLOR)
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
-        if mode == CREATOR:
-            # show shortcut info for CREATOR mode
-            text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
-            text_shortcuts.set_position((20, self._height - 150), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_shortcuts_title", text_shortcuts, zindex=98)
-
-            # robot movement
-            text_robot = Text(self._surface, "'R' Move the Robot", 0, 0, 30, SHORTCUT_TEXT_COLOR)
-            text_robot.set_position((20, self._height - 100), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_robot", text_robot, zindex=98)
-
-            # wall placement
-            text_robot = Text(self._surface, "'P' Start drawing a wall", 0, 0, 30, SHORTCUT_TEXT_COLOR)
-            text_robot.set_position((20, self._height - 70), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_wall", text_robot, zindex=98)
-
-            # save the current creation
-            text_robot = Text(self._surface, "'S' Save the map", 0, 0, 30, SHORTCUT_TEXT_COLOR)
-            text_robot.set_position((20, self._height - 40), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_save", text_robot, zindex=98)
-
-        if mode == MANUAL:
-            pass
-
-        if mode == SIMULATION:
-            pass
-
+        # show shortcut info for CREATOR mode
+        text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
+        text_shortcuts.set_position((20, self._height - 150), ANCHOR_TOP_LEFT)
+        self._window.add_sprite("text_shortcuts_title", text_shortcuts, zindex=98)
+    
     def loop(self) -> None:
-        pass
+        self._robot.loop()
