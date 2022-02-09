@@ -7,10 +7,10 @@ robot:
   y: 458
 walls:
   sprite_wall_1:
-    end_x: 1191
-    end_y: 11
-    start_x: 9
-    start_y: 11
+    end_x: 1180
+    end_y: 20
+    start_x: 20
+    start_y: 20
   sprite_wall_10:
     end_x: 494
     end_y: 393
@@ -62,10 +62,10 @@ walls:
     start_x: 140
     start_y: 194
   sprite_wall_2:
-    end_x: 1191
-    end_y: 885
-    start_x: 1191
-    start_y: 11
+    end_x: 1180
+    end_y: 880
+    start_x: 1180
+    start_y: 20
   sprite_wall_20:
     end_x: 209
     end_y: 242
@@ -117,10 +117,10 @@ walls:
     start_x: 195
     start_y: 678
   sprite_wall_3:
-    end_x: 16
-    end_y: 883
-    start_x: 1191
-    start_y: 885
+    end_x: 20
+    end_y: 880
+    start_x: 1180
+    start_y: 880
   sprite_wall_30:
     end_x: 163
     end_y: 633
@@ -172,10 +172,10 @@ walls:
     start_x: 885
     start_y: 687
   sprite_wall_4:
-    end_x: 9
-    end_y: 11
-    start_x: 16
-    start_y: 883
+    end_x: 20
+    end_y: 20
+    start_x: 20
+    start_y: 880
   sprite_wall_40:
     end_x: 921
     end_y: 657
