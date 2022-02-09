@@ -17,15 +17,15 @@ if not args.name:
     print("Provide a map. Exit.")
     quit()
 
-# create the visuals
-application = SimulationController(window_size=(1200, 900), flags=py.HWSURFACE)
-
+mode = simulation.SIMULATION
 if args.create:
-    application.mode(simulation.CREATOR)
+    mode = simulation.CREATOR
 
 if args.load:
-    application.mode(simulation.MANUAL)
+    mode = simulation.MANUAL
 
+# create the visuals
+application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
 application.boot()
 
 # TODO: Button object

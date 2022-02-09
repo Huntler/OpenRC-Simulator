@@ -20,6 +20,7 @@ class BaseWindow:
             flags (int, optional): Flags like fullscreen or hardware acceleration. Defaults to 0.
         """
         py.init()
+        py.font.init()
 
         # set the screen size and draw area
         self._width, self._height = self._window_size = window_size
