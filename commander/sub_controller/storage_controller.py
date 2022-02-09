@@ -1,8 +1,8 @@
 from typing import List
 from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
-from simulation import CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from simulation.window import CREATOR_SAVE_MAP, SimulationWindow
+from commander import CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from commander.window import CREATOR_SAVE_MAP, SimulationWindow
 import yaml
 
 

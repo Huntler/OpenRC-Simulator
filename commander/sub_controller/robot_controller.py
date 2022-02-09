@@ -4,8 +4,8 @@ from pygame import Surface
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
-from simulation import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from simulation.window import CREATOR_PLACE_ROBOT, MOUSE_CLICK, SimulationWindow
+from commander import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from commander.window import CREATOR_PLACE_ROBOT, MOUSE_CLICK, SimulationWindow
 
 
 ROBOT_COLOR = (160, 160, 200)

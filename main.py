@@ -1,7 +1,7 @@
 import argparse
 import pygame as py
-import simulation
-from simulation.controller import SimulationController
+import commander
+from commander.controller import SimulationController
 
 
 # add program arguments for configuring the run
@@ -18,12 +18,12 @@ if not args.name:
     print("Provide a map. Exit.")
     quit()
 
-mode = simulation.SIMULATION
+mode = commander.SIMULATION
 if args.create:
-    mode = simulation.CREATOR
+    mode = commander.CREATOR
 
 if args.manual:
-    mode = simulation.MANUAL
+    mode = commander.MANUAL
 
 # create the visuals
 application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)

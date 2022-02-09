@@ -1,8 +1,8 @@
 from typing import Dict
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
-from simulation import CREATOR, SHORTCUT_TEXT_COLOR
-from simulation.window import CREATOR_PLACE_GOAL, SimulationWindow
+from commander import CREATOR, SHORTCUT_TEXT_COLOR
+from commander.window import CREATOR_PLACE_GOAL, SimulationWindow
 
 
 class GoalController(BaseSubController):

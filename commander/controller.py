@@ -4,12 +4,12 @@ from graphics.objects.rectangle import Rectangle
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
-from simulation import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from simulation.sub_controller.goal_controller import GoalController
-from simulation.sub_controller.robot_controller import RobotController
-from simulation.sub_controller.storage_controller import StorageController
-from simulation.sub_controller.wall_controller import WallController
-from simulation.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SHORTCUTS_UNTOGGLE, SimulationWindow
+from commander import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
+from commander.sub_controller.goal_controller import GoalController
+from commander.sub_controller.robot_controller import RobotController
+from commander.sub_controller.storage_controller import StorageController
+from commander.sub_controller.wall_controller import WallController
+from commander.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SHORTCUTS_UNTOGGLE, SimulationWindow
 
 
 class SimulationController(BaseController):
