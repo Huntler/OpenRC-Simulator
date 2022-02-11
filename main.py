@@ -30,6 +30,5 @@ application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.
 application.file(args.name)
 application.boot()
 
-# TODO: save and load
 # TODO: manual
 # TODO: simulation

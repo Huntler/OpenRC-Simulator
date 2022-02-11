@@ -1,3 +1,4 @@
+import time
 from typing import Tuple
 from graphics.controller import BaseController
 from graphics.objects.rectangle import Rectangle
@@ -22,6 +23,8 @@ class SimulationController(BaseController):
             flags (int, optional): Fullscreen, hardware acceleration, ... Defaults to 0.
         """
         super().__init__()
+        self._t = 0
+        self._delta = 0.1
 
         self._width, self._height = window_size
         self._center = (self._width // 2, self._height // 2)
@@ -117,6 +120,9 @@ class SimulationController(BaseController):
             self._storage.load(name, [self._robot, self._goal, self._wall])
 
     def loop(self) -> None:
-        self._robot.loop()
+        self._robot.loop(self._delta)
         self._wall.loop()
         self._goal.loop()
+
+        self._t += self._delta
+        time.sleep(0.001)

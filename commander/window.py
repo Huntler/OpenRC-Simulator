@@ -10,6 +10,12 @@ CREATOR_PLACE_GOAL = "creator_place_goal"
 CREATOR_PLACE_WALL= "creator_place_wall"
 CREATOR_SAVE_MAP = "creato_save_map"
 
+MANUAL_LEFT_INCREASE = "left_increase"
+MANUAL_LEFT_DECREASE = "left_decrease"
+MANUAL_RIGHT_INCREASE = "right_increase"
+MANUAL_RIGHT_DECREASE = "left_decrease"
+MANUAL_BOTH_INCREASE = "both_increase"
+
 
 class SimulationWindow(BaseWindow):
     def sprites(self) -> None:
@@ -47,6 +53,15 @@ class SimulationWindow(BaseWindow):
             # untoggle all
             if event.key == py.K_ESCAPE:
                 self._execute_callback(SHORTCUTS_UNTOGGLE)
+            
+            if event.key == py.K_o:
+                self._execute_callback(MANUAL_RIGHT_INCREASE)
+
+            if event.key == py.K_w:
+                self._execute_callback(MANUAL_LEFT_INCREASE)
+            
+            if event.key == py.K_t:
+                self._execute_callback(MANUAL_BOTH_INCREASE)
         
         if mouse_buttons[0]:
             func = self._callbacks.get(MOUSE_CLICK, None)

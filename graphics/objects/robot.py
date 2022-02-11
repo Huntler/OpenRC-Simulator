@@ -21,17 +21,17 @@ class Robot(Sprite):
         self._clicked_c = c
     
     def set_direction(self, angle: float) -> None:
-        self._angle = angle * 0.015708
-        self._line_end_x = int(math.sin(self._angle) * (self._radius -1) + self._x)
-        self._line_end_y = int(math.cos(self._angle) * (self._radius -1) + self._y)
+        self._angle = angle
+        self._line_end_x = int(math.cos(self._angle) * (self._radius -1) + self._x)
+        self._line_end_y = int(math.sin(self._angle) * (self._radius -1) + self._y)
 
     def get_direction(self) -> float:
-        return self._angle / 0.015708
+        return self._angle
 
     def set_position(self, pos: Tuple[int, int]) -> None:
         self._x, self._y = pos
-        self._line_end_x = int(math.sin(self._angle) * (self._radius -1) + self._x)
-        self._line_end_y = int(math.cos(self._angle) * (self._radius -1) + self._y)
+        self._line_end_x = int(math.cos(self._angle) * (self._radius -1) + self._x)
+        self._line_end_y = int(math.sin(self._angle) * (self._radius -1) + self._y)
 
     def get_position(self) -> Tuple[int, int]:
         return (self._x, self._y)

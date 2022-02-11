@@ -1,75 +1,90 @@
 import numpy as np
 import math
 
+from motion_model import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
+
 
 class Robot:
-    def __init__(self, midpoint, l, theta):
+    def __init__(self, pixel_pos: np.array, robot_size: int):
         """
         initializes robot
         :param midpoint: midpoint of the robot (in space)
-        :param l: distance between the centers of the two wheels
         """
+        # handling coordinate system in pixel diemnsion
+        self._pixel_meter_const = robot_size * 2 / ROBOT_WHEEL_DISTANCE
+        self._pixel_pos = pixel_pos
 
-        self.midpoint = midpoint
-        self._theta = theta
-        self._l = l
+        # simulation related measuremnets
+        self._x = self._y = 0
+        self._delta = 0
 
-        self.l_wheel_pos = (midpoint[0] - l / 2, midpoint[1])
-        self.r_wheel_pos = (midpoint[0] + l / 2, midpoint[1])
+        # angle to coordinate system's x-axis
+        self._theta = ROBOT_INITIAL_THETA
 
-    def _calc_velocities(self, omega, r):
-        """
-        calculates velocities for both wheels
-        :param omega: rate of rotation
-        :param r: signed distance form icc to the midpoint
-        :return: velocities for left and right wheel
-        """
-        velocity_l = omega(r - self._l / 2)
-        velocity_r = omega(r + self._l / 2)
+        self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2
+        print(f"Acceleration: {round(self._acceleration * 100)} cm/s^2")
+        self._acc_l = self._acc_r = 0
 
-        return velocity_l, velocity_r
+    def accelerate_left(self):
+        self._acc_l += self._acceleration
 
-    def _calc_r(self, velocity_l, velocity_r):
-        """
-        calculates the signed distance from icc to the midpoint
-        :param velocity_l: velocity of left wheel
-        :param velocity_r: velocity of right wheel
-        :return: signed distance from icc to the midpoint
-        """
-        return (self._l / 2) * ((velocity_l + velocity_r) / velocity_r - velocity_l)
+    def slowdown_left(self):
+        self._acc_l -= self._acceleration
 
-    def _calc_omega(self, velocity_l, velocity_r):
-        """
-        calculates the rate of rotation
-        :param velocity_l: velocity of left wheel
-        :param velocity_r: velocity of right wheel
-        :return: rate of rotation
-        """
-        return (velocity_r - velocity_l) / self._l
+    def accelerate_right(self):
+        self._acc_r += self._acceleration
 
-    def _calc_icc(self, velocity_l, velocity_r):
-        """
-        calaculates the icc
-        :param velocity_l: velocity of left wheel
-        :param velocity_r: velocity of right wheel
-        :return: icc - the point that the robot rotates about
-        """
-        r = self._calc_r(velocity_l, velocity_r)
-        return self.midpoint + np.array([- r * math.sin(self._theta), r * math.cos(self._theta)])
+    def slowdown_right(self):
+        self._acc_r -= self._acceleration
 
-    def rotate(self, t, delta, velocity_l, velocity_r):
-        """
-        rotates the robot
-        :param t: timestep
-        :param delta: timestep when robot should be at new position
-        :param velocity_l: velocity of left wheel
-        :param velocity_r: velocity of right wheel
-        """
+    def set_time_delta(self, delta: float):
+        self._delta = delta
 
-        omega = self._calc_omega(velocity_l, velocity_r)
-        icc = self._calc_icc(velocity_l, velocity_r)
+    def _rotation(self, vl, vr):
+        # calculate metrics
+        R = (ROBOT_WHEEL_DISTANCE / 2) * ((vl + vr) / (vr - vl))
+        omega = (vr - vl) / ROBOT_WHEEL_DISTANCE
 
-        rotation_matrix = np.array([math.cos(omega * delta * t), - math.sin(omega * delta * t)])
+        # calculate ICC and extend it with w*dt
+        icc = [self._x - R * math.sin(omega),
+               self._y + R * math.cos(omega), 
+               omega * self._delta]
+        matrix = np.array([
+            [math.cos(omega * self._delta), -math.sin(omega * self._delta), 0],
+            [math.sin(omega * self._delta), math.cos(omega * self._delta), 0],
+            [0, 0, 1]], dtype=float)
+        result = np.matmul(matrix, np.array([self._x - icc[0], self._y - icc[1], self._theta])) + icc
 
-        self.midpoint = rotation_matrix * (self.midpoint - icc) + icc
-        self._theta = self._theta + omega * delta * t
+        # update coordinates and angle
+        self._x = result[0]
+        self._y = result[1]
+        self._theta = result[2] % (math.pi * 2)
+
+        # update velocity of wheels
+        vr = omega * (R + ROBOT_WHEEL_DISTANCE / 2)
+        vl = omega * (R - ROBOT_WHEEL_DISTANCE / 2)
+        return vl, vr
+
+    def _forward(self, vl, vr):
+        # calculate the distance, the roboter made after delta of time
+        speed = (vl + vr) / 2
+        dir_vector = np.array([math.cos(self._theta), math.sin(self._theta)])
+        print(dir_vector, [vl, vr])
+        distance = dir_vector * speed * self._delta * self._pixel_meter_const
+        self._pixel_pos += distance
+
+    def drive(self):
+        # acceleration * times -> velocity
+        velocity_l = self._acc_l * self._delta
+        velocity_r = self._acc_r * self._delta
+
+        # spin the wheels
+        if velocity_l != velocity_r:
+            velocity_l, velocity_r = self._rotation(velocity_l, velocity_r)
+            self._forward(velocity_l, velocity_r)
+        else:
+            self._forward(velocity_l, velocity_r)
+
+        # update position
+        pos = self._pixel_pos + self._pixel_meter_const * np.array([self._x, -self._y])
+        return self._theta, int(pos[0]), int(pos[1])
