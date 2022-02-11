@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from motion_model import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
+from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
 
 
 class Robot:
@@ -24,6 +24,15 @@ class Robot:
         self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2
         print(f"Acceleration: {round(self._acceleration * 100)} cm/s^2")
         self._acc_l = self._acc_r = 0
+
+        # create distance sensors
+        pi = math.pi
+        self._sensor_lenght = 100
+        self.sensor_lines = [
+            np.array([self._x + math.cos(2 * pi / 12 * x) * self._sensor_lenght, self._y +
+                      math.sin(2 * pi / 12 * x) * self._sensor_lenght])
+            for x in range(0, 12 + 1)]
+        self.distances = []
 
     def accelerate_left(self):
         self._acc_l += self._acceleration
@@ -63,6 +72,14 @@ class Robot:
         # update velocity of wheels
         vr = omega * (R + ROBOT_WHEEL_DISTANCE / 2)
         vl = omega * (R - ROBOT_WHEEL_DISTANCE / 2)
+
+        # rotate sensor lines
+        pi = math.pi
+        self.sensor_lines = [
+            np.array([self._x + math.cos(2 * pi / 12 * x) * self._sensor_lenght, self._y +
+                      math.sin(2 * pi / 12 * x) * self._sensor_lenght])
+            for x in range(0, 12 + 1)]
+
         return vl, vr
 
     def _forward(self, vl, vr):
