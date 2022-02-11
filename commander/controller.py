@@ -1,5 +1,7 @@
 import time
 from typing import Tuple
+
+import pygame as py
 from graphics.controller import BaseController
 from graphics.objects.rectangle import Rectangle
 from graphics.objects.robot import Robot
@@ -23,7 +25,7 @@ class SimulationController(BaseController):
             flags (int, optional): Fullscreen, hardware acceleration, ... Defaults to 0.
         """
         super().__init__()
-        self._t = 0
+        self._t = py.time.get_ticks()
         self._delta = 0.1
 
         self._width, self._height = window_size
@@ -120,9 +122,11 @@ class SimulationController(BaseController):
             self._storage.load(name, [self._robot, self._goal, self._wall])
 
     def loop(self) -> None:
-        self._robot.loop(self._delta)
+        # calculate the time delta
+        delta = (py.time.get_ticks() - self._t) / 1_000
+
+        self._robot.loop(delta)
         self._wall.loop()
         self._goal.loop()
 
-        self._t += self._delta
-        time.sleep(0.001)
+        self._t += delta

@@ -3,7 +3,7 @@ import pygame as py
 from typing import Dict, Tuple
 from pygame import Surface
 from graphics.window import MUTEX
-from motion_model.robot import Robot as SimRobot
+from simulation.robot import Robot as SimRobot
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
@@ -126,7 +126,7 @@ class RobotController(BaseSubController):
             # get the simulations info about the robot and update the sprite
             self._robot.set_time_delta(delta)
             angle, x, y = self._robot.drive()
-            
+
             self._sprite_robot.set_position((x, y))
             self._sprite_robot.set_direction(angle)
     
