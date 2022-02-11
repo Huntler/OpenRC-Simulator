@@ -75,7 +75,7 @@ class RobotController(BaseSubController):
     def _motors_both(self, left: int, right: int):
         def fire():
             if left == right and left == 0:
-                self._robot.hard_stop()
+                self._robot.stop()
                 return
                 
             self._motor_left(left)()

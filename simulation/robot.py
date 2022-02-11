@@ -37,9 +37,15 @@ class Robot:
                       math.sin(2 * pi / 12 * x) * self._sensor_lenght])
             for x in range(0, 12 + 1)]
         self.distances = []
+
+        #
+        self._stop = False
     
     def hard_stop(self):
         self._velocity = np.array([0, 0], dtype=float)
+    
+    def stop(self):
+        self._stop = True
 
     def accelerate_left(self):
         self._velocity[0] += self._acceleration
@@ -56,6 +62,12 @@ class Robot:
     def set_time_delta(self, delta: float):
         self._delta = delta
         self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2 * self._delta
+    
+    def _brake(self, energy=0.05):
+        """
+        This method uses energy to reverse the motors in order to break.
+        """
+        return -math.sqrt((energy * ROBOT_MOTOR_POWER) / ROBOT_WEIGHT) / 2 * self._delta
 
     def _rotate(self):
         # calculate the movement and rotation
@@ -71,6 +83,16 @@ class Robot:
             for x in range(0, 12 + 1)]
 
     def drive(self):
+        if self._stop:
+            self._velocity += self._brake()
+
+            # if the kinetic energy is 0 (or lower) then the robot has stopped
+            energy = (np.sum(self._velocity) / 2) * ROBOT_WEIGHT
+            print(energy)
+            if energy <= 0:
+                self._velocity = np.array([0, 0], dtype=float)
+                self._stop = False
+
         # calculate the rotation and movement
         self._rotate()
 
