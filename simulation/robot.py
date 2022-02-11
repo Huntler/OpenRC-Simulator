@@ -37,6 +37,9 @@ class Robot:
                       math.sin(2 * pi / 12 * x) * self._sensor_lenght])
             for x in range(0, 12 + 1)]
         self.distances = []
+    
+    def hard_stop(self):
+        self._velocity = np.array([0, 0], dtype=float)
 
     def accelerate_left(self):
         self._velocity[0] += self._acceleration

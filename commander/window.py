@@ -15,6 +15,10 @@ MANUAL_LEFT_DECREASE = "left_decrease"
 MANUAL_RIGHT_INCREASE = "right_increase"
 MANUAL_RIGHT_DECREASE = "left_decrease"
 MANUAL_BOTH_INCREASE = "both_increase"
+MANUAL_BOTH_DECREASE = "both_decrease"
+MANUAL_BOTH_ZERO = "both_zero"
+
+SIMULATION_PAUSE = "pause"
 
 
 class SimulationWindow(BaseWindow):
@@ -45,6 +49,7 @@ class SimulationWindow(BaseWindow):
             # wall placement
             if event.key == py.K_p:
                 self._execute_callback(CREATOR_PLACE_WALL)
+                self._execute_callback(SIMULATION_PAUSE)
 
             # save map
             if event.key == py.K_s:
@@ -56,12 +61,21 @@ class SimulationWindow(BaseWindow):
             
             if event.key == py.K_o:
                 self._execute_callback(MANUAL_RIGHT_INCREASE)
+            
+            if event.key == py.K_l:
+                self._execute_callback(MANUAL_RIGHT_DECREASE)
 
             if event.key == py.K_w:
                 self._execute_callback(MANUAL_LEFT_INCREASE)
             
+            if event.key == py.K_s:
+                self._execute_callback(MANUAL_RIGHT_DECREASE)
+            
             if event.key == py.K_t:
                 self._execute_callback(MANUAL_BOTH_INCREASE)
+
+            if event.key == py.K_g:
+                self._execute_callback(MANUAL_BOTH_ZERO)
         
         if mouse_buttons[0]:
             func = self._callbacks.get(MOUSE_CLICK, None)

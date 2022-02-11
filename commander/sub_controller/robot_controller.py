@@ -8,7 +8,7 @@ from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from commander.window import CREATOR_PLACE_ROBOT, MANUAL_BOTH_INCREASE, MANUAL_LEFT_DECREASE, MANUAL_LEFT_INCREASE, MANUAL_RIGHT_DECREASE, MANUAL_RIGHT_INCREASE, MOUSE_CLICK, SimulationWindow
+from commander.window import CREATOR_PLACE_ROBOT, MANUAL_BOTH_DECREASE, MANUAL_BOTH_INCREASE, MANUAL_BOTH_ZERO, MANUAL_LEFT_DECREASE, MANUAL_LEFT_INCREASE, MANUAL_RIGHT_DECREASE, MANUAL_RIGHT_INCREASE, MOUSE_CLICK, SIMULATION_PAUSE, SimulationWindow
 
 
 ROBOT_COLOR = (160, 160, 200)
@@ -40,11 +40,19 @@ class RobotController(BaseSubController):
             self._window.on_callback(CREATOR_PLACE_ROBOT, self.toggle)
         
         if app_mode == MANUAL:
+            self._is_paused = False
+            self._text_robot = Text(self._surface, "'P' Pause simulation", 0, 0, 30, SHORTCUT_TEXT_COLOR)
+            self._text_robot.set_position((20, self._wh - 50), ANCHOR_TOP_LEFT)
+            self._window.add_sprite("text_robot", self._text_robot)
+            self._window.on_callback(SIMULATION_PAUSE, self._pause)
+
             self._window.on_callback(MANUAL_LEFT_INCREASE, self._motor_left(1))
             self._window.on_callback(MANUAL_LEFT_DECREASE, self._motor_left(-1))
             self._window.on_callback(MANUAL_RIGHT_INCREASE, self._motor_right(1))
             self._window.on_callback(MANUAL_RIGHT_DECREASE, self._motor_right(-1))
             self._window.on_callback(MANUAL_BOTH_INCREASE, self._motors_both(1, 1))
+            self._window.on_callback(MANUAL_BOTH_DECREASE, self._motors_both(-1, -1))
+            self._window.on_callback(MANUAL_BOTH_ZERO, self._motors_both(0, 0))
     
     def _motor_left(self, left: int):
         def fire():
@@ -66,9 +74,16 @@ class RobotController(BaseSubController):
     
     def _motors_both(self, left: int, right: int):
         def fire():
+            if left == right and left == 0:
+                self._robot.hard_stop()
+                return
+                
             self._motor_left(left)()
             self._motor_right(right)()
         return fire
+    
+    def _pause(self) -> None:
+        self._is_paused = not self._is_paused
 
     def toggle(self, call: bool = True) -> None:
         """This method toggles a special mode for this controller. In CREATOR mode, the robot's 
@@ -124,6 +139,9 @@ class RobotController(BaseSubController):
         
         if self._app_mode != CREATOR:
             # get the simulations info about the robot and update the sprite
+            if self._is_paused:
+                delta = 0
+
             self._robot.set_time_delta(delta)
             angle, x, y = self._robot.drive()
 
