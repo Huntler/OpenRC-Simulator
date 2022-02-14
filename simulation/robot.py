@@ -129,8 +129,21 @@ class Robot:
          :param lines: the lines the robot collided with
          :return: the collision points
         """
-        collision = np.where(self._distances < ROBOT_WHEEL_DISTANCE / 2, -self._distances, 0)
-        return collision
+        # get collisions
+        collisions = np.where(self._distances < ROBOT_WHEEL_DISTANCE / 2, -self._distances, 0)
+
+        # if any collision was found, then reset the robots position back so it is not stuck in the wall
+        if collisions.any() != 0:
+            sensor_num = np.argmin(collisions)
+
+            # FIXME: this calculation may be wrong
+            collision = collisions[sensor_num] / self._pixel_meter_const
+            direction = self.sensor_lines[sensor_num] / np.linalg.norm(self.sensor_lines[sensor_num])
+
+            self._pos = self._pos + direction * collision
+            self.hard_stop()
+
+        return collisions
 
     def drive(self, lines):
         lines = np.array(lines) / self._pixel_meter_const
@@ -150,16 +163,6 @@ class Robot:
 
         # stop if there was a colision
         collisions = self._collision()
-        if collisions.any() != 0:
-            sensor_num = np.argmin(collisions)
-
-            collision = collisions[sensor_num] / self._pixel_meter_const
-            direction = self.sensor_lines[sensor_num] / np.linalg.norm(self.sensor_lines[sensor_num])
-
-            print(self._pos, direction, collision, self._pos + direction * collision)
-
-            self._pos = self._pos + direction * collision
-            self.hard_stop()
 
         # transfer back to pixel data
         x = int(self._pos[0] * self._pixel_meter_const)
