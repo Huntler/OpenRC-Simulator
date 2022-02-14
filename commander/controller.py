@@ -125,6 +125,7 @@ class SimulationController(BaseController):
     def loop(self) -> None:
         # calculate the time delta
         delta = (py.time.get_ticks() - self._t) / 1_000
+        self._t = py.time.get_ticks()
 
         self._wall.loop()
         walls = self._wall.get_walls()

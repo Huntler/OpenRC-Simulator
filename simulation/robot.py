@@ -49,32 +49,38 @@ class Robot:
         self._stop = True
 
     def accelerate_left(self):
-        self._velocity[0] += self._acceleration
+        self._velocity[0] += 1_000
 
     def slowdown_left(self):
-        self._velocity[0] -= self._acceleration
+        self._velocity[0] -= 1_000
 
     def accelerate_right(self):
-        self._velocity[1] += self._acceleration
+        self._velocity[1] += 1_000
 
     def slowdown_right(self):
-        self._velocity[1] -= self._acceleration
+        self._velocity[1] -= 1_000
 
     def set_time_delta(self, delta: float):
         self._delta = delta
+
+        # update the acceleration for the frame which has been drawn in delta time
         self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2 * self._delta
 
-    def _brake(self, energy=0.05):
+    def _brake(self, brake_const: float = 2):
         """
         This method uses energy to reverse the motors in order to break.
         """
-        return -math.sqrt((energy * ROBOT_MOTOR_POWER) / ROBOT_WEIGHT) / 2 * self._delta
+        self._velocity /= 2
 
     def _rotate(self):
+        # calculate the current velocity
+        vel_left = self._velocity[0] * self._acceleration
+        vel_right = self._velocity[1] * self._acceleration
+        
         # calculate the movement and rotation
-        self._pos[0] += ((self._velocity[0] + self._velocity[1]) / 2) * math.cos(self._theta) * self._delta
-        self._pos[1] -= ((self._velocity[0] + self._velocity[1]) / 2) * math.sin(self._theta) * self._delta
-        self._theta += (self._velocity[1] - self._velocity[0]) / ROBOT_WHEEL_DISTANCE * self._delta
+        self._pos[0] += ((vel_left + vel_right) / 2) * math.cos(self._theta) * self._delta
+        self._pos[1] -= ((vel_left + vel_right) / 2) * math.sin(self._theta) * self._delta
+        self._theta += (vel_right - vel_left) / ROBOT_WHEEL_DISTANCE * self._delta
 
         # rotate sensor lines
         self.sensor_lines = [
@@ -121,26 +127,30 @@ class Robot:
 
     def drive(self, lines):
         if self._stop:
-            self._velocity += self._brake()
+            self._brake()
 
             # if the kinetic energy is 0 (or lower) then the robot has stopped
             energy = (np.sum(self._velocity) / 2) * ROBOT_WEIGHT
-            if energy <= 0:
-                self._velocity = np.array([0, 0], dtype=float)
+            if energy <= 1:
+                self.hard_stop()
                 self._stop = False
 
         # calculate the rotation and movement
         self._rotate()
         self._calc_distances(lines)
+
+        # stop if there was a colision
         collision_point_a, collision_point_b = self._collision(lines)
         if collision_point_a or collision_point_b:
-            self._velocity = np.array([0, 0])
+            self.hard_stop()
 
         # transfer back to pixel data
         x = int(self._pos[0] * self._pixel_meter_const)
         y = int(self._pos[1] * self._pixel_meter_const)
+
+        # update the distance lines
+        distances = list((self._pixel_meter_const * self._distances).astype(int))
         sensor_lines = [(int(sensor[0] * self._pixel_meter_const), int(sensor[1] * self._pixel_meter_const))
                         for sensor in self.sensor_lines]
-        distances = list((self._pixel_meter_const * self._distances).astype(int))
 
         return -self._theta, x, y, sensor_lines, distances

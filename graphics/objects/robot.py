@@ -1,5 +1,5 @@
 import math
-from typing import Tuple
+from typing import List, Tuple
 from graphics.objects.sprite import Sprite
 import pygame as py
 
@@ -40,10 +40,10 @@ class Robot(Sprite):
     def get_position(self) -> Tuple[int, int]:
         return self._x, self._y
 
-    def set_sensors(self, sensors: []):
+    def set_sensors(self, sensors: List):
         self._sensors = sensors
 
-    def set_distances(self, distances: []):
+    def set_distances(self, distances: List):
         self._distances = distances
 
     def draw(self) -> None:
