@@ -1,8 +1,10 @@
+from dis import dis
 import numpy as np
 import math
 
-from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
+from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_SENSOR_DISTANCE, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
 from skspatial.objects import Line, Circle
+from shapely.geometry import LineString, Point
 
 
 class Robot:
@@ -31,13 +33,9 @@ class Robot:
         self._delta = delta
 
         # create distance sensors
-        pi = math.pi
-        self._sensor_lenght = 20
-        self.sensor_lines = [
-            np.array([self._pos[0] + math.cos(2 * pi / 12 * x) * self._sensor_lenght, self._pos[1] +
-                      math.sin(2 * pi / 12 * x) * self._sensor_lenght])
-            for x in range(0, 12 + 1)]
-        self._distances = np.array([200 for sensor in self.sensor_lines])
+        self.sensor_lines = np.array([np.zeros(2) for _ in range(13)])
+        self._update_sensors()
+        self._distances = np.array([ROBOT_SENSOR_DISTANCE for sensor in self.sensor_lines])
 
         #
         self._stop = False
@@ -67,10 +65,25 @@ class Robot:
         self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2
 
     def _brake(self, brake_const: float = 2):
-        """
-        This method uses energy to reverse the motors in order to break.
-        """
         self._velocity /= brake_const
+
+    def _update_sensors(self):
+        # the factor which is used to get the sensors end position
+        factor = 2 * math.pi / 12
+
+        # iterate of each sensor
+        for i, _ in enumerate(self.sensor_lines):
+            # and create its stock position
+            sensor = np.array([
+                self._pos[0] + math.cos(factor * i),
+                self._pos[1] + math.sin(factor * i)
+                ])
+
+            # then update the sensors position afterwards
+            sensor[0] += math.cos(factor * i - self._theta) * ROBOT_SENSOR_DISTANCE
+            sensor[1] += math.sin(factor * i - self._theta) * ROBOT_SENSOR_DISTANCE
+
+            self.sensor_lines[i] = sensor
 
     def _rotate(self):
         # calculate the current velocity
@@ -81,51 +94,47 @@ class Robot:
         self._pos[0] += ((vel_left + vel_right) / 2) * math.cos(self._theta) * self._delta
         self._pos[1] -= ((vel_left + vel_right) / 2) * math.sin(self._theta) * self._delta
         self._theta += (vel_right - vel_left) / ROBOT_WHEEL_DISTANCE * self._delta
+        self._theta = self._theta % (2 * math.pi)
 
         # rotate sensor lines
-        self.sensor_lines = [
-            np.array([self._pos[0] + math.cos(2 * math.pi / 12 * (x - self._theta)) * self._sensor_lenght,
-                      self._pos[1] + math.sin(2 * math.pi / 12 * (x - self._theta)) * self._sensor_lenght])
-            for x in range(0, 12 + 1)]
+        self._update_sensors()
 
     def _calc_distances(self, lines):
         """
-         calculates distances to all lines for every sensor line
-         :param lines: the lines to which the distance is calculated
-         """
-        for line in lines:
-            line = Line(point=line[0], direction=line[1])
+        calculates distances to all lines for every sensor line
+        :param lines: the lines to which the distance is calculated
+        """
+        robot = Point(self._pos)
 
-            for index, s_line in enumerate(self.sensor_lines):
-                # transform arrays to scikit Lines
-                sensor_line = Line(point=self._pos, direction=s_line)
-                try:
-                    point_intersection = line.intersect_line(sensor_line)
-                    distance = point_intersection.distance_point(self._pos)
-                except ValueError:
-                    distance = 200
+        # reset each sensor values
+        for sensor_num, sensor_point in enumerate(self.sensor_lines):
+            sensor_line = LineString([self._pos, sensor_point])
+            self._distances[sensor_num] = ROBOT_SENSOR_DISTANCE
 
-                # change distance if it is less than 200
-                if distance < self._distances[index]:
-                    self._distances[index] = distance
+            # calulate the current sensor's value for each wall
+            for wall in lines:
+                wall = LineString(wall)
+                hit = sensor_line.intersection(wall)
 
-    def _collision(self, lines):
+                if hit:
+                    distance = robot.distance(hit)
+
+                    # change distance if it is less than the found distance so far
+                    if distance < self._distances[sensor_num]:
+                        self._distances[sensor_num] = distance
+
+    def _collision(self) -> np.ndarray:
         """
          calculates collision points of robot with all lines
          :param lines: the lines the robot collided with
          :return: the collision points
-         """
-        robot_body = Circle(self._pos, ROBOT_WHEEL_DISTANCE / 2)
-        for line in lines:
-            line = Line(line[0], line[1])
-            try:
-                point_a, point_b = robot_body.intersect_line(line)
-            except ValueError:
-                return None, None
-
-            return point_a, point_b
+        """
+        collision = np.where(self._distances < ROBOT_WHEEL_DISTANCE / 2, -self._distances, 0)
+        return collision
 
     def drive(self, lines):
+        lines = np.array(lines) / self._pixel_meter_const
+
         if self._stop:
             self._brake()
 
@@ -140,8 +149,16 @@ class Robot:
         self._calc_distances(lines)
 
         # stop if there was a colision
-        collision_point_a, collision_point_b = self._collision(lines)
-        if collision_point_a or collision_point_b:
+        collisions = self._collision()
+        if collisions.any() != 0:
+            sensor_num = np.argmin(collisions)
+
+            collision = collisions[sensor_num] / self._pixel_meter_const
+            direction = self.sensor_lines[sensor_num] / np.linalg.norm(self.sensor_lines[sensor_num])
+
+            print(self._pos, direction, collision, self._pos + direction * collision)
+
+            self._pos = self._pos + direction * collision
             self.hard_stop()
 
         # transfer back to pixel data
@@ -149,7 +166,7 @@ class Robot:
         y = int(self._pos[1] * self._pixel_meter_const)
 
         # update the distance lines
-        distances = list((self._pixel_meter_const * self._distances).astype(int))
+        distances = list((self._distances).astype(int))
         sensor_lines = [(int(sensor[0] * self._pixel_meter_const), int(sensor[1] * self._pixel_meter_const))
                         for sensor in self.sensor_lines]
 

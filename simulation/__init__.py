@@ -11,3 +11,5 @@ ROBOT_MOTOR_POWER = 30
 
 # in degree
 ROBOT_INITIAL_THETA = math.radians(0)
+
+ROBOT_SENSOR_DISTANCE = 20

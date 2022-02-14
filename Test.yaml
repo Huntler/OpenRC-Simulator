@@ -1,0 +1,13 @@
+app:
+  height: 900
+  width: 1200
+robot:
+  direction: 90
+  x: 200
+  y: 448
+walls:
+  sprite_wall_1:
+    end_x: 533
+    end_y: 546
+    start_x: 531
+    start_y: 368

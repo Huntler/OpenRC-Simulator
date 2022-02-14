@@ -49,6 +49,7 @@ class Robot(Sprite):
     def draw(self) -> None:
         for sensor_point in self._sensors:
             py.draw.line(self._surface, (255, 255, 255), (self._x, self._y), sensor_point)
+            
         py.draw.circle(self._surface, self._c, (self._x, self._y), self._radius)
         py.draw.circle(self._surface, (0, 0, 0), (self._x, self._y), self._radius, self._border)
         py.draw.line(self._surface, (0, 0, 0), (self._x, self._y), (self._line_end_x, self._line_end_y), self._border)
