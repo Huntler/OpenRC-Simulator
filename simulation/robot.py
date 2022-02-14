@@ -49,28 +49,28 @@ class Robot:
         self._stop = True
 
     def accelerate_left(self):
-        self._velocity[0] += 1_000
+        self._velocity[0] += 100
 
     def slowdown_left(self):
-        self._velocity[0] -= 1_000
+        self._velocity[0] -= 100
 
     def accelerate_right(self):
-        self._velocity[1] += 1_000
+        self._velocity[1] += 100
 
     def slowdown_right(self):
-        self._velocity[1] -= 1_000
+        self._velocity[1] -= 100
 
     def set_time_delta(self, delta: float):
         self._delta = delta
 
         # update the acceleration for the frame which has been drawn in delta time
-        self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2 * self._delta
+        self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2
 
     def _brake(self, brake_const: float = 2):
         """
         This method uses energy to reverse the motors in order to break.
         """
-        self._velocity /= 2
+        self._velocity /= brake_const
 
     def _rotate(self):
         # calculate the current velocity
