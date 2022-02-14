@@ -123,7 +123,7 @@ class Robot:
                     if distance < self._distances[sensor_num]:
                         self._distances[sensor_num] = distance
 
-    def _collision(self) -> np.ndarray:
+    def _collision(self, lines) -> np.ndarray:
         """
          calculates collision points of robot with all lines
          :param lines: the lines the robot collided with
@@ -133,6 +133,9 @@ class Robot:
         collisions = np.where(self._distances < ROBOT_WHEEL_DISTANCE / 2, -self._distances, 0)
 
         # if any collision was found, then reset the robots position back so it is not stuck in the wall
+        
+        # TODO: this here is only for ONE collsion. If there are two walls shaped like an arrow >
+        # then this may not work.
         if collisions.any() != 0:
             sensor_num = np.argmin(collisions)
 
@@ -140,12 +143,32 @@ class Robot:
             collision = collisions[sensor_num] / self._pixel_meter_const
             direction = self.sensor_lines[sensor_num] / np.linalg.norm(self.sensor_lines[sensor_num])
 
-            self._pos = self._pos + direction * collision
-            self.hard_stop()
+            # TODO: calulation should be mathematical correct
+            # pos[1] +/- depends on tilted wall and approach angle
+            self._pos[0] += direction[0] * collision
+            self._pos[1] -= direction[1] * collision
+            return collisions
+        
+        # check if the robot hits a wall without a sensor detecting it
+        # may occur at corners
+        robot = Point(self._pos)
+        for wall in lines:
+            for corner_pos in wall:
+                # check the robots position to any corner, which have to be
+                # ROBOT_WHEEL_DISTANCE cm away
+                corner = Point(corner_pos)
+                distance = robot.distance(corner)
+                if distance < ROBOT_WHEEL_DISTANCE / 2:
+                    # TODO: calulation should be mathematical correct
+                    # pos[1] +/- depends on tilted wall and approach angle
+                    direction = (self._pos - corner_pos) / np.linalg.norm((self._pos - corner_pos))
+                    self._pos += direction * (distance / self._pixel_meter_const)
+                    return collisions
 
         return collisions
 
     def drive(self, lines):
+        # transferr walls into the simulations coordinate system
         lines = np.array(lines) / self._pixel_meter_const
 
         if self._stop:
@@ -162,7 +185,7 @@ class Robot:
         self._calc_distances(lines)
 
         # stop if there was a colision
-        collisions = self._collision()
+        collisions = self._collision(lines)
 
         # transfer back to pixel data
         x = int(self._pos[0] * self._pixel_meter_const)

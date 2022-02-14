@@ -1,0 +1,298 @@
+app:
+  height: 900
+  width: 1200
+robot:
+  direction: 90
+  x: 104
+  y: 510
+walls:
+  sprite_wall_1:
+    end_x: 497
+    end_y: 157
+    start_x: 497
+    start_y: 61
+  sprite_wall_10:
+    end_x: 1024
+    end_y: 861
+    start_x: 354
+    start_y: 865
+  sprite_wall_11:
+    end_x: 992
+    end_y: 31
+    start_x: 1024
+    start_y: 861
+  sprite_wall_12:
+    end_x: 497
+    end_y: 61
+    start_x: 992
+    start_y: 31
+  sprite_wall_13:
+    end_x: 601
+    end_y: 79
+    start_x: 546
+    start_y: 104
+  sprite_wall_14:
+    end_x: 641
+    end_y: 93
+    start_x: 601
+    start_y: 79
+  sprite_wall_15:
+    end_x: 684
+    end_y: 68
+    start_x: 641
+    start_y: 93
+  sprite_wall_16:
+    end_x: 777
+    end_y: 87
+    start_x: 684
+    start_y: 68
+  sprite_wall_17:
+    end_x: 851
+    end_y: 67
+    start_x: 777
+    start_y: 87
+  sprite_wall_18:
+    end_x: 943
+    end_y: 92
+    start_x: 851
+    start_y: 67
+  sprite_wall_19:
+    end_x: 962
+    end_y: 143
+    start_x: 943
+    start_y: 92
+  sprite_wall_2:
+    end_x: 740
+    end_y: 91
+    start_x: 497
+    start_y: 157
+  sprite_wall_20:
+    end_x: 888
+    end_y: 117
+    start_x: 962
+    start_y: 143
+  sprite_wall_21:
+    end_x: 775
+    end_y: 161
+    start_x: 888
+    start_y: 117
+  sprite_wall_22:
+    end_x: 867
+    end_y: 199
+    start_x: 775
+    start_y: 161
+  sprite_wall_23:
+    end_x: 964
+    end_y: 171
+    start_x: 867
+    start_y: 199
+  sprite_wall_24:
+    end_x: 973
+    end_y: 235
+    start_x: 964
+    start_y: 171
+  sprite_wall_25:
+    end_x: 881
+    end_y: 281
+    start_x: 973
+    start_y: 235
+  sprite_wall_26:
+    end_x: 769
+    end_y: 232
+    start_x: 881
+    start_y: 281
+  sprite_wall_27:
+    end_x: 785
+    end_y: 306
+    start_x: 769
+    start_y: 232
+  sprite_wall_28:
+    end_x: 898
+    end_y: 372
+    start_x: 785
+    start_y: 306
+  sprite_wall_29:
+    end_x: 951
+    end_y: 341
+    start_x: 898
+    start_y: 372
+  sprite_wall_3:
+    end_x: 740
+    end_y: 319
+    start_x: 740
+    start_y: 91
+  sprite_wall_30:
+    end_x: 987
+    end_y: 460
+    start_x: 951
+    start_y: 341
+  sprite_wall_31:
+    end_x: 895
+    end_y: 420
+    start_x: 987
+    start_y: 460
+  sprite_wall_32:
+    end_x: 983
+    end_y: 518
+    start_x: 895
+    start_y: 420
+  sprite_wall_33:
+    end_x: 928
+    end_y: 518
+    start_x: 983
+    start_y: 518
+  sprite_wall_34:
+    end_x: 994
+    end_y: 566
+    start_x: 928
+    start_y: 518
+  sprite_wall_35:
+    end_x: 888
+    end_y: 566
+    start_x: 994
+    start_y: 566
+  sprite_wall_36:
+    end_x: 1020
+    end_y: 623
+    start_x: 888
+    start_y: 566
+  sprite_wall_37:
+    end_x: 845
+    end_y: 613
+    start_x: 1020
+    start_y: 623
+  sprite_wall_38:
+    end_x: 845
+    end_y: 613
+    start_x: 845
+    start_y: 613
+  sprite_wall_39:
+    end_x: 994
+    end_y: 669
+    start_x: 845
+    start_y: 613
+  sprite_wall_4:
+    end_x: 909
+    end_y: 489
+    start_x: 740
+    start_y: 319
+  sprite_wall_40:
+    end_x: 847
+    end_y: 673
+    start_x: 994
+    start_y: 669
+  sprite_wall_41:
+    end_x: 987
+    end_y: 715
+    start_x: 847
+    start_y: 673
+  sprite_wall_42:
+    end_x: 902
+    end_y: 719
+    start_x: 987
+    start_y: 715
+  sprite_wall_43:
+    end_x: 1025
+    end_y: 809
+    start_x: 902
+    start_y: 719
+  sprite_wall_44:
+    end_x: 910
+    end_y: 820
+    start_x: 1025
+    start_y: 809
+  sprite_wall_45:
+    end_x: 858
+    end_y: 804
+    start_x: 910
+    start_y: 820
+  sprite_wall_46:
+    end_x: 848
+    end_y: 833
+    start_x: 858
+    start_y: 804
+  sprite_wall_47:
+    end_x: 803
+    end_y: 809
+    start_x: 848
+    start_y: 833
+  sprite_wall_48:
+    end_x: 803
+    end_y: 809
+    start_x: 803
+    start_y: 809
+  sprite_wall_49:
+    end_x: 735
+    end_y: 843
+    start_x: 803
+    start_y: 809
+  sprite_wall_5:
+    end_x: 760
+    end_y: 626
+    start_x: 909
+    start_y: 489
+  sprite_wall_50:
+    end_x: 677
+    end_y: 815
+    start_x: 735
+    start_y: 843
+  sprite_wall_51:
+    end_x: 609
+    end_y: 847
+    start_x: 677
+    start_y: 815
+  sprite_wall_52:
+    end_x: 581
+    end_y: 819
+    start_x: 609
+    start_y: 847
+  sprite_wall_53:
+    end_x: 508
+    end_y: 842
+    start_x: 581
+    start_y: 819
+  sprite_wall_54:
+    end_x: 474
+    end_y: 790
+    start_x: 508
+    start_y: 842
+  sprite_wall_55:
+    end_x: 435
+    end_y: 833
+    start_x: 474
+    start_y: 790
+  sprite_wall_56:
+    end_x: 397
+    end_y: 795
+    start_x: 435
+    start_y: 833
+  sprite_wall_57:
+    end_x: 385
+    end_y: 746
+    start_x: 397
+    start_y: 795
+  sprite_wall_58:
+    end_x: 425
+    end_y: 761
+    start_x: 385
+    start_y: 746
+  sprite_wall_6:
+    end_x: 897
+    end_y: 776
+    start_x: 760
+    start_y: 626
+  sprite_wall_7:
+    end_x: 492
+    end_y: 770
+    start_x: 897
+    start_y: 776
+  sprite_wall_8:
+    end_x: 344
+    end_y: 672
+    start_x: 492
+    start_y: 770
+  sprite_wall_9:
+    end_x: 354
+    end_y: 865
+    start_x: 344
+    start_y: 672
