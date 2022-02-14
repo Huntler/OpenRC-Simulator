@@ -39,6 +39,9 @@ class WallController(BaseSubController):
             self._window.add_sprite("text_wall", self._text_wall)
             self._window.on_callback(CREATOR_PLACE_WALL, self.toggle)
 
+    def get_walls(self):
+        return self._walls
+
     def toggle(self, call: bool = True) -> None:
         super().toggle(call)
 

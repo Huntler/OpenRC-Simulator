@@ -19,13 +19,13 @@ class Wall(Sprite):
         self._sx, self._sy = pos
     
     def get_start(self) -> Tuple[int, int]:
-        return (self._sx, self._sy)
+        return self._sx, self._sy
 
     def set_end(self, pos: Tuple[int, int]) -> None:
         self._ex, self._ey = pos
 
     def get_end(self) -> Tuple[int, int]:
-        return (self._ex, self._ey)
+        return self._ex, self._ey
 
     def set_color(self, c: Tuple[int, int, int]) -> None:
         self._c = c

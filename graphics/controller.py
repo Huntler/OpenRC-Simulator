@@ -8,7 +8,7 @@ class BaseController(Thread):
     def __init__(self) -> None:
         """
         This class represents a controller that connects the game logic to the GUI object.
-        This runs in a separate thread so it is next to the GUI one.
+        This runs in a separate thread, so it is next to the GUI one.
         """
         super(BaseController, self).__init__(group=None, target=None, name="ControllerThread")
         

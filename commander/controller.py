@@ -17,8 +17,8 @@ from commander.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, 
 
 class SimulationController(BaseController):
     def __init__(self, window_size: Tuple[int, int], mode:int, flags: int = 0) -> None:
-        """The SimulationController manages the SimulationWindow. This is a seperate 
-        thread, than the pygame one.
+        """The SimulationController manages the SimulationWindow. This is a separate
+        thread than the pygame one.
 
         Args:
             window_size (Tuple[int, int]): Width and height of the window.
@@ -36,6 +36,7 @@ class SimulationController(BaseController):
         self._window = SimulationWindow(window_size=window_size, flags=flags)
         self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
         self._surface = self._window.get_surface()
+        self._font = self._window.get_font()
 
         # create the sprites we want to use
         # background object (just a colored box)
@@ -46,7 +47,7 @@ class SimulationController(BaseController):
         self._active_sub_controller = None
 
         # create the robot controller
-        self._robot = RobotController(self._window, mode)
+        self._robot = RobotController(self._window, mode, self._font)
         self._robot.on_toggle(self._sub_controller_toggled)
 
         # create the wall controller
@@ -125,8 +126,9 @@ class SimulationController(BaseController):
         # calculate the time delta
         delta = (py.time.get_ticks() - self._t) / 1_000
 
-        self._robot.loop(delta)
         self._wall.loop()
+        walls = self._wall.get_walls()
+        self._robot.loop(delta, walls)
         self._goal.loop()
 
         self._t += delta

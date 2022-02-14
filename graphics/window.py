@@ -35,6 +35,7 @@ class BaseWindow:
         # define the screen on which all sprites are rendered
         self._flags = flags#py.FULLSCREEN | py.HWSURFACE | py.DOUBLEBUF# | py.SCALED 
         self._screen = py.display.set_mode(self._window_size, self._flags)
+        self._font = py.font.SysFont("Times New Roman", 14)
 
         # define a clock to limit the frames per second
         self._clock = py.time.Clock()
@@ -66,6 +67,9 @@ class BaseWindow:
   
     def get_flags(self):
         return self._flags
+
+    def get_font(self):#
+        return self._font
 
     @property
     def frame_rate(self) -> int:
