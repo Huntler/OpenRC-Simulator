@@ -13,7 +13,7 @@ CREATOR_SAVE_MAP = "creato_save_map"
 MANUAL_LEFT_INCREASE = "left_increase"
 MANUAL_LEFT_DECREASE = "left_decrease"
 MANUAL_RIGHT_INCREASE = "right_increase"
-MANUAL_RIGHT_DECREASE = "left_decrease"
+MANUAL_RIGHT_DECREASE = "right_decrease"
 MANUAL_BOTH_INCREASE = "both_increase"
 MANUAL_BOTH_DECREASE = "both_decrease"
 MANUAL_BOTH_ZERO = "both_zero"
@@ -53,6 +53,7 @@ class SimulationWindow(BaseWindow):
 
             # save map
             if event.key == py.K_s:
+                self._execute_callback(MANUAL_LEFT_DECREASE)
                 self._execute_callback(CREATOR_SAVE_MAP)
             
             # untoggle all
@@ -68,13 +69,13 @@ class SimulationWindow(BaseWindow):
             if event.key == py.K_w:
                 self._execute_callback(MANUAL_LEFT_INCREASE)
             
-            if event.key == py.K_s:
-                self._execute_callback(MANUAL_RIGHT_DECREASE)
-            
             if event.key == py.K_t:
                 self._execute_callback(MANUAL_BOTH_INCREASE)
-
+            
             if event.key == py.K_g:
+                self._execute_callback(MANUAL_BOTH_DECREASE)
+
+            if event.key == py.K_x:
                 self._execute_callback(MANUAL_BOTH_ZERO)
         
         if mouse_buttons[0]:

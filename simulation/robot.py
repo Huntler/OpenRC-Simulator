@@ -1,6 +1,8 @@
-from dis import dis
+from dis import dis, disco
 import numpy as np
 import math
+
+from pyparsing import col
 
 from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_SENSOR_DISTANCE, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
 from skspatial.objects import Line, Circle
@@ -131,39 +133,46 @@ class Robot:
         """
         # get collisions
         collisions = np.where(self._distances < ROBOT_WHEEL_DISTANCE / 2, -self._distances, 0)
-
-        # if any collision was found, then reset the robots position back so it is not stuck in the wall
-        
-        # TODO: this here is only for ONE collsion. If there are two walls shaped like an arrow >
-        # then this may not work.
-        if collisions.any() != 0:
-            sensor_num = np.argmin(collisions)
-
-            # FIXME: this calculation may be wrong
-            collision = collisions[sensor_num] / self._pixel_meter_const
-            direction = self.sensor_lines[sensor_num] / np.linalg.norm(self.sensor_lines[sensor_num])
-
-            # TODO: calulation should be mathematical correct
-            # pos[1] +/- depends on tilted wall and approach angle
-            self._pos[0] += direction[0] * collision
-            self._pos[1] -= direction[1] * collision
-            return collisions
         
         # check if the robot hits a wall without a sensor detecting it
         # may occur at corners
+        velocity = np.sum(self._velocity * self._acceleration) / 2 * self._delta
+
+        # calculating the robots direction (as a vector)
+        robot_vect = np.array([math.cos(self._theta), -math.sin(self._theta)])
+        robot_vect = robot_vect / np.linalg.norm(robot_vect)
         robot = Point(self._pos)
+
         for wall in lines:
-            for corner_pos in wall:
-                # check the robots position to any corner, which have to be
-                # ROBOT_WHEEL_DISTANCE cm away
-                corner = Point(corner_pos)
-                distance = robot.distance(corner)
-                if distance < ROBOT_WHEEL_DISTANCE / 2:
-                    # TODO: calulation should be mathematical correct
-                    # pos[1] +/- depends on tilted wall and approach angle
-                    direction = (self._pos - corner_pos) / np.linalg.norm((self._pos - corner_pos))
-                    self._pos += direction * (distance / self._pixel_meter_const)
-                    return collisions
+            line = LineString(wall)
+            wall = np.asarray(wall)
+
+            # check if the robot has collided with a wall
+            distance = line.distance(robot)
+            if distance < ROBOT_WHEEL_DISTANCE / 2:
+                difference = distance - (ROBOT_WHEEL_DISTANCE / 2)
+
+                # set the robot back to the pre-collision point
+                self._pos[0] += robot_vect[0] * difference
+                self._pos[1] -= robot_vect[1] * difference
+
+                # calculate the lines direction vector
+                line_vect = [wall[1][0] - wall[0][0], wall[1][1] - wall[0][1]]
+                line_vect = line_vect / np.linalg.norm(line_vect)
+
+                # calculating the robots angle when colliding with a wall
+                dot_product = np.dot(robot_vect, line_vect)
+                angle = np.arccos(dot_product)
+
+                line_vect = line_vect * np.dot(robot_vect * velocity, line_vect) / np.dot(line_vect, line_vect)
+                
+                # depending on the angle, the y direction changes
+                if angle > math.pi / 2:
+                    self._pos[0] += line_vect[0]
+                    self._pos[1] -= line_vect[1]
+                else:
+                    self._pos[0] += line_vect[0]
+                    self._pos[1] += line_vect[1]
 
         return collisions
 
