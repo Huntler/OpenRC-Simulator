@@ -1,3 +1,5 @@
+from dis import dis, disco
+
 import numpy as np
 import math
 
@@ -75,7 +77,7 @@ class Robot:
             sensor = np.array([
                 self._pos[0] + math.cos(factor * i),
                 self._pos[1] + math.sin(factor * i)
-                ])
+            ])
 
             # then update the sensors position afterwards
             sensor[0] += math.cos(factor * i - self._theta) * ROBOT_SENSOR_DISTANCE
@@ -136,7 +138,7 @@ class Robot:
          calculates collision points of robot with all lines
          :param lines: the lines the robot collided with
          :return: the true if a collision was detected
-        """ 
+        """
         collision = False
 
         # check if the robot hits a wall without a sensor detecting it
@@ -147,13 +149,23 @@ class Robot:
         robot_dir = np.sign(velocity)
         robot_vect = np.array([math.cos(self._theta), -math.sin(self._theta)])
         robot_vect = robot_vect / np.linalg.norm(robot_vect)
+
+        # calc points in sensor directions for second shapely line
         robot = Point(self._pos)
+        sensor_points = [Point(sensor) for sensor in self.sensor_lines]
+        sensor_lines = [LineString((robot, sensor_point)) for sensor_point in sensor_points]
 
         for wall in lines:
             line = LineString(wall)
             wall = np.asarray(wall)
 
-            # check if the robot has collided with a wall
+            # for index, sensor_line in enumerate(sensor_lines):
+            #     intersection_points = sensor_line.intersection(line)
+            #     if intersection_points.is_empty:
+            #         continue
+
+                # check if the robot has collided with a wall
+                # distance = robot.distance(intersection_points)
             distance = line.distance(robot)
             if distance < ROBOT_WHEEL_DISTANCE / 2:
                 # set the robot back to the pre-collision point

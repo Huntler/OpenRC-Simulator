@@ -1,5 +1,5 @@
 from random import choices
-from typing import Tuple
+from typing import Tuple, List, Any
 from algorithm.robot_genome import RobotGenome
 
 
@@ -7,7 +7,7 @@ class RobotPopulation:
     def __init__(self, robot_num) -> None:
         self._population = [RobotGenome() for _ in range(robot_num)]
 
-    def _select_pair(self) -> Tuple[RobotGenome, RobotGenome]:
+    def _select_pair(self) -> [RobotGenome, RobotGenome]:
         # select two genomes based on their fitness value
         return choices(
             population=self._population,
@@ -15,7 +15,7 @@ class RobotPopulation:
             k=2
         )
 
-    def run_evolution(self, generation_limit: int = 100, fitness_limit: int = 100) -> Tuple["RobotPopulation", int]:
+    def run_evolution(self, generation_limit: int = 100, fitness_limit: int = 100) -> tuple[list[Any], int]:
         for i in range(generation_limit):
             # sort the population based on the genome's fitness
             self._population = sorted(
@@ -35,7 +35,7 @@ class RobotPopulation:
                 # also select parents from the old population
                 parents = self._select_pair()
 
-                # and create childrens using the crossover function
+                # and create children using the crossover function
                 offspring_a, offspring_b = RobotGenome.crossover(
                     parents[0], parents[1])
 
