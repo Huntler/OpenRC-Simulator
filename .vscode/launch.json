@@ -5,19 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Manual ArrowedWall",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--manual",
+                "--name",
+                "ArrowedWall"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: Manual SimpleMap",
             "type": "python",
             "request": "launch",
             "program": "main.py",
-            "args": ["--manual", "--name", "SimpleMap"],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Python: Manual TiltedWall",
-            "type": "python",
-            "request": "launch",
-            "program": "main.py",
-            "args": ["--manual", "--name", "TiltedWall"],
+            "args": [
+                "--manual",
+                "--name",
+                "SimpleMap"
+            ],
             "console": "integratedTerminal"
         }
     ]

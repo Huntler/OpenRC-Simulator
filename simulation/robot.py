@@ -169,22 +169,11 @@ class Robot:
                     continue
                     
                 line_vect = line_vect / np.linalg.norm(line_vect)
-
-                # calculating the robots angle when colliding with a wall
-                dot_product = np.dot(robot_vect, line_vect) * robot_dir
-                angle = np.arccos(dot_product)
-
                 line_vect = line_vect * np.dot(robot_vect * velocity, line_vect) / np.dot(line_vect, line_vect)
                 
-                # depending on the angle, the y direction changes
-                if angle > math.pi / 2:
-                    # move robot down
-                    self._pos[0] += line_vect[0]
-                    self._pos[1] += line_vect[1]
-                else:
-                    # move robot up
-                    self._pos[0] += line_vect[0]
-                    self._pos[1] -= line_vect[1]
+                # move robot along side the wall
+                self._pos[0] += line_vect[0]
+                self._pos[1] += line_vect[1]
                 
                 collision = True
         return collision
