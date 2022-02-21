@@ -1,11 +1,7 @@
-from dis import dis, disco
 import numpy as np
 import math
 
-from pyparsing import col
-
 from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_SENSOR_DISTANCE, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
-from skspatial.objects import Line, Circle
 from shapely.geometry import LineString, Point
 
 

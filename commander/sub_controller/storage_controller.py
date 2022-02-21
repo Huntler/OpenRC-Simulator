@@ -50,7 +50,7 @@ class StorageController(BaseSubController):
         for controller in controllers:
             dict_file = dict_file | controller.to_dict()
         
-        with open(f"{file_name}.yaml", "w") as file:
+        with open(f"maps/{file_name}.yaml", "w") as file:
             documents = yaml.dump(dict_file, file)
         
         self.changes(False)
@@ -62,7 +62,7 @@ class StorageController(BaseSubController):
             file_name (str): the yaml file name.
             controllers (List[BaseSubController]): The list of sub controllers.
         """
-        with open(f"{file_name}.yaml", "r") as file:
+        with open(f"maps/{file_name}.yaml", "r") as file:
             dict_file = yaml.load(file, Loader=yaml.FullLoader)
 
         # load the dict into each sub controller
