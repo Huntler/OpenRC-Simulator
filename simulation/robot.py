@@ -87,14 +87,24 @@ class Robot:
 
             self.sensor_lines[i] = sensor
 
-    def _rotate(self):
+    def _rotate(self, lines):
         # calculate the current velocity
         vel_left = self._velocity[0] * self._acceleration
         vel_right = self._velocity[1] * self._acceleration
         
         # calculate the movement and rotation
-        self._pos[0] += ((vel_left + vel_right) / 2) * math.cos(self._theta) * self._delta
-        self._pos[1] -= ((vel_left + vel_right) / 2) * math.sin(self._theta) * self._delta
+        update_pos = np.zeros_like(self._pos)
+        update_pos[0] = +((vel_left + vel_right) / 2) * math.cos(self._theta) * self._delta
+        update_pos[1] = -((vel_left + vel_right) / 2) * math.sin(self._theta) * self._delta
+        self._pos += update_pos
+
+        # stop if a collision was detected
+        collision_detected = self._collision(lines, update_pos)
+        if collision_detected:
+            # rotate sensor lines
+            self._update_sensors()
+            return
+
         self._theta += (vel_right - vel_left) / ROBOT_WHEEL_DISTANCE * self._delta
         self._theta = self._theta % (2 * math.pi)
 
@@ -125,20 +135,20 @@ class Robot:
                     if distance < self._distances[sensor_num]:
                         self._distances[sensor_num] = distance
 
-    def _collision(self, lines) -> np.ndarray:
+    def _collision(self, lines, update_pos) -> bool:
         """
          calculates collision points of robot with all lines
          :param lines: the lines the robot collided with
-         :return: the collision points
-        """
-        # get collisions
-        collisions = np.where(self._distances < ROBOT_WHEEL_DISTANCE / 2, -self._distances, 0)
-        
+         :return: the true if a collision was detected
+        """ 
+        collision = False
+
         # check if the robot hits a wall without a sensor detecting it
         # may occur at corners
         velocity = np.sum(self._velocity * self._acceleration) / 2 * self._delta
 
         # calculating the robots direction (as a vector)
+        robot_dir = np.sign(velocity)
         robot_vect = np.array([math.cos(self._theta), -math.sin(self._theta)])
         robot_vect = robot_vect / np.linalg.norm(robot_vect)
         robot = Point(self._pos)
@@ -150,31 +160,34 @@ class Robot:
             # check if the robot has collided with a wall
             distance = line.distance(robot)
             if distance < ROBOT_WHEEL_DISTANCE / 2:
-                difference = distance - (ROBOT_WHEEL_DISTANCE / 2)
-
                 # set the robot back to the pre-collision point
-                self._pos[0] += robot_vect[0] * difference
-                self._pos[1] -= robot_vect[1] * difference
+                self._pos -= update_pos
 
                 # calculate the lines direction vector
                 line_vect = [wall[1][0] - wall[0][0], wall[1][1] - wall[0][1]]
+                if line_vect[0] == 0 and line_vect[1] == 0:
+                    continue
+                    
                 line_vect = line_vect / np.linalg.norm(line_vect)
 
                 # calculating the robots angle when colliding with a wall
-                dot_product = np.dot(robot_vect, line_vect)
+                dot_product = np.dot(robot_vect, line_vect) * robot_dir
                 angle = np.arccos(dot_product)
 
                 line_vect = line_vect * np.dot(robot_vect * velocity, line_vect) / np.dot(line_vect, line_vect)
                 
                 # depending on the angle, the y direction changes
                 if angle > math.pi / 2:
-                    self._pos[0] += line_vect[0]
-                    self._pos[1] -= line_vect[1]
-                else:
+                    # move robot down
                     self._pos[0] += line_vect[0]
                     self._pos[1] += line_vect[1]
-
-        return collisions
+                else:
+                    # move robot up
+                    self._pos[0] += line_vect[0]
+                    self._pos[1] -= line_vect[1]
+                
+                collision = True
+        return collision
 
     def drive(self, lines):
         # transferr walls into the simulations coordinate system
@@ -190,11 +203,11 @@ class Robot:
                 self._stop = False
 
         # calculate the rotation and movement
-        self._rotate()
+        self._rotate(lines)
         self._calc_distances(lines)
 
         # stop if there was a colision
-        collisions = self._collision(lines)
+        # self._collision(lines)
 
         # transfer back to pixel data
         x = int(self._pos[0] * self._pixel_meter_const)
