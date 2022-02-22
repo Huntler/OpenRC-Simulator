@@ -1,6 +1,6 @@
 from functools import partial
 from random import choices, randint, randrange
-from random import random, uniform
+from random import random, uniform, seed
 from typing import Callable, List, Tuple, Any
 
 genome = Tuple[float, float]
@@ -11,10 +11,12 @@ SelectionFunc = Callable[[population, FitnessFunc], Tuple[genome, genome]]
 CrossoverFunc = Callable[[genome, genome], Tuple[genome, genome]]
 MutationFunc = Callable[[genome], genome]
 
+seed(0)
+
 
 def generate_genome(rand_range: float) -> genome:
-    # rand_range might depend on benchmark function
-    return uniform(0, rand_range), uniform(0, rand_range)
+    # rand_range depends on benchmark function
+    return uniform(-rand_range, rand_range), uniform(0, rand_range)
 
 
 def generate_population(size: int, rand_range: float) -> population:
@@ -22,7 +24,7 @@ def generate_population(size: int, rand_range: float) -> population:
 
 
 def fitness(genome: genome, benchmark_func) -> float:
-    return 10000 - benchmark_func(genome[0], genome[1]) # we want the minimum
+    return 10000 - benchmark_func(genome[0], genome[1])  # we want the minimum
 
 
 def selection_pair(population: population, fitness_func: FitnessFunc) -> population:
@@ -44,9 +46,8 @@ def single_point_crossover(a: genome, b: genome) -> Tuple[genome, genome]:
         return a, b
 
     # do a random crossover
-    # p = randint(1, length - 1)
-    # crossover for tuples of length 2 (for benchmark test)
-    return (a[0], b[1]), (b[0], a[1])
+    p = randint(1, length - 1)
+    return a[0:p] + b[p:], b[0:p] + a[p:]
 
 
 def mutation(genome: genome, num: int = 1, probability: float = 0.5) -> genome:
@@ -89,7 +90,6 @@ def run_evolution(populate_func: PopulateFunc,
 
         history.append(population)
 
-
         # if this generation includes a genome with the maximum fitness specified
         # then break -> best population found
         print(fitness_limit)
@@ -128,7 +128,6 @@ def run_evolution(populate_func: PopulateFunc,
     )
 
     return population, i, history
-
 
 # if __name__ == "__main__":
 #     population, generations = run_evolution(
