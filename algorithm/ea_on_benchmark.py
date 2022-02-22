@@ -14,7 +14,7 @@ MutationFunc = Callable[[genome], genome]
 
 def generate_genome(rand_range: float) -> genome:
     # rand_range might depend on benchmark function
-    return uniform(-rand_range, rand_range), uniform(0, rand_range)
+    return uniform(0, rand_range), uniform(0, rand_range)
 
 
 def generate_population(size: int, rand_range: float) -> population:
@@ -75,7 +75,6 @@ def run_evolution(populate_func: PopulateFunc,
     # ignore
     # plotting
     history = []
-    history.append(population)
 
     # run for (at most) as many generations as specified
     for i in range(generation_limit):
@@ -84,14 +83,19 @@ def run_evolution(populate_func: PopulateFunc,
         # sort the population based on the genome's fitness
         population = sorted(
             population,
-            key=lambda genome: fitness_func(genome)
-            # reverse=True because find minimum
+            key=lambda genome: fitness_func(genome),
+            reverse=True
         )
+
+        history.append(population)
 
 
         # if this generation includes a genome with the maximum fitness specified
         # then break -> best population found
-        if fitness_func(population[0]) == fitness_limit:  # == because we want to find minimum
+        print(fitness_limit)
+        print(population[0])
+        print(fitness_func(population[0]))
+        if fitness_limit + 0.1 >= fitness_func(population[0]) >= fitness_limit - 0.1:
             break
 
         # create a new generation based on the best two genomes
@@ -119,8 +123,8 @@ def run_evolution(populate_func: PopulateFunc,
     # together with the amount of generations simulated
     population = sorted(
         population,
-        key=lambda genome: fitness_func(genome)
-        # reverse=True because we want to find minimum
+        key=lambda genome: fitness_func(genome),
+        reverse=True
     )
 
     return population, i, history

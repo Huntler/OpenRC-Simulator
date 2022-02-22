@@ -66,11 +66,11 @@ surf = ax3d.plot_surface(x, y, z, cmap=cm.coolwarm, alpha=0.3, linewidth=0, anti
 
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
-fitness_limit = bench(0, 0)
+fitness_limit = 10000
 
 population, generations, history = run_evolution(
     populate_func=partial(
-        generate_population, size=15, rand_range=x_max
+        generate_population, size=25, rand_range=x_max
     ),
     fitness_func=partial(
         fitness, benchmark_func=rosenbrock
@@ -79,8 +79,7 @@ population, generations, history = run_evolution(
     generation_limit=1000,
 )
 print(population)
-history.reverse()
-history = history[int(len(history) / 2):]
+# mhistory = history[int(len(history) / 2):]
 
 # for i, genome in enumerate(population):
 #     x_pos, y_pos = genome
