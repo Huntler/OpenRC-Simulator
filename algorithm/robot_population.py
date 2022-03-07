@@ -1,6 +1,7 @@
 from random import choices
 import numpy as np
 import yaml
+import copy
 from typing import Tuple, List, Any
 from algorithm.robot_genome import RobotGenome
 from commander.sub_controller.robot_controller import ROBOT_SIZE
@@ -35,6 +36,14 @@ class RobotPopulation:
             end_pos = (wall["end_x"], wall["end_y"])
             self.__walls.append(Wall(start_pos, end_pos))
 
+        # load width, height
+        size_dict = dict_file.get("app", None)
+        self._width = size_dict["width"]
+        self._height = size_dict["height"]
+
+        for genome in self._population:
+            genome.set_simulation_details(copy.copy(self.__robot), self.__walls, self._steps, self._width, self._height)
+
     def _select_pair(self) -> Tuple[RobotGenome, RobotGenome]:
         # select two genomes based on their fitness value
         return choices(
@@ -47,7 +56,7 @@ class RobotPopulation:
         for i in range(self._generation_limit):
             # run simulation for each robot to get generate its fitness
             for genome in self._population:
-                genome.run_simulation(robot=self.__robot.copy(), walls=self.__walls, steps=self._steps)
+                genome.run_simulation()
 
             # sort the population based on the genome's fitness
             self._population = sorted(
