@@ -146,6 +146,11 @@ class RobotController(BaseSubController):
         if self.is_toggled():
             mouse_pos = py.mouse.get_pos()
             self._sprite_robot.set_position(mouse_pos)
+        
+        if self._app_mode == SIMULATION:
+            # pass through the sensors to the trained robot and use its decision to controll the robot
+            left_wheel, right_wheel = self._genome.drive(sensor_lines)
+            self._motors_both(left_wheel, right_wheel)
 
         if self._app_mode != CREATOR:
             # get the simulations info about the robot and update the sprite
@@ -161,7 +166,3 @@ class RobotController(BaseSubController):
             self._sprite_robot.set_sensors(sensor_lines)
             self._sprite_robot.set_distances(distances)
         
-        if self._app_mode == SIMULATION:
-            # pass through the sensors to the trained robot and use its decision to controll the robot
-            left_wheel, right_wheel = self._genome.drive(sensor_lines)
-            self._motors_both(left_wheel, right_wheel)

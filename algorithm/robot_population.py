@@ -1,16 +1,39 @@
 from random import choices
 import numpy as np
+import yaml
 from typing import Tuple, List, Any
 from algorithm.robot_genome import RobotGenome
+from commander.sub_controller.robot_controller import ROBOT_SIZE
+from simulation.robot import Robot
+from simulation.wall import Wall
 
 
 class RobotPopulation:
-    def __init__(self, population, mutation, fitness_limit, generation_limit) -> None:
+    def __init__(self, population, mutation, fitness_limit, generation_limit, simulation_steps) -> None:
         self._mutation_parameter = mutation
         self._fitness_limit = fitness_limit
         self._generation_limit = generation_limit
+        self._steps = simulation_steps
         self._population = [RobotGenome() for _ in range(population)]
         self._hist = {}
+
+    def set_simulation_details(self, name: str) -> None:
+        # open map file
+        with open(f"maps/{name}.yaml", "r") as file:
+            dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
+
+        # load robot
+        robot_dict = dict_file.get(Robot.dict_name, None)
+        self.__robot = Robot(np.array([robot_dict["x"], robot_dict["y"]]), ROBOT_SIZE, robot_dict["direction"])
+
+        # load all walls
+        self.__walls = []
+        walls_dict: dict = dict_file.get(Wall.dict_name, None)
+        for wall in walls_dict.items():
+            wall = wall[1]
+            start_pos = (wall["start_x"], wall["start_y"])
+            end_pos = (wall["end_x"], wall["end_y"])
+            self.__walls.append(Wall(start_pos, end_pos))
 
     def _select_pair(self) -> Tuple[RobotGenome, RobotGenome]:
         # select two genomes based on their fitness value
@@ -22,6 +45,10 @@ class RobotPopulation:
 
     def run_evolution(self) -> tuple[list[Any], int]:
         for i in range(self._generation_limit):
+            # run simulation for each robot to get generate its fitness
+            for genome in self._population:
+                genome.run_simulation(robot=self.__robot.copy(), walls=self.__walls, steps=self._steps)
+
             # sort the population based on the genome's fitness
             self._population = sorted(
                 self._population,

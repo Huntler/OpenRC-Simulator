@@ -2,6 +2,7 @@ from dis import dis, disco
 
 import numpy as np
 import math
+from commander.sub_controller.robot_controller import ROBOT_SIZE
 
 from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_SENSOR_DISTANCE, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
@@ -38,8 +39,15 @@ class Robot:
         self._update_sensors()
         self._distances = np.array([ROBOT_SENSOR_DISTANCE for sensor in self.sensor_lines])
 
-        #
         self._stop = False
+    
+    @staticmethod
+    def copy(robot: "Robot") -> "Robot":
+        pos = robot._pos
+        delta = robot._delta
+        robot = Robot([0, 0], ROBOT_SIZE, delta)
+        robot._pos = pos
+        return robot
 
     def hard_stop(self):
         self._velocity = np.array([0, 0], dtype=float)
@@ -160,13 +168,7 @@ class Robot:
             line = LineString(wall)
             wall = np.asarray(wall)
 
-            # for index, sensor_line in enumerate(sensor_lines):
-            #     intersection_points = sensor_line.intersection(line)
-            #     if intersection_points.is_empty:
-            #         continue
-
-                # check if the robot has collided with a wall
-                # distance = robot.distance(intersection_points)
+            # check if the robot has collided with a wall
             distance = line.distance(robot)
             if distance < ROBOT_WHEEL_DISTANCE / 2:
                 # set the robot back to the pre-collision point

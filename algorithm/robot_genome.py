@@ -4,6 +4,9 @@ from typing import List, Tuple
 
 import numpy as np
 
+from simulation.robot import Robot
+from simulation.wall import Wall
+
 
 class RobotGenome:
     def __init__(self, sensor_num: int = 12, motor_num: int = 2, hidden_layer_size: int = 4) -> None:
@@ -14,6 +17,21 @@ class RobotGenome:
         # randomly initilize the output layer weights
         self._output_layer_weights = np.array(
             [[random() for _ in range(motor_num)] for _ in range(hidden_layer_size)])
+        
+        self._max_particles = 0
+        self._fitness_value = 0
+
+        # TODO: load simulation aka walls and robot
+    
+    def run_simulation(self, robot: Robot, walls: Wall, steps: int) -> None:
+        # TODO: initialize particles
+        # TODO: set max_particles
+        for i in range(steps):
+            left_wheel, right_wheel = self.drive(robot.sensor_lines)
+            if left_wheel < 0:
+                robot.slowdown_left()
+
+        # TODO: run siumlation
 
     def _sigmoid(self, x: float) -> float:
         return 1.0 / (1.0 + np.exp(-x))
@@ -22,7 +40,8 @@ class RobotGenome:
         return x * (x > 0)
 
     def fitness(self) -> float:
-        return 0
+        # TODO: claculate percentage of particles collected
+        return self._fitness_value
 
     def drive(self, sensors: np.ndarray) -> Tuple[float]:
         # forward passthrough the sensors into our NN to get the motors acceleration
