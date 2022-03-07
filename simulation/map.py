@@ -1,5 +1,6 @@
 from typing import Tuple
 import yaml
+import pickle
 from algorithm.robot_population import RobotPopulation
 from commander.sub_controller.robot_controller import ROBOT_SIZE
 from simulation.robot import Robot
@@ -8,6 +9,9 @@ from simulation.wall import Wall
 
 class Map:
     def __init__(self, name: str) -> None:
+        self.__ea = None
+        self.__config_name = ""
+
         # open map file
         with open(f"maps/{name}.yaml", "r") as file:
             dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
@@ -29,7 +33,13 @@ class Map:
         with open(f"ea_configs/{config_name}.yaml", "r") as file:
             dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
 
-        ea = RobotPopulation(**dict_file)
+        self.__ea = RobotPopulation(**dict_file)
+        self.__config_name = config_name
 
     def ea_train(self) -> None:
-        pass
+        # train
+        population, generation = self.__ea.run_evolution()
+        
+        # store the best robot
+        filehandler = open(f"robot_{self.__config_name}.pkl", 'w') 
+        pickle.dump(population[0], filehandler)

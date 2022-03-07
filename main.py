@@ -44,7 +44,7 @@ else:
 # TODAY'S TODOS
 # TODO: simulation - when startet, then load a trained robot
 # DONE: walls should be loaded as UI independent object, so we can access them without having the UI active
-# TODO: training - start the program without a UI and execute the training process
+# DONE: training - start the program without a UI and execute the training process
 # TODO: fitness function based on 1. map covered (unique, so driving on spot is not rewarded) 2. time (less time is better)
 # TODO: current neural network is feed forward, we need to have a recurrent neural network
 # TODO: add metric measurements to the training loop and plot/save them in the end
