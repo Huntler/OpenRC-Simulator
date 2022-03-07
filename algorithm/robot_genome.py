@@ -48,6 +48,13 @@ class RobotGenome:
         return self._fitness_value
 
     def drive(self, sensors: np.ndarray) -> Tuple[float]:
+        sensors = np.array(sensors)
+        print("sensors", sensors.shape)
+        print("input", self._input_layer_weights.shape)
+        print("shared_weights", self.shared_weights.shape)
+        print("prevs", self.prevs.shape)
+        print("output", self._output_layer_weights.shape)
+
         # forward passthrough the sensors into our NN to get the motors acceleration
         x = self._input_layer_weights * sensors
         w = self.shared_weights * self.prevs

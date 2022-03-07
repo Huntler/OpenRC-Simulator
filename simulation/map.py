@@ -25,6 +25,7 @@ class Map:
         population, history = self.__ea.run_evolution()
 
         # store the best robot
+        
         filehandler = open(f"robot_{self.__config_name}.pkl", 'wb') 
         pickle.dump(population[0], filehandler)
 

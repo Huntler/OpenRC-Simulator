@@ -163,7 +163,7 @@ class RobotController(BaseSubController):
             
         if self._app_mode == SIMULATION:
             # pass through the sensors to the trained robot and use its decision to controll the robot
-            left_wheel, right_wheel = self._genome.drive(sensor_lines)
+            left_wheel, right_wheel = self._genome.drive(distances)
             self._motors_both(left_wheel, right_wheel)
 
         

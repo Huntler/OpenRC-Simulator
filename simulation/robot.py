@@ -35,7 +35,7 @@ class Robot:
         self._delta = delta
 
         # create distance sensors
-        self.sensor_lines = np.array([np.zeros(2) for _ in range(13)])
+        self.sensor_lines = np.array([np.zeros(2) for _ in range(12)])
         self._update_sensors()
         self._distances = np.array([ROBOT_SENSOR_DISTANCE for sensor in self.sensor_lines])
 
