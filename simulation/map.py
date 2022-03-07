@@ -21,6 +21,7 @@ class Map:
         self.__config_name = config_name
 
     def ea_train(self) -> None:
+        print("Started training using EA.")
         # train
         population, history = self.__ea.run_evolution()
 

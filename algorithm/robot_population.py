@@ -10,11 +10,12 @@ from simulation.wall import Wall
 
 
 class RobotPopulation:
-    def __init__(self, population, mutation, fitness_limit, generation_limit, simulation_steps) -> None:
+    def __init__(self, population, mutation, fitness_limit, generation_limit, simulation_steps, particle_dist) -> None:
         self._mutation_parameter = mutation
         self._fitness_limit = fitness_limit
         self._generation_limit = generation_limit
         self._steps = simulation_steps
+        self._particle_dist = particle_dist
         self._population = [RobotGenome() for _ in range(population)]
         self._hist = {}
 
@@ -42,7 +43,10 @@ class RobotPopulation:
         self._height = size_dict["height"]
 
         for genome in self._population:
-            genome.set_simulation_details(copy.copy(self.__robot), self.__walls, self._steps, self._width, self._height)
+            self._set_genome_simulation(genome)
+
+    def _set_genome_simulation(self, genome: RobotGenome) -> None:
+        genome.set_simulation_details(copy.copy(self.__robot), self.__walls, self._steps, self._width, self._height, self._particle_dist)
 
     def _select_pair(self) -> Tuple[RobotGenome, RobotGenome]:
         # select two genomes based on their fitness value
@@ -67,11 +71,12 @@ class RobotPopulation:
 
             # save some statistics
             hist = self._hist.get("best_fitness", [])
-            hist.append(self._population[0].fitness())
+            best_fitness = self._population[0].fitness()
+            hist.append(best_fitness)
 
             hist = self._hist.get("mean_fitness", [])
-            fitnesses = np.array([g.fitness() for g in self._population])
-            hist.append(np.mean(fitnesses))
+            mean_fitness = np.mean(np.array([g.fitness() for g in self._population]))
+            hist.append(mean_fitness)
 
             # if this generation includes a genome with the maximum fitness specified
             # then break -> best population found
@@ -87,16 +92,20 @@ class RobotPopulation:
                 # and create children using the crossover function
                 offspring_a, offspring_b = RobotGenome.crossover(
                     parents[0], parents[1])
+                self._set_genome_simulation(offspring_a)
+                self._set_genome_simulation(offspring_b)
 
                 # do not forget to mutate those children to inject the evolutionary approach
-                offspring_a.mutate(self._mutation_parameter)
-                offspring_b.mutate(self._mutation_parameter)
+                offspring_a.mutate(probability=self._mutation_parameter)
+                offspring_b.mutate(probability=self._mutation_parameter)
 
                 # then add those children to the new generation
                 next_generation += [offspring_a, offspring_b]
 
             # new generation build up -> repeat process
             self._population = next_generation
+
+            print(f"In generation {i} with best fitness {best_fitness} and population mean {mean_fitness}.")
 
         # the best population was found (or the limit has been reached)
         # sort the population based on the genome's fitness and return it

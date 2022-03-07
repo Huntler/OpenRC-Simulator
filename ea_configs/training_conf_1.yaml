@@ -1,5 +1,6 @@
-population: 20
+population: 10
 mutation: 0.5
-fitness_limit: 0.9
-generation_limit: 100
-simulation_steps: 10_000
+fitness_limit: 0.6
+generation_limit: 10
+simulation_steps: 50
+particle_dist: 25

@@ -4,6 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 from shapely.geometry import LineString, Point
+from simulation import ROBOT_SENSOR_DISTANCE
 
 from simulation.robot import Robot
 from simulation.wall import Wall
@@ -11,6 +12,8 @@ from simulation.wall import Wall
 
 class RobotGenome:
     def __init__(self, sensor_num: int = 12, motor_num: int = 2, hidden_layer_size: int = 4) -> None:
+        self._motor_num = motor_num
+
         # randomly initialize the input layer weights
         self._input_layer_weights = np.random.uniform(0, 1, (hidden_layer_size, sensor_num))
 
@@ -26,27 +29,30 @@ class RobotGenome:
         self._max_particles = 0
         self._fitness_value = 0
 
-    def set_simulation_details(self, robot: Robot, walls: [Wall], simulation_steps: int, width: int, height: int):
+    def set_simulation_details(self, robot: Robot, walls: List[Wall], simulation_steps: int, width: int, height: int, particle_dist: int):
         # set simulation details aka robot, walls and simulation steps
         self._robot = robot
         self._walls = walls
         self._simulation_steps = simulation_steps
         self._width = width
         self._height = height
+        self._particle_dist = particle_dist
 
     def run_simulation(self) -> None:
         robot_point = Point(self._robot._pos)
         walls = [LineString([wall._start_pos, wall._end_pos]) for wall in self._walls]
         particles = []
+
         # generate particles everywhere on the map except "in" the walls
-        for x in range(self._height):
-            for y in range(self._width):
+        for x in range(0, self._height, self._particle_dist):
+            for y in range(0, self._width, self._particle_dist):
                 particle = Point((x, y))
                 for wall in walls:
                     if not wall.distance(particle) < 1e-8:  # this might be too small
                         particles.append(particle)
 
         self._max_particles = len(particles)
+        print(f"simulation holds {self._max_particles} particles")
 
         # drive simulations steps times
         for i in range(self._simulation_steps):
@@ -81,32 +87,19 @@ class RobotGenome:
         return self._fitness_value / self._max_particles
 
     def drive(self) -> Tuple[float]:
-        sensors = np.array(self._robot.sensor_lines)
-        print("sensors", sensors.shape)
-        print("input", self._input_layer_weights.shape)
-        print("shared_weights", self.shared_weights.shape)
-        print("prevs", self.prevs.shape)
-        print("output", self._output_layer_weights.shape)
-
         # calc distances from sensors to walls
         self._robot._calc_distances([[wall._start_pos, wall._end_pos] for wall in self._walls])
 
         # forward passthrough the sensors into our NN to get the motors acceleration
-        x = np.dot(self._input_layer_weights, self._robot._distances)
+        x = np.dot(self._input_layer_weights, self._robot._distances / ROBOT_SENSOR_DISTANCE)
         w = np.dot(self.shared_weights, self.prevs)
         x = self._relu(x + np.transpose(w))
         self.prevs = np.transpose(x)
         # self._relu(self._activation_func) ?
 
         x = np.dot(self._output_layer_weights, np.transpose(x))
-        print(x)
+        print("output layer", x[:, 0])
         left, right = self._sigmoid(x[0]), self._sigmoid(x[1])  # weights are too large -> norm distances ?
-        print("output")
-        print(left, right)
-        print("sign")
-        print(np.sign(left))
-        print(np.sign(right))
-
         # self._sigmoid(self._activation_func) ?
 
         # 1 means accelerate, -1 break and 0 nothing
@@ -140,8 +133,7 @@ class RobotGenome:
         # get the genomes parameter
         sensor_num = len(a._input_layer_weights)
         hidden_layer_size = len(a._output_layer_weights)
-        motor_num = a._output_layer_weights.shape[0] * \
-                    a._output_layer_weights.shape[1] / hidden_layer_size
+        motor_num = a._motor_num
 
         # and create new ones
         new_a = RobotGenome(sensor_num, motor_num, hidden_layer_size)
