@@ -1,0 +1,4 @@
+population: 20
+mutation: 0.5
+fitness_limit: 0.5
+generation_limit: 100

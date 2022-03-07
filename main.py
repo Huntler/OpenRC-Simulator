@@ -2,6 +2,7 @@ import argparse
 import pygame as py
 import commander
 from commander.controller import SimulationController
+from simulation.map import Map
 
 
 # add program arguments for configuring the run
@@ -35,6 +36,11 @@ if mode != commander.TRAIN:
     application.file(args.name)
     application.boot()
 
+else:
+    map = Map(args.name)
+    map.load_training_config("MISSING")
+    map.ea_train()
+
 # TODAY'S TODOS
 # TODO: simulation - when startet, then load a trained robot
 # DONE: walls should be loaded as UI independent object, so we can access them without having the UI active
@@ -44,7 +50,7 @@ if mode != commander.TRAIN:
 # TODO: add metric measurements to the training loop and plot/save them in the end
 # TODO: we need to store the best robot (using pickle?) so we can load it later on into the simulation
 # TODO: add some kind of progress report while training (into the console should be sufficient)
-# TODO: add a yaml configuration file to specify population, random mutation, aso.
+# DONE: add a yaml configuration file to specify population, random mutation, aso.
 
 # MIDNIGHT'S TODOS
 # TODO: start a training to check everything works -> debug :(

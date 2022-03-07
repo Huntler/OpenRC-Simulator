@@ -4,10 +4,13 @@ from algorithm.robot_genome import RobotGenome
 
 
 class RobotPopulation:
-    def __init__(self, robot_num) -> None:
-        self._population = [RobotGenome() for _ in range(robot_num)]
+    def __init__(self, population, mutation, fitness_limit, generation_limit) -> None:
+        self._mutation_parameter = mutation
+        self._fitness_limit = fitness_limit
+        self._generation_limit = generation_limit
+        self._population = [RobotGenome() for _ in range(population)]
 
-    def _select_pair(self) -> [RobotGenome, RobotGenome]:
+    def _select_pair(self) -> Tuple[RobotGenome, RobotGenome]:
         # select two genomes based on their fitness value
         return choices(
             population=self._population,
@@ -15,8 +18,8 @@ class RobotPopulation:
             k=2
         )
 
-    def run_evolution(self, generation_limit: int = 100, fitness_limit: int = 100) -> tuple[list[Any], int]:
-        for i in range(generation_limit):
+    def run_evolution(self) -> tuple[list[Any], int]:
+        for i in range(self._generation_limit):
             # sort the population based on the genome's fitness
             self._population = sorted(
                 self._population,
@@ -26,7 +29,7 @@ class RobotPopulation:
 
             # if this generation includes a genome with the maximum fitness specified
             # then break -> best population found
-            if self._population[0].fitness() >= fitness_limit:
+            if self._population[0].fitness() >= self._population:
                 break
 
             # create a new generation based on the best two genomes
@@ -40,8 +43,8 @@ class RobotPopulation:
                     parents[0], parents[1])
 
                 # do not forget to mutate those children to inject the evolutionary approach
-                offspring_a.mutate()
-                offspring_b.mutate()
+                offspring_a.mutate(self._mutation_parameter)
+                offspring_b.mutate(self._mutation_parameter)
 
                 # then add those children to the new generation
                 next_generation += [offspring_a, offspring_b]

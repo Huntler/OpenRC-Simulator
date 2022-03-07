@@ -1,5 +1,6 @@
 from typing import Tuple
 import yaml
+from algorithm.robot_population import RobotPopulation
 from commander.sub_controller.robot_controller import ROBOT_SIZE
 from simulation.robot import Robot
 from simulation.wall import Wall
@@ -25,7 +26,10 @@ class Map:
     
     def load_training_config(self, config_name) -> None:
         # copy the robots so they match the population's size
-        pass
+        with open(f"ea_configs/{config_name}.yaml", "r") as file:
+            dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
+
+        ea = RobotPopulation(**dict_file)
 
     def ea_train(self) -> None:
         pass
