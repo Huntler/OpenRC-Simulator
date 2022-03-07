@@ -8,7 +8,6 @@ from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from commander import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from commander.sub_controller.goal_controller import GoalController
 from commander.sub_controller.robot_controller import RobotController
 from commander.sub_controller.storage_controller import StorageController
 from commander.sub_controller.wall_controller import WallController
@@ -53,10 +52,6 @@ class SimulationController(BaseController):
         # create the wall controller
         self._wall = WallController(self._window, mode)
         self._wall.on_toggle(self._sub_controller_toggled)
-
-        # create the goal controller
-        self._goal = GoalController(self._window, mode)
-        self._goal.on_toggle(self._sub_controller_toggled)
 
         # create the storage controller
         self._storage = StorageController(self._window, mode)
@@ -114,13 +109,13 @@ class SimulationController(BaseController):
         self._window.add_sprite("text_shortcuts_title", text_shortcuts)
     
     def _save(self) -> None:
-        self._storage.save(self._file_name, [self._robot, self._goal, self._wall])
+        self._storage.save(self._file_name, [self._robot, self._wall])
 
     def file(self, name: str) -> None:
         self._file_name = name
 
         if self._mode != CREATOR:
-            self._storage.load(name, [self._robot, self._goal, self._wall])
+            self._storage.load(name, [self._robot, self._wall])
 
     def loop(self) -> None:
         # calculate the time delta
@@ -130,6 +125,5 @@ class SimulationController(BaseController):
         self._wall.loop()
         walls = self._wall.get_walls()
         self._robot.loop(delta, walls)
-        self._goal.loop()
 
         self._t += delta
