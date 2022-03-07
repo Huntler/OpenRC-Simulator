@@ -40,8 +40,14 @@ class Map:
 
     def ea_train(self) -> None:
         # train
-        population, generation = self.__ea.run_evolution()
+        population, history = self.__ea.run_evolution()
 
         # store the best robot
         filehandler = open(f"robot_{self.__config_name}.pkl", 'w') 
         pickle.dump(population[0], filehandler)
+
+        # plot the history using matplot
+        # TODO: can be done after training is implemented
+
+        # save the generated plots
+        # TODO: can be done after training is implemented

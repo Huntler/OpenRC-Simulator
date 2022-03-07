@@ -1,4 +1,5 @@
 from random import choices
+import numpy as np
 from typing import Tuple, List, Any
 from algorithm.robot_genome import RobotGenome
 
@@ -9,6 +10,7 @@ class RobotPopulation:
         self._fitness_limit = fitness_limit
         self._generation_limit = generation_limit
         self._population = [RobotGenome() for _ in range(population)]
+        self._hist = {}
 
     def _select_pair(self) -> Tuple[RobotGenome, RobotGenome]:
         # select two genomes based on their fitness value
@@ -26,6 +28,14 @@ class RobotPopulation:
                 key=lambda genome: genome.fitness(),
                 reverse=True
             )
+
+            # save some statistics
+            hist = self._hist.get("best_fitness", [])
+            hist.append(self._population[0].fitness())
+
+            hist = self._hist.get("mean_fitness", [])
+            fitnesses = np.array([g.fitness() for g in self._population])
+            hist.append(np.mean(fitnesses))
 
             # if this generation includes a genome with the maximum fitness specified
             # then break -> best population found
@@ -61,4 +71,4 @@ class RobotPopulation:
             reverse=True
         )
 
-        return population, i
+        return population, self._hist
