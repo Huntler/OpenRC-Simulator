@@ -2,7 +2,6 @@ from dis import dis, disco
 
 import numpy as np
 import math
-from commander.sub_controller.robot_controller import ROBOT_SIZE
 
 from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_SENSOR_DISTANCE, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
@@ -20,6 +19,7 @@ class Robot:
         #  - pixel-radius * 2 to get robot's size in pixel
         #  - then divided by the distance of the robot's wheels (given in cm)
         #  - results in amount of pixels per meter
+        self._size = robot_size
         self._pixel_meter_const = robot_size * 2 / ROBOT_WHEEL_DISTANCE
         self._pos = pixel_pos / self._pixel_meter_const
 
@@ -45,7 +45,8 @@ class Robot:
     def copy(robot: "Robot") -> "Robot":
         pos = robot._pos
         delta = robot._delta
-        robot = Robot([0, 0], ROBOT_SIZE, delta)
+        size = robot._size
+        robot = Robot([0, 0], size, delta)
         robot._pos = pos
         return robot
 
