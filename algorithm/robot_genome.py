@@ -8,12 +8,16 @@ import numpy as np
 class RobotGenome:
     def __init__(self, sensor_num: int = 12, motor_num: int = 2, hidden_layer_size: int = 4) -> None:
         # randomly initialize the input layer weights
-        self._input_layer_weights = np.array(
-            [[random() for _ in range(hidden_layer_size)] for _ in range(sensor_num)])
+        self._input_layer_weights = np.random.uniform(0, 1, (hidden_layer_size, sensor_num))
 
-        # randomly initilize the output layer weights
-        self._output_layer_weights = np.array(
-            [[random() for _ in range(motor_num)] for _ in range(hidden_layer_size)])
+        # randomly initialize the output layer weights
+        self._output_layer_weights = np.random.uniform(0, 1, (motor_num, hidden_layer_size))
+
+        # randomly initialize shared weights in RNN hidden layer
+        self.shared_weights = np.random.uniform(0, 1, (hidden_layer_size, hidden_layer_size))
+
+        # previous activation of hidden layer, initialized with 0s
+        self.prevs = np.zeros((1, hidden_layer_size))
 
     def _sigmoid(self, x: float) -> float:
         return 1.0 / (1.0 + np.exp(-x))
@@ -27,12 +31,17 @@ class RobotGenome:
     def drive(self, sensors: np.ndarray) -> Tuple[float]:
         # forward passthrough the sensors into our NN to get the motors acceleration
         x = self._input_layer_weights * sensors
-        x = self._relu(self._activation_func)
+        w = self.shared_weights * self.prevs
+        x = self._relu(x + w)
+        self.prevs = x
+        # self._relu(self._activation_func) ?
 
         x = self._output_layer_weights * x
-        x = self._sigmoid(self._activation_func)
+        x = self._sigmoid(x)
 
-        # 1 means accelerate, -1 breake and 0 nothing
+        # self._sigmoid(self._activation_func) ?
+
+        # 1 means accelerate, -1 break and 0 nothing
         return np.sign(x)
 
     def mutate(self, num: int = 1, probability: float = 0.5) -> None:

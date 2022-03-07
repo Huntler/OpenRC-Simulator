@@ -47,7 +47,7 @@ else:
 # DONE: walls should be loaded as UI independent object, so we can access them without having the UI active
 # DONE: training - start the program without a UI and execute the training process
 # TODO: fitness function based on 1. map covered (unique, so driving on spot is not rewarded) [optional 2. time (less time is better)]
-# TODO: current neural network is feed forward, we need to have a recurrent neural network
+# DONE: current neural network is feed forward, we need to have a recurrent neural network
 # DONE: add metric measurements to the training loop and TODO: plot/save them in the end
 # TODO: we need to store the best robot (using pickle?) so we can load it later on into the simulation
 # TODO: add some kind of progress report while training (into the console should be sufficient)
