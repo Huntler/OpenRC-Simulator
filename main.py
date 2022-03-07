@@ -11,8 +11,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--create", help="Starts Creation tool. Make sure to provide a name to store the map.", action="store_true")
 parser.add_argument("--manual", help="Loads the manual control mode. Make sure to provide a name to load a map", action="store_true")
 parser.add_argument("--simulation", help="Loads the simulation mode. Make sure to provide a name to load a map", action="store_true")
-parser.add_argument("--train", help="Starts training a robot using EA on the provided map.", action="store_true")
+parser.add_argument("--train", help="Starts training a robot using EA on the provided map. Provded a config file!")
 parser.add_argument("--name", help="The name of a map (needed to create or load a map).")
+parser.add_argument("--robot", help="The trained robot, this contains the NN for controlling the robot.")
 
 args = parser.parse_args()
 
@@ -33,7 +34,7 @@ if args.train:
 # create the visuals
 if mode != commander.TRAIN:
     application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
-    application.file(args.name)
+    application.file(args.name, args.robot)
     application.boot()
 
 else:

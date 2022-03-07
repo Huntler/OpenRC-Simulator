@@ -1,3 +1,4 @@
+import pickle
 from random import randint, random, randrange
 from typing import List, Tuple
 
@@ -14,8 +15,11 @@ class RobotGenome:
         self._output_layer_weights = np.array(
             [[random() for _ in range(motor_num)] for _ in range(hidden_layer_size)])
 
-        self._sigmoid = lambda x: 1.0 / (1.0 + np.exp(-x))
-        self._relu = lambda x: x * (x > 0)
+    def _sigmoid(self, x: float) -> float:
+        return 1.0 / (1.0 + np.exp(-x))
+    
+    def _relu(self, x: float) -> float:
+        return x * (x > 0)
 
     def fitness(self) -> float:
         return 0
@@ -93,4 +97,8 @@ class RobotGenome:
 
 
 if __name__ == "__main__":
-    print(np.sign([-123, 0.435]))
+    # test save a genome
+    genome = RobotGenome()
+    filehandler = open(f"robot_training_conf_1.pkl", 'wb') 
+    pickle.dump(genome, filehandler)
+

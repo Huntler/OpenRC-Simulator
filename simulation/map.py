@@ -2,6 +2,7 @@ from typing import Tuple
 import yaml
 import pickle
 import numpy as np
+from algorithm.robot_genome import RobotGenome
 from algorithm.robot_population import RobotPopulation
 from commander.sub_controller.robot_controller import ROBOT_SIZE
 from simulation.robot import Robot
@@ -43,7 +44,7 @@ class Map:
         population, history = self.__ea.run_evolution()
 
         # store the best robot
-        filehandler = open(f"robot_{self.__config_name}.pkl", 'w') 
+        filehandler = open(f"robot_{self.__config_name}.pkl", 'wb') 
         pickle.dump(population[0], filehandler)
 
         # plot the history using matplot

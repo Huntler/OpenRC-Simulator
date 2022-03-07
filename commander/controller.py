@@ -111,17 +111,19 @@ class SimulationController(BaseController):
     def _save(self) -> None:
         self._storage.save(self._file_name, [self._robot, self._wall])
 
-    def file(self, name: str) -> None:
+    def file(self, name: str, robot_name: str = None) -> None:
         self._file_name = name
 
         if self._mode != CREATOR:
             self._storage.load(name, [self._robot, self._wall])
         
-        if self._mode == SIMULATION:
+        if robot_name:
             # load the robots brain from file
-            filehandler = open(f"robot_{name}.pkl", 'r') 
+            filehandler = open(f"robot_{robot_name}.pkl", 'rb') 
             genome = pickle.load(filehandler)
             self._robot.set_brain(genome)
+
+            print("Loaded trained robot into simulation.")
 
     def loop(self) -> None:
         # calculate the time delta

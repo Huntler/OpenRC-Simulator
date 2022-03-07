@@ -162,5 +162,6 @@ class RobotController(BaseSubController):
             self._sprite_robot.set_distances(distances)
         
         if self._app_mode == SIMULATION:
-            # TODO: pass sensor data into genome-network to calculate robots acceleration
-            pass
+            # pass through the sensors to the trained robot and use its decision to controll the robot
+            left_wheel, right_wheel = self._genome.drive(sensor_lines)
+            self._motors_both(left_wheel, right_wheel)
