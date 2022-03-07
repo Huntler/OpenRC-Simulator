@@ -1,5 +1,7 @@
 import yaml
 import pickle
+import matplotlib.pyplot as plt
+import numpy as np
 from algorithm.robot_population import RobotPopulation
 
 
@@ -27,7 +29,26 @@ class Map:
         pickle.dump(population[0], filehandler)
 
         # plot the history using matplot
-        # TODO: can be done after training is implemented
+        font = {'family': 'serif',
+            'color':  'darkred',
+            'weight': 'normal',
+            'size': 16,
+        }
+
+        best_fitnesses = history.get("best_fitness", [])
+        plt.figure(1)
+        plt.subplot(211)
+        plt.plot(range(len(best_fitnesses)), best_fitnesses, 'k')
+        plt.title('Fitness of best genome', fontdict=font)
+        plt.xlabel('Generation', fontdict=font)
+        plt.ylabel('Fitness', fontdict=font)
+
+        mean_fitnesses = history.get("mean_fitness", [])
+        plt.subplot(212)
+        plt.plot(range(len(mean_fitnesses)), mean_fitnesses, 'k')
+        plt.title('Mean fitness of population', fontdict=font)
+        plt.xlabel('Generation', fontdict=font)
+        plt.ylabel('Fitness', fontdict=font)
 
         # save the generated plots
-        # TODO: can be done after training is implemented
+        plt.savefig(f"plot_{self.__config_name}.png")

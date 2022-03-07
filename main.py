@@ -48,7 +48,7 @@ else:
 # DONE: training - start the program without a UI and execute the training process
 # TODO: fitness function based on 1. map covered (unique, so driving on spot is not rewarded) [optional 2. time (less time is better)]
 # DONE: current neural network is feed forward, we need to have a recurrent neural network
-# DONE: add metric measurements to the training loop and TODO: plot/save them in the end
+# DONE: add metric measurements to the training loop and plot/save them in the end
 # DONE: we need to store the best robot (using pickle?) so we can load it later on into the simulation
 # TODO: add some kind of progress report while training (into the console should be sufficient)
 # DONE: add a yaml configuration file to specify population, random mutation, aso.
