@@ -1,6 +1,6 @@
 import time
 from typing import Tuple
-
+import pickle
 import pygame as py
 from graphics.controller import BaseController
 from graphics.objects.rectangle import Rectangle
@@ -116,6 +116,12 @@ class SimulationController(BaseController):
 
         if self._mode != CREATOR:
             self._storage.load(name, [self._robot, self._wall])
+        
+        if self._mode == SIMULATION:
+            # load the robots brain from file
+            filehandler = open(f"robot_{name}.pkl", 'r') 
+            genome = pickle.load(filehandler)
+            self._robot.set_brain(genome)
 
     def loop(self) -> None:
         # calculate the time delta

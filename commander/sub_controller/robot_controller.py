@@ -2,12 +2,13 @@ import numpy as np
 import pygame as py
 from typing import Dict, Tuple
 from pygame import Surface
+from algorithm.robot_genome import RobotGenome
 from graphics.window import MUTEX
 from simulation.robot import Robot as SimRobot
 from graphics.objects.robot import Robot
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
-from commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
 from commander.window import CREATOR_PLACE_ROBOT, MANUAL_BOTH_DECREASE, MANUAL_BOTH_INCREASE, MANUAL_BOTH_ZERO, \
     MANUAL_LEFT_DECREASE, MANUAL_LEFT_INCREASE, MANUAL_RIGHT_DECREASE, MANUAL_RIGHT_INCREASE, MOUSE_CLICK, \
     SIMULATION_PAUSE, SimulationWindow
@@ -56,6 +57,9 @@ class RobotController(BaseSubController):
             self._window.on_callback(MANUAL_BOTH_INCREASE, self._motors_both(1, 1))
             self._window.on_callback(MANUAL_BOTH_DECREASE, self._motors_both(-1, -1))
             self._window.on_callback(MANUAL_BOTH_ZERO, self._motors_both(0, 0))
+
+    def set_brain(self, genome: RobotGenome) -> None:
+        self._genome = genome
 
     def _motor_left(self, left: int):
         def fire():
@@ -149,10 +153,14 @@ class RobotController(BaseSubController):
                 delta = 0
 
             self._robot.set_time_delta(delta)
-            lines = [[line.get_start(), line.get_end()] for line in lines]
-            angle, x, y, sensor_lines, distances = self._robot.drive(lines)
+            walls = [[line.get_start(), line.get_end()] for line in lines]
+            angle, x, y, sensor_lines, distances = self._robot.drive(walls)
 
             self._sprite_robot.set_position((x, y))
             self._sprite_robot.set_direction(angle)
             self._sprite_robot.set_sensors(sensor_lines)
             self._sprite_robot.set_distances(distances)
+        
+        if self._app_mode == SIMULATION:
+            # TODO: pass sensor data into genome-network to calculate robots acceleration
+            pass
