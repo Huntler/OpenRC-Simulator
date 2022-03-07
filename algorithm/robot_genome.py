@@ -17,8 +17,8 @@ class RobotGenome:
         self._sigmoid = lambda x: 1.0 / (1.0 + np.exp(-x))
         self._relu = lambda x: x * (x > 0)
 
-    def fitness(self, benchmark_func) -> float:
-        pass
+    def fitness(self) -> float:
+        return 0
 
     def drive(self, sensors: np.ndarray) -> Tuple[float]:
         # forward passthrough the sensors into our NN to get the motors acceleration

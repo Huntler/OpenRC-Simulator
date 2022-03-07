@@ -38,7 +38,7 @@ if mode != commander.TRAIN:
 
 else:
     map = Map(args.name)
-    map.load_training_config("MISSING")
+    map.load_training_config("training_conf_1")
     map.ea_train()
 
 # TODAY'S TODOS

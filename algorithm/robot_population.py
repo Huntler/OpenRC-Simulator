@@ -29,7 +29,7 @@ class RobotPopulation:
 
             # if this generation includes a genome with the maximum fitness specified
             # then break -> best population found
-            if self._population[0].fitness() >= self._population:
+            if self._population[0].fitness() >= self._fitness_limit:
                 break
 
             # create a new generation based on the best two genomes
