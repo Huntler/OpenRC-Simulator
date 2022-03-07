@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--create", help="Starts Creation tool. Make sure to provide a name to store the map.", action="store_true")
 parser.add_argument("--manual", help="Loads the manual control mode. Make sure to provide a name to load a map", action="store_true")
 parser.add_argument("--simulation", help="Loads the simulation mode. Make sure to provide a name to load a map", action="store_true")
+parser.add_argument("--train", help="Starts training a robot using EA on the provided map.", action="store_true")
 parser.add_argument("--name", help="The name of a map (needed to create or load a map).")
 
 args = parser.parse_args()
@@ -25,10 +26,28 @@ if args.create:
 if args.manual:
     mode = commander.MANUAL
 
+if args.train:
+    mode = commander.TRAIN
+
 # create the visuals
 application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
 application.file(args.name)
 application.boot()
 
-# TODO: manual
-# TODO: simulation
+# TODAY'S TODOS
+# TODO: simulation - when startet, then load a trained robot
+# TODO: walls should be loaded as UI independent object, so we can access them without having the UI active
+# TODO: training - start the program without a UI and execute the training process
+# TODO: fitness function based on 1. map covered (unique, so driving on spot is not rewarded) 2. time (less time is better)
+# TODO: current neural network is feed forward, we need to have a recurrent neural network
+# TODO: add metric measurements to the training loop and plot/save them in the end
+# TODO: we need to store the best robot (using pickle?) so we can load it later on into the simulation
+# TODO: add some kind of progress report while training (into the console should be sufficient)
+
+# MIDNIGHT'S TODOS
+# TODO: start a training to check everything works -> debug :(
+
+# TOMORROW'S TODOS
+# TODO: start a few trainings with different parameters
+# TODO: analyze those results and create a video from it
+# TODO: then upload the video and code, don't forget to add credentials
