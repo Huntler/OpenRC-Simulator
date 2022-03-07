@@ -8,6 +8,7 @@ from shapely.geometry import LineString, Point
 
 
 class Robot:
+    dict_name = "robot"
     def __init__(self, pixel_pos: np.array, robot_size: int, delta: float = 0.1):
         """
         initializes robot

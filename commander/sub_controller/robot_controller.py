@@ -21,6 +21,7 @@ class RobotController(BaseSubController):
         super().__init__()
         self._app_mode = app_mode
         self.dict_name = "robot"
+        self._is_paused = True
 
         self._robot = SimRobot(np.array([-ROBOT_SIZE * 2, -ROBOT_SIZE * 2], dtype=float), ROBOT_SIZE)
 

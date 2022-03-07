@@ -30,19 +30,21 @@ if args.train:
     mode = commander.TRAIN
 
 # create the visuals
-application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
-application.file(args.name)
-application.boot()
+if mode != commander.TRAIN:
+    application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
+    application.file(args.name)
+    application.boot()
 
 # TODAY'S TODOS
 # TODO: simulation - when startet, then load a trained robot
-# TODO: walls should be loaded as UI independent object, so we can access them without having the UI active
+# DONE: walls should be loaded as UI independent object, so we can access them without having the UI active
 # TODO: training - start the program without a UI and execute the training process
 # TODO: fitness function based on 1. map covered (unique, so driving on spot is not rewarded) 2. time (less time is better)
 # TODO: current neural network is feed forward, we need to have a recurrent neural network
 # TODO: add metric measurements to the training loop and plot/save them in the end
 # TODO: we need to store the best robot (using pickle?) so we can load it later on into the simulation
 # TODO: add some kind of progress report while training (into the console should be sufficient)
+# TODO: add a yaml configuration file to specify population, random mutation, aso.
 
 # MIDNIGHT'S TODOS
 # TODO: start a training to check everything works -> debug :(

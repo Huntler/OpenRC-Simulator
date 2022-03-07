@@ -103,12 +103,12 @@ class SimulationController(BaseController):
 
         # show background text
         # text describing the current mode (integrated into the background)
-        mode_text = ["SIMULATION", "CREATOR", "MANUAL"]
+        mode_text = ["SIMULATION", "CREATOR", "MANUAL", "TRAINING"]
         text_mode = Text(self._surface, mode_text[mode], cx, cy, 120, MODE_TEXT_COLOR)
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
         # show shortcut info for CREATOR mode
-        shortcuts_height = [80, 180, 110]
+        shortcuts_height = [80, 180, 110, 80]
         text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
         text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_shortcuts_title", text_shortcuts)
