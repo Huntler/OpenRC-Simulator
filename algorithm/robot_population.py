@@ -1,7 +1,9 @@
+import pickle
 from random import choices
 import numpy as np
 import yaml
 import copy
+import threading
 from typing import Tuple, List, Any
 from algorithm.robot_genome import RobotGenome
 from commander.sub_controller.robot_controller import ROBOT_SIZE
@@ -59,8 +61,17 @@ class RobotPopulation:
     def run_evolution(self) -> tuple[list[Any], int]:
         for i in range(self._generation_limit):
             # run simulation for each robot to get generate its fitness
+            sim_threads = []
             for genome in self._population:
-                genome.run_simulation()
+                t = threading.Thread(target=genome.run_simulation)
+                sim_threads.append(t)
+                #genome.run_simulation()
+            
+            # start all simulations simultaneously and wait for all to finish
+            for t in sim_threads:
+                t.start()
+            for t in sim_threads:
+                t.join()
 
             # sort the population based on the genome's fitness
             self._population = sorted(
@@ -106,6 +117,9 @@ class RobotPopulation:
             self._population = next_generation
 
             print(f"In generation {i} with best fitness {best_fitness} and population mean {mean_fitness}.")
+        
+            filehandler = open(f"robot_test.pkl", 'wb') 
+            pickle.dump(self._population[0], filehandler)
 
         # the best population was found (or the limit has been reached)
         # sort the population based on the genome's fitness and return it

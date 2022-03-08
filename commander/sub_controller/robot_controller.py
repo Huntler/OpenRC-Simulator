@@ -22,7 +22,7 @@ class RobotController(BaseSubController):
         super().__init__()
         self._app_mode = app_mode
         self.dict_name = "robot"
-        self._is_paused = True
+        self._is_paused = False
 
         self._robot = SimRobot(np.array([-ROBOT_SIZE * 2, -ROBOT_SIZE * 2], dtype=float), ROBOT_SIZE)
 
@@ -163,7 +163,16 @@ class RobotController(BaseSubController):
             
         if self._app_mode == SIMULATION:
             # pass through the sensors to the trained robot and use its decision to controll the robot
-            left_wheel, right_wheel = self._genome.drive(distances)
-            self._motors_both(left_wheel, right_wheel)
+            left_wheel, right_wheel = self._genome.drive()
+            
+            if left_wheel == -1:
+                self._robot.slowdown_left()
+            if left_wheel == 1:
+                self._robot.accelerate_left()
+            if right_wheel == -1:
+                self._robot.slowdown_right()
+            if right_wheel == 1:
+                self._robot.accelerate_right()
+
 
         

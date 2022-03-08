@@ -52,7 +52,7 @@ class RobotGenome:
                         particles.append(particle)
 
         self._max_particles = len(particles)
-        print(f"simulation holds {self._max_particles} particles")
+        #print(f"simulation holds {self._max_particles} particles")
 
         # drive simulations steps times
         for i in range(self._simulation_steps):
@@ -91,19 +91,20 @@ class RobotGenome:
         self._robot._calc_distances([[wall._start_pos, wall._end_pos] for wall in self._walls])
 
         # forward passthrough the sensors into our NN to get the motors acceleration
-        x = np.dot(self._input_layer_weights, self._robot._distances / ROBOT_SENSOR_DISTANCE)
+        x = np.dot(self._input_layer_weights, self._robot._distances)
         w = np.dot(self.shared_weights, self.prevs)
+
         x = self._relu(x + np.transpose(w))
+        x = self._sigmoid(x)
+
         self.prevs = np.transpose(x)
-        # self._relu(self._activation_func) ?
 
         x = np.dot(self._output_layer_weights, np.transpose(x))
-        print("output layer", x[:, 0])
+        # print("output layer", x[:, 0])
         left, right = self._sigmoid(x[0]), self._sigmoid(x[1])  # weights are too large -> norm distances ?
-        # self._sigmoid(self._activation_func) ?
 
         # 1 means accelerate, -1 break and 0 nothing
-        return np.sign(left), np.sign(right)
+        return int(np.sign(left)[0]), int(np.sign(right)[0])
 
     def mutate(self, num: int = 1, probability: float = 0.5) -> None:
         for _ in range(num):
