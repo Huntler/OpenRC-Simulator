@@ -1,3 +1,9 @@
+# GitHub repository: https://github.com/Huntler/ARS-Simulator
+# start Creator:    python main.py --create --name MAP_NAME
+# start Manual:     python main.py --manual --name MAP_NAME
+# start Training:   python main.py --train CONFIG_NAME --name MAP_NAME
+# start Simulation: python main.py --simulation --robot ROBOT_NAME --name MAP_NAME
+
 import argparse
 import pygame as py
 import commander
@@ -41,24 +47,3 @@ else:
     map = Map(args.name)
     map.load_training_config(args.train)
     map.ea_train()
-
-# TODAY'S TODOS
-# DONE: simulation - when startet, then load a trained robot
-# DONE: walls should be loaded as UI independent object, so we can access them without having the UI active
-# DONE: training - start the program without a UI and execute the training process
-# DONE: fitness function based on 1. map covered (unique, so driving on spot is not rewarded) [optional 2. time (less time is better)]
-# DONE: current neural network is feed forward, we need to have a recurrent neural network
-# DONE: add metric measurements to the training loop and plot/save them in the end
-# DONE: we need to store the best robot (using pickle?) so we can load it later on into the simulation
-# TODO: add some kind of progress report while training (into the console should be sufficient)
-# DONE: add a yaml configuration file to specify population, random mutation, aso.
-
-# MIDNIGHT'S TODOS
-# TODO: start a training to check everything works -> debug :(
-
-# TOMORROW'S TODOS
-# TODO: crossover or mutation are not correct -> shape missmatch on weights
-# TODO: our robot is glitching thorugh the wall (reproduce: python main.py --simulation --name SimpleMap --robot test)
-# TODO: start a few trainings with different parameters
-# TODO: analyze those results and create a video from it
-# TODO: then upload the video and code, don't forget to add credentials
