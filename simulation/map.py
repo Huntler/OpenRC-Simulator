@@ -37,6 +37,8 @@ class Map:
             'size': 16,
         }
 
+        print(history)
+
         best_fitnesses = history.get("best_fitness", [])
         plt.figure(1)
         plt.subplot(211)
