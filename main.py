@@ -57,6 +57,8 @@ else:
 # TODO: start a training to check everything works -> debug :(
 
 # TOMORROW'S TODOS
+# TODO: crossover or mutation are not correct -> shape missmatch on weights
+# TODO: our robot is glitching thorugh the wall (reproduce: python main.py --simulation --name SimpleMap --robot test)
 # TODO: start a few trainings with different parameters
 # TODO: analyze those results and create a video from it
 # TODO: then upload the video and code, don't forget to add credentials
