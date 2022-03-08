@@ -29,7 +29,8 @@ class RobotGenome:
         self._max_particles = 0
         self._fitness_value = 0
 
-    def set_simulation_details(self, robot: Robot, walls: List[Wall], simulation_steps: int, width: int, height: int, particle_dist: int):
+    def set_simulation_details(self, robot: Robot, walls: List[Wall], simulation_steps: int, width: int, height: int,
+                               particle_dist: int):
         # set simulation details aka robot, walls and simulation steps
         self._robot = robot
         self._walls = walls
@@ -52,7 +53,7 @@ class RobotGenome:
                         particles.append(particle)
 
         self._max_particles = len(particles)
-        #print(f"simulation holds {self._max_particles} particles")
+        # print(f"simulation holds {self._max_particles} particles")
 
         # drive simulations steps times
         for i in range(self._simulation_steps):
@@ -132,8 +133,8 @@ class RobotGenome:
     @staticmethod
     def crossover(a: "RobotGenome", b: "RobotGenome") -> Tuple["RobotGenome", "RobotGenome"]:
         # get the genomes parameter
-        sensor_num = len(a._input_layer_weights)
-        hidden_layer_size = len(a._output_layer_weights)
+        sensor_num = a._input_layer_weights.shape[1]
+        hidden_layer_size = a._output_layer_weights.shape[1]
         motor_num = a._motor_num
 
         # and create new ones
@@ -141,26 +142,29 @@ class RobotGenome:
         new_b = RobotGenome(sensor_num, motor_num, hidden_layer_size)
 
         # chose random weights from the provided genomes a and b
-        p_1 = randint(1, sensor_num - 1)
+        p_1 = randint(1, hidden_layer_size - 1)
         p_2 = randint(1, hidden_layer_size - 1)
-        p_3 = randint(1, motor_num - 1)
 
         # perform crossover for the first layer
-        a_crossover = a._input_layer_weights[0:p_1,
-                      0:p_2] + b._input_layer_weights[p_1:, p_2:]
+        a_crossover = np.concatenate((a._input_layer_weights[0:p_1, :].flat[:],
+                                      b._input_layer_weights[p_1:, :].flat[:]))
+        a_crossover = a_crossover.reshape((hidden_layer_size, sensor_num))
         new_a._input_layer_weights = a_crossover
 
-        b_crossover = b._input_layer_weights[0:p_1,
-                      0:p_2] + a._input_layer_weights[p_1:, p_2:]
+        b_crossover = np.concatenate((b._input_layer_weights[0:p_1, :].flat[:],
+                                      a._input_layer_weights[p_1:, :].flat[:]))
+        b_crossover = b_crossover.reshape((hidden_layer_size, sensor_num))
         new_b._input_layer_weights = b_crossover
 
         # perform crossover for the second layer
-        a_crossover = a._output_layer_weights[0:p_2,
-                      0:p_3] + b._output_layer_weights[p_2:, p_3:]
+        a_crossover = np.concatenate((a._output_layer_weights[:, 0:p_2].flat[:],
+                                     b._output_layer_weights[:, p_2:].flat[:]))
+        a_crossover = a_crossover.reshape((motor_num, hidden_layer_size))
         new_a._output_layer_weights = a_crossover
 
-        b_crossover = b._output_layer_weights[0:p_2,
-                      0:p_3] + a._output_layer_weights[p_2:, p_3:]
+        b_crossover = np.concatenate((b._output_layer_weights[:, 0:p_2].flat[:],
+                                     a._output_layer_weights[:, p_2:].flat[:]))
+        b_crossover = b_crossover.reshape((motor_num, hidden_layer_size))
         new_b._output_layer_weights = b_crossover
 
         return new_a, new_b

@@ -58,20 +58,24 @@ class RobotPopulation:
             k=2
         )
 
+    def _run_simulation(self) -> None:
+        sim_threads = []
+        for genome in self._population:
+            t = threading.Thread(target=genome.run_simulation)
+            sim_threads.append(t)
+            # genome.run_simulation()
+
+        # start all simulations simultaneously and wait for all to finish
+        for t in sim_threads:
+            t.start()
+        for t in sim_threads:
+            t.join()
+
     def run_evolution(self) -> tuple[list[Any], int]:
+        fitness_limit_reached = False
         for i in range(self._generation_limit):
             # run simulation for each robot to get generate its fitness
-            sim_threads = []
-            for genome in self._population:
-                t = threading.Thread(target=genome.run_simulation)
-                sim_threads.append(t)
-                #genome.run_simulation()
-            
-            # start all simulations simultaneously and wait for all to finish
-            for t in sim_threads:
-                t.start()
-            for t in sim_threads:
-                t.join()
+            self._run_simulation()
 
             # sort the population based on the genome's fitness
             self._population = sorted(
@@ -84,14 +88,17 @@ class RobotPopulation:
             hist = self._hist.get("best_fitness", [])
             best_fitness = self._population[0].fitness()
             hist.append(best_fitness)
+            self._hist["best_fitness"] = hist
 
             hist = self._hist.get("mean_fitness", [])
             mean_fitness = np.mean(np.array([g.fitness() for g in self._population]))
             hist.append(mean_fitness)
+            self._hist["mean_fitness"] = hist
 
             # if this generation includes a genome with the maximum fitness specified
             # then break -> best population found
             if self._population[0].fitness() >= self._fitness_limit:
+                fitness_limit_reached = True
                 break
 
             # create a new generation based on the best two genomes
@@ -117,9 +124,9 @@ class RobotPopulation:
             self._population = next_generation
 
             print(f"In generation {i} with best fitness {best_fitness} and population mean {mean_fitness}.")
-        
-            filehandler = open(f"robot_test.pkl", 'wb') 
-            pickle.dump(self._population[0], filehandler)
+
+        if not fitness_limit_reached:
+            self._run_simulation()
 
         # the best population was found (or the limit has been reached)
         # sort the population based on the genome's fitness and return it
