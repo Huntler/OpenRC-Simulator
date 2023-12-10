@@ -1,15 +1,16 @@
 import math
 
 # in centimeters
-ROBOT_WHEEL_DISTANCE = 10
+WHEEL_DISTANCE = 12
+CHASSIS_SIZE = 50#[12.5, 20]
 
 # in kilogram
-ROBOT_WEIGHT = 1_000
+WEIGHT = 1_000
 
 # in Watt
-ROBOT_MOTOR_POWER = 30
+MOTOR_POWER = 30
 
 # in degree
-ROBOT_INITIAL_THETA = math.radians(0)
+INITIAL_THETA = math.radians(0)
 
-ROBOT_SENSOR_DISTANCE = 20
+SENSOR_DISTANCE = 20

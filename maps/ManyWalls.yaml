@@ -1,7 +1,7 @@
 app:
   height: 900
   width: 1200
-robot:
+car:
   direction: 90.0
   x: 225
   y: 458

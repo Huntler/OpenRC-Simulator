@@ -3,33 +3,29 @@ from dis import dis, disco
 import numpy as np
 import math
 
-from simulation import ROBOT_INITIAL_THETA, ROBOT_MOTOR_POWER, ROBOT_SENSOR_DISTANCE, ROBOT_WEIGHT, ROBOT_WHEEL_DISTANCE
+from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, WEIGHT, WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
 
 
-class Robot:
-    dict_name = "robot"
-    def __init__(self, pixel_pos: np.array, robot_size: int, delta: float = 0.1):
-        """
-        initializes robot
-        :param midpoint: midpoint of the robot (in space)
-        """
+class OpenRC:
+    dict_name = "open-rc"
+    def __init__(self, pixel_pos: np.array, delta: float = 0.1):
         # handling coordinate system in pixel diemnsion
         # calculation:
-        #  - pixel-radius * 2 to get robot's size in pixel
-        #  - then divided by the distance of the robot's wheels (given in cm)
+        #  - pixel-radius * 2 to get car's size in pixel
+        #  - then divided by the distance of the car's wheels (given in cm)
         #  - results in amount of pixels per meter
-        self._size = robot_size
-        self._pixel_meter_const = robot_size * 2 / ROBOT_WHEEL_DISTANCE
+        self._size = CHASSIS_SIZE
+        self._pixel_meter_const = CHASSIS_SIZE * 2 / WHEEL_DISTANCE
         self._pos = pixel_pos / self._pixel_meter_const
 
         # acceleration is calculated based on weight and motor power
         # value in meter per second (already calculated with time)
-        self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2 * delta
+        self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2 * delta
         self._velocity = np.array([0, 0], dtype=float)
 
         # angle to coordinate system's x-axis
-        self._theta = ROBOT_INITIAL_THETA
+        self._theta = INITIAL_THETA
 
         # simulation related measuremnets
         self._delta = delta
@@ -37,18 +33,18 @@ class Robot:
         # create distance sensors
         self.sensor_lines = np.array([np.zeros(2) for _ in range(12)])
         self._update_sensors()
-        self._distances = np.array([ROBOT_SENSOR_DISTANCE for sensor in self.sensor_lines])
+        self._distances = np.array([SENSOR_DISTANCE for sensor in self.sensor_lines])
 
         self._stop = False
     
     @staticmethod
-    def copy(robot: "Robot") -> "Robot":
-        pos = robot._pos
-        delta = robot._delta
-        size = robot._size
-        robot = Robot([0, 0], size, delta)
-        robot._pos = pos
-        return robot
+    def copy(car: "OpenRC") -> "OpenRC":
+        pos = car._pos
+        delta = car._delta
+        size = car._size
+        car = OpenRC([0, 0], size, delta)
+        car._pos = pos
+        return car
 
     def hard_stop(self):
         self._velocity = np.array([0, 0], dtype=float)
@@ -72,7 +68,7 @@ class Robot:
         self._delta = delta
 
         # update the acceleration for the frame which has been drawn in delta time
-        self._acceleration = math.sqrt(ROBOT_MOTOR_POWER / ROBOT_WEIGHT) / 2
+        self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2
 
     def _brake(self, brake_const: float = 2):
         self._velocity /= brake_const
@@ -90,8 +86,8 @@ class Robot:
             ])
 
             # then update the sensors position afterwards
-            sensor[0] += math.cos(factor * i - self._theta) * ROBOT_SENSOR_DISTANCE
-            sensor[1] += math.sin(factor * i - self._theta) * ROBOT_SENSOR_DISTANCE
+            sensor[0] += math.cos(factor * i - self._theta) * SENSOR_DISTANCE
+            sensor[1] += math.sin(factor * i - self._theta) * SENSOR_DISTANCE
 
             self.sensor_lines[i] = sensor
 
@@ -113,7 +109,7 @@ class Robot:
             self._update_sensors()
             return
 
-        self._theta += (vel_right - vel_left) / ROBOT_WHEEL_DISTANCE * self._delta
+        self._theta += (vel_right - vel_left) / WHEEL_DISTANCE * self._delta
         self._theta = self._theta % (2 * math.pi)
 
         # rotate sensor lines
@@ -124,12 +120,12 @@ class Robot:
         calculates distances to all lines for every sensor line
         :param lines: the lines to which the distance is calculated
         """
-        robot = Point(self._pos)
+        car = Point(self._pos)
 
         # reset each sensor values
         for sensor_num, sensor_point in enumerate(self.sensor_lines):
             sensor_line = LineString([self._pos, sensor_point])
-            self._distances[sensor_num] = ROBOT_SENSOR_DISTANCE
+            self._distances[sensor_num] = SENSOR_DISTANCE
 
             # calulate the current sensor's value for each wall
             for wall in lines:
@@ -137,7 +133,7 @@ class Robot:
                 hit = sensor_line.intersection(wall)
 
                 if hit:
-                    distance = robot.distance(hit)
+                    distance = car.distance(hit)
 
                     # change distance if it is less than the found distance so far
                     if distance < self._distances[sensor_num]:
@@ -145,34 +141,34 @@ class Robot:
 
     def _collision(self, lines, update_pos) -> bool:
         """
-         calculates collision points of robot with all lines
-         :param lines: the lines the robot collided with
+         calculates collision points of car with all lines
+         :param lines: the lines the car collided with
          :return: the true if a collision was detected
         """
         collision = False
 
-        # check if the robot hits a wall without a sensor detecting it
+        # check if the car hits a wall without a sensor detecting it
         # may occur at corners
         velocity = np.sum(self._velocity * self._acceleration) / 2 * self._delta
 
-        # calculating the robots direction (as a vector)
-        robot_dir = np.sign(velocity)
-        robot_vect = np.array([math.cos(self._theta), -math.sin(self._theta)])
-        robot_vect = robot_vect / np.linalg.norm(robot_vect)
+        # calculating the car's direction (as a vector)
+        dir = np.sign(velocity)
+        vect = np.array([math.cos(self._theta), -math.sin(self._theta)])
+        vect = vect / np.linalg.norm(vect)
 
         # calc points in sensor directions for second shapely line
-        robot = Point(self._pos)
+        car = Point(self._pos)
         sensor_points = [Point(sensor) for sensor in self.sensor_lines]
-        sensor_lines = [LineString((robot, sensor_point)) for sensor_point in sensor_points]
+        sensor_lines = [LineString((car, sensor_point)) for sensor_point in sensor_points]
 
         for wall in lines:
             line = LineString(wall)
             wall = np.asarray(wall)
 
-            # check if the robot has collided with a wall
-            distance = line.distance(robot)
-            if distance < ROBOT_WHEEL_DISTANCE / 2:
-                # set the robot back to the pre-collision point
+            # check if the car has collided with a wall
+            distance = line.distance(car)
+            if distance < WHEEL_DISTANCE / 2:
+                # set the car back to the pre-collision point
                 self._pos -= update_pos
 
                 # calculate the lines direction vector
@@ -181,9 +177,9 @@ class Robot:
                     continue
                     
                 line_vect = line_vect / np.linalg.norm(line_vect)
-                line_vect = line_vect * np.dot(robot_vect * velocity, line_vect) / np.dot(line_vect, line_vect)
+                line_vect = line_vect * np.dot(vect * velocity, line_vect) / np.dot(line_vect, line_vect)
                 
-                # move robot along side the wall
+                # move car along side the wall
                 self._pos[0] += line_vect[0]
                 self._pos[1] += line_vect[1]
                 
@@ -197,8 +193,8 @@ class Robot:
         if self._stop:
             self._brake()
 
-            # if the kinetic energy is 0 (or lower) then the robot has stopped
-            energy = (np.sum(self._velocity) / 2) * ROBOT_WEIGHT
+            # if the kinetic energy is 0 (or lower) then the car has stopped
+            energy = (np.sum(self._velocity) / 2) * WEIGHT
             if energy <= 1:
                 self.hard_stop()
                 self._stop = False

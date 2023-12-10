@@ -4,7 +4,7 @@ from graphics.objects.sprite import Sprite
 import pygame as py
 
 
-class Robot(Sprite):
+class Car(Sprite):
     def __init__(self, surface, x: int, y: int, radius: int, c: Tuple[int, int, int], font) -> None:
         super().__init__()
 
