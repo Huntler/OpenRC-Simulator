@@ -114,7 +114,7 @@ class OpenRC:
         collision_detected = self._collision(lines, update_pos)
         if collision_detected:
             # rotate sensor lines
-            self._update_sensors()
+            self._update_sensors(lines)
             return
 
         self._theta += (vel_right - vel_left) / WHEEL_DISTANCE * self._delta
