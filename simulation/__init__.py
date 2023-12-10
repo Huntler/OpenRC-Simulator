@@ -1,7 +1,8 @@
 import math
 
 # in centimeters
-WHEEL_DISTANCE = 10
+WHEEL_DISTANCE = 12
+CHASSIS_SIZE = 50#[12.5, 20]
 
 # in kilogram
 WEIGHT = 1_000

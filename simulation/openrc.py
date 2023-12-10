@@ -3,20 +3,20 @@ from dis import dis, disco
 import numpy as np
 import math
 
-from simulation import INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, WEIGHT, WHEEL_DISTANCE
+from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, WEIGHT, WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
 
 
 class OpenRC:
     dict_name = "open-rc"
-    def __init__(self, pixel_pos: np.array, size: int, delta: float = 0.1):
+    def __init__(self, pixel_pos: np.array, delta: float = 0.1):
         # handling coordinate system in pixel diemnsion
         # calculation:
         #  - pixel-radius * 2 to get car's size in pixel
         #  - then divided by the distance of the car's wheels (given in cm)
         #  - results in amount of pixels per meter
-        self._size = size
-        self._pixel_meter_const = size * 2 / WHEEL_DISTANCE
+        self._size = CHASSIS_SIZE
+        self._pixel_meter_const = CHASSIS_SIZE * 2 / WHEEL_DISTANCE
         self._pos = pixel_pos / self._pixel_meter_const
 
         # acceleration is calculated based on weight and motor power

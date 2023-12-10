@@ -3,6 +3,7 @@ import pygame as py
 import commander
 from commander.controller import SimulationController
 from simulation.map import Map
+from simulation.trainer import Trainer
 
 
 # add program arguments for configuring the run
@@ -17,10 +18,6 @@ parser.add_argument("--model", help="The trained agent, this contains the NN for
 
 args = parser.parse_args()
 
-if not args.name:
-    print("Provide a map. Exit.")
-    quit()
-
 mode = commander.SIMULATION
 if args.create:
     mode = commander.CREATOR
@@ -30,6 +27,10 @@ if args.manual:
 
 if args.train:
     mode = commander.TRAIN
+    
+if not args.name and mode != commander.TRAIN:
+    print("Provide a map. Exit.")
+    quit()
 
 # create the visuals
 if mode != commander.TRAIN:
@@ -38,6 +39,5 @@ if mode != commander.TRAIN:
     application.boot()
 
 else:
-    map = Map(args.name)
-    map.load_training_config(args.train)
-    map.ea_train()
+    trainer = Trainer(args.train, args.name)
+    trainer.train()

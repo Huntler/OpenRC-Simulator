@@ -1,55 +1,53 @@
 import yaml
 import pickle
-import matplotlib.pyplot as plt
 import numpy as np
+
+from simulation.openrc import OpenRC
+from simulation.wall import Wall
 
 
 class Map:
     def __init__(self, name: str) -> None:
-        self.__ea = None
-        self.__config_name = ""
-        self.__simulation_config = name
+        self.__map_name = name
+
+        self.__car = None
+        self.__walls = []
+
+        self.__width = 0
+        self.__height = 0
     
-    def load_training_config(self, config_name) -> None:
-        with open(f"configs/{config_name}.yaml", "r") as file:
+    def _load_map(self) -> None:
+        with open(f"maps/{self.__map_name}.yaml", "r") as file:
             dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
-
-        # TODO: load config to agent as preparation for training
-        self.__config_name = config_name
-
-    def ea_train(self) -> None:
-        print("Started training using EA.")
-        # train
-        population, history = self.__ea.run_evolution()
-
-        # store the best car
         
-        filehandler = open(f"car_{self.__config_name}.pkl", 'wb') 
-        pickle.dump(population[0], filehandler)
+        # load car location/direction from map info
+        robot_dict = dict_file.get(OpenRC.dict_name, None)
+        self.__car = OpenRC(np.array([robot_dict["x"], robot_dict["y"]]), robot_dict["direction"])
 
-        # plot the history using matplot
-        font = {'family': 'serif',
-            'color':  'darkred',
-            'weight': 'normal',
-            'size': 16,
-        }
+        # load all walls
+        self.__walls = []
+        walls_dict: dict = dict_file.get(Wall.dict_name, None)
+        for wall in walls_dict.items():
+            wall = wall[1]
+            start_pos = (wall["start_x"], wall["start_y"])
+            end_pos = (wall["end_x"], wall["end_y"])
+            self.__walls.append(Wall(start_pos, end_pos))
 
-        print(history)
+        # load width, height
+        size_dict = dict_file.get("app", None)
+        self.__width = size_dict["width"]
+        self.__height = size_dict["height"]
+        
+    @property
+    def walls(self):
+        return self.__walls
+    
+    @property
+    def car(self):
+        return self.__car
+    
+    @property
+    def map_size(self):
+        return [self.__width, self.__height]
 
-        best_fitnesses = history.get("best_fitness", [])
-        plt.figure(1)
-        plt.subplot(211)
-        plt.plot(range(len(best_fitnesses)), best_fitnesses, 'k')
-        plt.title('Fitness of best genome', fontdict=font)
-        plt.xlabel('Generation', fontdict=font)
-        plt.ylabel('Fitness', fontdict=font)
 
-        mean_fitnesses = history.get("mean_fitness", [])
-        plt.subplot(212)
-        plt.plot(range(len(mean_fitnesses)), mean_fitnesses, 'k')
-        plt.title('Mean fitness of population', fontdict=font)
-        plt.xlabel('Generation', fontdict=font)
-        plt.ylabel('Fitness', fontdict=font)
-
-        # save the generated plots
-        plt.savefig(f"plot_{self.__config_name}.png")
