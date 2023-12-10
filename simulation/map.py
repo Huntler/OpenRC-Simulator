@@ -13,7 +13,7 @@ class Map:
     
     def load_training_config(self, config_name) -> None:
         # copy the robots so they match the population's size
-        with open(f"ea_configs/{config_name}.yaml", "r") as file:
+        with open(f"configs/{config_name}.yaml", "r") as file:
             dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
 
         self.__ea = RobotPopulation(**dict_file)

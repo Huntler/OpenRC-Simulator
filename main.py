@@ -1,9 +1,3 @@
-# GitHub repository: https://github.com/Huntler/ARS-Simulator
-# start Creator:    python main.py --create --name MAP_NAME
-# start Manual:     python main.py --manual --name MAP_NAME
-# start Training:   python main.py --train CONFIG_NAME --name MAP_NAME
-# start Simulation: python main.py --simulation --robot ROBOT_NAME --name MAP_NAME
-
 import argparse
 import pygame as py
 import commander
@@ -17,9 +11,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--create", help="Starts Creation tool. Make sure to provide a name to store the map.", action="store_true")
 parser.add_argument("--manual", help="Loads the manual control mode. Make sure to provide a name to load a map", action="store_true")
 parser.add_argument("--simulation", help="Loads the simulation mode. Make sure to provide a name to load a map", action="store_true")
-parser.add_argument("--train", help="Starts training a robot using EA on the provided map. Provded a config file!")
+parser.add_argument("--train", help="Starts training a agent using EA on the provided map. Provded a config file!")
 parser.add_argument("--name", help="The name of a map (needed to create or load a map).")
-parser.add_argument("--robot", help="The trained robot, this contains the NN for controlling the robot.")
+parser.add_argument("--model", help="The trained agent, this contains the NN for controlling the agent.")
 
 args = parser.parse_args()
 
@@ -39,8 +33,8 @@ if args.train:
 
 # create the visuals
 if mode != commander.TRAIN:
-    application = SimulationController(window_size=(1200, 900), mode=mode, flags=py.HWSURFACE)
-    application.file(args.name, args.robot)
+    application = SimulationController(window_size=(1200, 900), mode=mode)
+    application.file(args.name, args.model)
     application.boot()
 
 else:
