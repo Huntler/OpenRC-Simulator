@@ -3,7 +3,7 @@ app:
   width: 1200
 car:
   direction: 90
-  x: 152
+  x: 300
   y: 473
 walls:
   sprite_wall_1:

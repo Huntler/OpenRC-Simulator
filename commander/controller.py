@@ -4,14 +4,13 @@ import pickle
 import pygame as py
 from graphics.controller import BaseController
 from graphics.objects.rectangle import Rectangle
-from graphics.objects.car import Car
-from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
+from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
-from commander import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
+from commander import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
 from commander.sub_controller.car_controller import CarController
 from commander.sub_controller.storage_controller import StorageController
 from commander.sub_controller.wall_controller import WallController
-from commander.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SHORTCUTS_UNTOGGLE, SimulationWindow
+from commander.window import SHORTCUTS_UNTOGGLE, SimulationWindow
 
 
 class SimulationController(BaseController):

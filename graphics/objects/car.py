@@ -1,59 +1,106 @@
 import math
 from typing import List, Tuple
+
+import numpy as np
+from graphics import CENTIMETER_TO_PIXEL
 from graphics.objects.sprite import Sprite
 import pygame as py
 
 
 class Car(Sprite):
-    def __init__(self, surface, x: int, y: int, radius: int, c: Tuple[int, int, int], font) -> None:
+    def __init__(self, surface, x: int, y: int, chassis_size: Tuple[float, float], font) -> None:
         super().__init__()
 
+        # get the chassis size in pixels
+        self._pixel_size = np.array(chassis_size) * CENTIMETER_TO_PIXEL
+
+        # set drawing surface
         self._surface = surface
+
+        # load the car's texture
+        self._car_surface = py.image.load("graphics/resources/car_white.png")
+        self._car_surface = py.transform.rotate(self._car_surface, 90)
+        self._car_surface = py.transform.smoothscale(self._car_surface, self._pixel_size)
 
         self._x = x
         self._y = y
-        self._radius = radius
         self._sensors = []
         self._distances = []
-        self._border = int(radius // math.pi) // 2
 
         self.set_direction(90)
-
-        self._c = c
-        self._clicked_c = c
 
         self._font = font
 
     def set_direction(self, angle: float) -> None:
+        """Sets direction of the car in radians.
+
+        Args:
+            angle (float): Angle in radians.
+        """
         self._angle = angle
-        self._line_end_x = int(math.cos(self._angle) * (self._radius - 1) + self._x)
-        self._line_end_y = int(math.sin(self._angle) * (self._radius - 1) + self._y)
 
     def get_direction(self) -> float:
+        """Returns the current car's direction in radians.
+
+        Returns:
+            float: Direction in radians.
+        """
         return self._angle
 
     def set_position(self, pos: Tuple[int, int]) -> None:
+        """Sets the position of the car.
+
+        Args:
+            pos (Tuple[int, int]): Position given as (x, y)
+        """
         self._x, self._y = pos
-        self._line_end_x = int(math.cos(self._angle) * (self._radius - 1) + self._x)
-        self._line_end_y = int(math.sin(self._angle) * (self._radius - 1) + self._y)
 
     def get_position(self) -> Tuple[int, int]:
+        """Returns the current car's position
+
+        Returns:
+            Tuple[int, int]: Position in (x, y)
+        """
         return self._x, self._y
 
-    def set_sensors(self, sensors: List):
+    def set_sensors(self, sensors: List[Tuple[int, int]]):
+        """Position of sensor given as a point (x, y)
+
+        Args:
+            sensors (List): Expected list of sensors.
+        """
         self._sensors = sensors
 
-    def set_distances(self, distances: List):
+    def set_distances(self, distances: List[float]):
+        """Sets the distance readings of each sensor.
+
+        Args:
+            distances (List): Distances given as float in a list.
+        """
         self._distances = distances
 
-    def draw(self) -> None:
-        for sensor_point in self._sensors:
-            py.draw.line(self._surface, (255, 255, 255), (self._x, self._y), sensor_point)
-            
-        py.draw.circle(self._surface, self._c, (self._x, self._y), self._radius)
-        py.draw.circle(self._surface, (0, 0, 0), (self._x, self._y), self._radius, self._border)
-        py.draw.line(self._surface, (0, 0, 0), (self._x, self._y), (self._line_end_x, self._line_end_y), self._border)
+    def __rotate_pivoted(self, surface: py.Surface, angle: float, pivot: Tuple):
+        # rotate the leg image around the pivot
+        image = py.transform.rotate(surface, angle)
+        rect = image.get_rect()
+        rect.center = pivot
+        return image, rect
 
+    def draw(self) -> None:
+        # rotate the car
+        car, car_rect = self.__rotate_pivoted(self._car_surface, -math.degrees(self._angle) - 90, (self._x, self._y))
+
+        # calculate the correct center
+        x = car_rect[0] + (car_rect[2] / 2)
+        y = car_rect[1] + (car_rect[3] / 2)
+
+        for sensor_point in self._sensors:
+            py.draw.line(self._surface, (255, 255, 255), (x, y), sensor_point)
+        
+        # draw car, first rotate to correct direction
+        self._surface.blit(car, car_rect)
+
+        # draw sensors
         for index, sensor in enumerate(self._sensors):
             label = self._font.render(str(self._distances[index]), True, (255, 255, 255))
             self._surface.blit(label, sensor)
@@ -61,14 +108,17 @@ class Car(Sprite):
         super().draw()
 
     def collidepoint(self, point: Tuple[int, int]) -> bool:
-        x1, y1 = point
-        x2, y2 = self._x, self._y
-        distance = math.hypot(x1 - x2, y1 - y2)
-        return distance <= self._radius
+        """Checks if the car collides with a given point.
 
-    def set_clicked_color(self, c: Tuple[int, int, int]) -> None:
-        self._clicked_c = c
+        Args:
+            point (Tuple[int, int]): The collision point to check.
+
+        Returns:
+            bool: True if collision was detected.
+        """
+        x, y = point
+        x1, y1, x2, y2 = self._car_surface.get_rect()
+        return x1 <= x and x <= x2 and y1 <= y and y <= y2
 
     def _clicked(self) -> None:
-        py.draw.circle(self._surface, self._c, (self._x, self._y), self._radius)
-        py.draw.circle(self._surface, (0, 0, 0), (self._x, self._y), self._radius, self._border)
+        pass

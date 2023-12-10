@@ -1,9 +1,10 @@
-from dis import dis, disco
+from typing import List
 
 import numpy as np
 import math
+from graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
 
-from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, WEIGHT, WHEEL_DISTANCE
+from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, SENSOR_POINTS, WEIGHT, WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
 
 
@@ -16,8 +17,7 @@ class OpenRC:
         #  - then divided by the distance of the car's wheels (given in cm)
         #  - results in amount of pixels per meter
         self._size = CHASSIS_SIZE
-        self._pixel_meter_const = CHASSIS_SIZE * 2 / WHEEL_DISTANCE
-        self._pos = pixel_pos / self._pixel_meter_const
+        self._pos = pixel_pos * PIXEL_TO_CENTIMETER
 
         # acceleration is calculated based on weight and motor power
         # value in meter per second (already calculated with time)
@@ -30,9 +30,8 @@ class OpenRC:
         # simulation related measuremnets
         self._delta = delta
 
-        # create distance sensors
-        self.sensor_lines = np.array([np.zeros(2) for _ in range(12)])
-        self._update_sensors()
+        # create distance sensorsa
+        self.sensor_lines = np.array([np.zeros(2) for _ in range(SENSOR_POINTS)])
         self._distances = np.array([SENSOR_DISTANCE for sensor in self.sensor_lines])
 
         self._stop = False
@@ -73,9 +72,9 @@ class OpenRC:
     def _brake(self, brake_const: float = 2):
         self._velocity /= brake_const
 
-    def _update_sensors(self):
+    def _update_sensors(self, lines):
         # the factor which is used to get the sensors end position
-        factor = 2 * math.pi / 12
+        factor = 2 * math.pi / SENSOR_POINTS
 
         # iterate of each sensor
         for i, _ in enumerate(self.sensor_lines):
@@ -85,9 +84,18 @@ class OpenRC:
                 self._pos[1] + math.sin(factor * i)
             ])
 
-            # then update the sensors position afterwards
-            sensor[0] += math.cos(factor * i - self._theta) * SENSOR_DISTANCE
-            sensor[1] += math.sin(factor * i - self._theta) * SENSOR_DISTANCE
+            # create a temporary sensor
+            temp_sensor = sensor.copy()
+            temp_sensor[0] += math.cos(factor * i - self._theta) * SENSOR_DISTANCE
+            temp_sensor[1] += math.sin(factor * i - self._theta) * SENSOR_DISTANCE
+
+            # calculate distances
+            distance = self._calc_distance(lines, temp_sensor)
+            self._distances[i] = distance
+
+            # update the sensor
+            sensor[0] += math.cos(factor * i - self._theta) * distance
+            sensor[1] += math.sin(factor * i - self._theta) * distance
 
             self.sensor_lines[i] = sensor
 
@@ -112,32 +120,28 @@ class OpenRC:
         self._theta += (vel_right - vel_left) / WHEEL_DISTANCE * self._delta
         self._theta = self._theta % (2 * math.pi)
 
-        # rotate sensor lines
-        self._update_sensors()
-
-    def _calc_distances(self, lines):
+    def _calc_distance(self, lines, sensor_point: List[float]):
         """
         calculates distances to all lines for every sensor line
         :param lines: the lines to which the distance is calculated
         """
         car = Point(self._pos)
+        factor = 2 * math.pi / SENSOR_POINTS
 
         # reset each sensor values
-        for sensor_num, sensor_point in enumerate(self.sensor_lines):
-            sensor_line = LineString([self._pos, sensor_point])
-            self._distances[sensor_num] = SENSOR_DISTANCE
+        sensor_line = LineString([self._pos, sensor_point])
 
-            # calulate the current sensor's value for each wall
-            for wall in lines:
-                wall = LineString(wall)
-                hit = sensor_line.intersection(wall)
+        # calulate the current sensor's value for each wall
+        min_distance = SENSOR_DISTANCE
+        for wall in lines:
+            wall = LineString(wall)
+            hit = sensor_line.intersection(wall)
 
-                if hit:
-                    distance = car.distance(hit)
-
-                    # change distance if it is less than the found distance so far
-                    if distance < self._distances[sensor_num]:
-                        self._distances[sensor_num] = distance
+            if hit:
+                # change distance if it is less than the found distance so far
+                min_distance = min(min_distance, car.distance(hit))
+        
+        return min_distance
 
     def _collision(self, lines, update_pos) -> bool:
         """
@@ -188,7 +192,7 @@ class OpenRC:
 
     def drive(self, lines):
         # transferr walls into the simulations coordinate system
-        lines = np.array(lines) / self._pixel_meter_const
+        lines = np.array(lines) * PIXEL_TO_CENTIMETER
 
         if self._stop:
             self._brake()
@@ -201,18 +205,18 @@ class OpenRC:
 
         # calculate the rotation and movement
         self._rotate(lines)
-        self._calc_distances(lines)
+        self._update_sensors(lines)
 
         # stop if there was a colision
         # self._collision(lines)
 
         # transfer back to pixel data
-        x = int(self._pos[0] * self._pixel_meter_const)
-        y = int(self._pos[1] * self._pixel_meter_const)
+        x = int(self._pos[0] * CENTIMETER_TO_PIXEL)
+        y = int(self._pos[1] * CENTIMETER_TO_PIXEL)
 
         # update the distance lines
         distances = list((self._distances).astype(int))
-        sensor_lines = [(int(sensor[0] * self._pixel_meter_const), int(sensor[1] * self._pixel_meter_const))
+        sensor_lines = [(int(sensor[0] * CENTIMETER_TO_PIXEL), int(sensor[1] * CENTIMETER_TO_PIXEL))
                         for sensor in self.sensor_lines]
 
         return -self._theta, x, y, sensor_lines, distances

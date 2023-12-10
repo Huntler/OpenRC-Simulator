@@ -6,6 +6,7 @@ from typing import Dict, Tuple
 from pygame import Surface
 from graphics.window import MUTEX
 from simulation.openrc import OpenRC
+from simulation import CHASSIS_SIZE
 from graphics.objects.car import Car
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
@@ -14,8 +15,6 @@ from commander.window import CREATOR_PLACE_CAR, MANUAL_BOTH_DECREASE, MANUAL_BOT
     MANUAL_LEFT_DECREASE, MANUAL_LEFT_INCREASE, MANUAL_RIGHT_DECREASE, MANUAL_RIGHT_INCREASE, MOUSE_CLICK, \
     SIMULATION_PAUSE, SimulationWindow
 
-ROBOT_COLOR = (160, 160, 200)
-ROBOT_SIZE = 50
 
 
 class CarController(BaseSubController):
@@ -25,7 +24,7 @@ class CarController(BaseSubController):
         self.dict_name = "car"
         self._is_paused = False
 
-        self._car = OpenRC(np.array([-ROBOT_SIZE * 2, -ROBOT_SIZE * 2], dtype=float), ROBOT_SIZE)
+        self._car = OpenRC(np.array([-CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2]))
 
         # window and surface information
         self._window = window
@@ -34,7 +33,7 @@ class CarController(BaseSubController):
         self._font = font
 
         # car sprite
-        self._sprite_car = Car(self._surface, -ROBOT_SIZE * 2, -ROBOT_SIZE * 2, ROBOT_SIZE, ROBOT_COLOR, font)
+        self._sprite_car = Car(self._surface, -CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2, CHASSIS_SIZE, font)
         self._window.add_sprite("sprite_car", self._sprite_car)
         self._sprite_position_set = True
 
@@ -144,7 +143,7 @@ class CarController(BaseSubController):
         self._sprite_car.set_position(pos)
         self._sprite_car.set_direction(dir)
 
-        self._car = OpenRC(np.array([d["x"], d["y"]], dtype=float), ROBOT_SIZE)
+        self._car = OpenRC(np.array([d["x"], d["y"]], dtype=float))
 
     def loop(self, delta, lines) -> None:
         """
