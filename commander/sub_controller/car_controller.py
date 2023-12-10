@@ -1,3 +1,5 @@
+import math
+from time import sleep
 import numpy as np
 import pygame as py
 from typing import Dict, Tuple
@@ -34,6 +36,7 @@ class CarController(BaseSubController):
         # car sprite
         self._sprite_car = Car(self._surface, -ROBOT_SIZE * 2, -ROBOT_SIZE * 2, ROBOT_SIZE, ROBOT_COLOR, font)
         self._window.add_sprite("sprite_car", self._sprite_car)
+        self._sprite_position_set = True
 
         # car placement shortcuts
         if app_mode == CREATOR:
@@ -107,6 +110,7 @@ class CarController(BaseSubController):
         if self._toggled:
             self._window.on_callback(MOUSE_CLICK, self._on_mouse_click)
             self._text_car.set_color(SHORTCUT_TEXT_COLOR_ACTIVE)
+            self._sprite_position_set = False
 
         else:
             self._window.remove_callback(MOUSE_CLICK)
@@ -118,8 +122,11 @@ class CarController(BaseSubController):
         Args:
             pos (Tuple[int, int]): The mouse position.
         """
-        self._sprite_car.set_position(pos)
-        self.toggle()
+        if not self._sprite_position_set:
+            self._sprite_position_set = True
+        else:
+            self.toggle()
+        sleep(0.2)
 
     def to_dict(self) -> Dict:
         x, y = self._sprite_car.get_position()
@@ -145,7 +152,14 @@ class CarController(BaseSubController):
         """
         if self.is_toggled():
             mouse_pos = py.mouse.get_pos()
-            self._sprite_car.set_position(mouse_pos)
+
+            # set position
+            if not self._sprite_position_set:
+                self._sprite_car.set_position(mouse_pos)
+
+            # set angle to mouse
+            angle = math.atan2(mouse_pos[1] - self._sprite_car.get_position()[1], mouse_pos[0] - self._sprite_car.get_position()[0])
+            self._sprite_car.set_direction(angle)
         
         if self._app_mode != CREATOR:
             # get the simulations info about the car and update the sprite
