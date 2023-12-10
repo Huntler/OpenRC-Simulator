@@ -4,11 +4,11 @@ import pickle
 import pygame as py
 from graphics.controller import BaseController
 from graphics.objects.rectangle import Rectangle
-from graphics.objects.robot import Robot
+from graphics.objects.car import Car
 from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from commander import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from commander.sub_controller.robot_controller import RobotController
+from commander.sub_controller.car_controller import CarController
 from commander.sub_controller.storage_controller import StorageController
 from commander.sub_controller.wall_controller import WallController
 from commander.window import CREATOR_PLACE_WALL, CREATOR_SAVE_MAP, MOUSE_CLICK, SHORTCUTS_UNTOGGLE, SimulationWindow
@@ -45,9 +45,9 @@ class SimulationController(BaseController):
         # create sub controllers
         self._active_sub_controller = None
 
-        # create the robot controller
-        self._robot = RobotController(self._window, mode, self._font)
-        self._robot.on_toggle(self._sub_controller_toggled)
+        # create the car controller
+        self._car = CarController(self._window, mode, self._font)
+        self._car.on_toggle(self._sub_controller_toggled)
 
         # create the wall controller
         self._wall = WallController(self._window, mode)
@@ -109,21 +109,21 @@ class SimulationController(BaseController):
         self._window.add_sprite("text_shortcuts_title", text_shortcuts)
     
     def _save(self) -> None:
-        self._storage.save(self._file_name, [self._robot, self._wall])
+        self._storage.save(self._file_name, [self._car, self._wall])
 
-    def file(self, name: str, robot_name: str = None) -> None:
+    def file(self, name: str, car_name: str = None) -> None:
         self._file_name = name
 
         if self._mode != CREATOR:
-            self._storage.load(name, [self._robot, self._wall])
+            self._storage.load(name, [self._car, self._wall])
         
-        if robot_name:
-            # load the robots brain from file
-            filehandler = open(f"robot_{robot_name}.pkl", 'rb') 
+        if car_name:
+            # load the car's brain from file
+            filehandler = open(f"car_{car_name}.pkl", 'rb') 
             genome = pickle.load(filehandler)
-            self._robot.set_brain(genome)
+            self._car.set_brain(genome)
 
-            print("Loaded trained robot into simulation.")
+            print("Loaded trained car into simulation.")
 
     def loop(self) -> None:
         # calculate the time delta
@@ -132,6 +132,6 @@ class SimulationController(BaseController):
 
         self._wall.loop()
         walls = self._wall.get_walls()
-        self._robot.loop(delta, walls)
+        self._car.loop(delta, walls)
 
         self._t += delta

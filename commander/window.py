@@ -5,7 +5,7 @@ import pygame as py
 MOUSE_CLICK = "mouse_click"
 SHORTCUTS_UNTOGGLE = "untoggle_all"
 
-CREATOR_PLACE_ROBOT = "creator_place_robot"
+CREATOR_PLACE_CAR = "creator_place_car"
 CREATOR_PLACE_GOAL = "creator_place_goal"
 CREATOR_PLACE_WALL= "creator_place_wall"
 CREATOR_SAVE_MAP = "creato_save_map"
@@ -42,9 +42,9 @@ class SimulationWindow(BaseWindow):
 
         if event.type == py.KEYDOWN:
             # events when creator mode enabled
-            # roboter movement
+            # car movement
             if event.key == py.K_r:
-                self._execute_callback(CREATOR_PLACE_ROBOT)
+                self._execute_callback(CREATOR_PLACE_CAR)
 
             # wall placement
             if event.key == py.K_p:

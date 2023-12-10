@@ -1,18 +1,18 @@
 app:
   height: 900
   width: 1200
-robot:
-  direction: 90.0
-  x: 219
-  y: 434
+car:
+  direction: 90
+  x: 152
+  y: 473
 walls:
   sprite_wall_1:
-    end_x: 937
-    end_y: 438
-    start_x: 790
-    start_y: 250
+    end_x: 849
+    end_y: 460
+    start_x: 662
+    start_y: 285
   sprite_wall_2:
-    end_x: 793
-    end_y: 606
-    start_x: 937
-    start_y: 438
+    end_x: 678
+    end_y: 638
+    start_x: 849
+    start_y: 460
