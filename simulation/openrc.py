@@ -106,31 +106,31 @@ class OpenRC:
             self.sensor_lines[i] = sensor
 
     def _update_state(self, lines) -> bool:
-        print("turn_angle", self._turn_angle)
         # calculate Pro-Ackerman condition of car turning
         turning_angle = math.radians(180 - 90 - (90 - self._turn_angle))
         rear_radius = CHASSIS_SIZE[1] / math.tan(turning_angle) - 0.5 * CHASSIS_SIZE[0] if turning_angle != 0 else 0
-        print("rear_radius", rear_radius)
 
         # calculate the current velocity
         velocity = self._velocity * self._acceleration
 
         # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
-        self._theta += math.tanh(velocity * self._delta) / rear_radius if rear_radius != 0 else 0
-        self._theta = self._theta % (2 * math.pi)
-        print("theta", self._theta)
+        theta = self._theta + math.tanh(velocity * self._delta) / rear_radius if rear_radius != 0 else 0
+        theta = theta % (2 * math.pi)
+        self._theta = theta
         
         # calculate the movement and rotation
         update_pos = np.zeros_like(self._pos)
-        update_pos[0] = velocity * math.cos(self._theta) * self._delta
-        update_pos[1] = -velocity * math.sin(self._theta) * self._delta
+        update_pos[0] = velocity * math.cos(theta) * self._delta
+        update_pos[1] = -velocity * math.sin(theta) * self._delta
 
         # stop if a collision was detected
-        collision_detected = self._collision(lines, update_pos)
+        collision_detected = self._collision(lines, update_pos, theta)
         if collision_detected:
             return False, np.zeros_like(self._pos)
-
+        
+        # update position and agle
         self._pos += update_pos
+
         return True, update_pos
 
     def _calc_distance(self, lines, sensor_point: List[float]):
@@ -155,7 +155,7 @@ class OpenRC:
         
         return min_distance
 
-    def _collision(self, lines, update_pos) -> bool:
+    def _collision(self, lines, update_pos, theta) -> bool:
         """
          calculates collision points of car with all lines
          :param lines: the lines the car collided with
@@ -165,41 +165,42 @@ class OpenRC:
 
         # check if the car hits a wall without a sensor detecting it
         # may occur at corners
-        velocity = np.sum(self._velocity * self._acceleration) / 2 * self._delta
+        velocity = self._velocity * self._acceleration * self._delta
 
         # calculating the car's direction (as a vector)
-        dir = np.sign(velocity)
-        vect = np.array([math.cos(self._theta), -math.sin(self._theta)])
+        vect = np.array([math.cos(theta), -math.sin(theta)])
         vect = vect / np.linalg.norm(vect)
 
         # calc points in sensor directions for second shapely line
-        car = Point(self._pos)
-        sensor_points = [Point(sensor) for sensor in self.sensor_lines]
-        sensor_lines = [LineString((car, sensor_point)) for sensor_point in sensor_points]
-
+        car = Point(self._pos)# + update_pos)
         for wall in lines:
             line = LineString(wall)
             wall = np.asarray(wall)
 
             # check if the car has collided with a wall
             distance = line.distance(car)
-            if distance < WHEEL_DISTANCE / 2:
-                # set the car back to the pre-collision point
-                self._pos -= update_pos
-
+            if distance < CHASSIS_SIZE[1] / 2:
                 # calculate the lines direction vector
                 line_vect = [wall[1][0] - wall[0][0], wall[1][1] - wall[0][1]]
                 if line_vect[0] == 0 and line_vect[1] == 0:
                     continue
-                    
+                
                 line_vect = line_vect / np.linalg.norm(line_vect)
                 line_vect = line_vect * np.dot(vect * velocity, line_vect) / np.dot(line_vect, line_vect)
-                
-                # move car along side the wall
-                self._pos[0] += line_vect[0]
-                self._pos[1] += line_vect[1]
-                
+
+                # check if the car is within the range of the wall
+                update_x = car.x + line_vect[0]
+                if update_x > min(wall[0][0], wall[1][0]) - CHASSIS_SIZE[0] / 2 and update_x < max(wall[0][0], wall[1][0]) + CHASSIS_SIZE[0] / 2 :
+                    update_y = car.y + line_vect[1]
+                    if update_y > min(wall[0][1], wall[1][1]) - CHASSIS_SIZE[1] / 2 and update_y < max(wall[0][1], wall[1][1]) + CHASSIS_SIZE[1] / 2:
+                        # move car along side the wall
+                        car = Point(car.x + line_vect[0], car.y + line_vect[1])    
+                          
                 collision = True
+
+        if collision:
+            self._pos = [car.x, car.y]
+
         return collision
 
     def drive(self, lines):
