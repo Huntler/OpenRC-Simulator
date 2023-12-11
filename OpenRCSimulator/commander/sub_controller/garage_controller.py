@@ -44,15 +44,36 @@ class GarageController(BaseSubController):
         ###############
         # input texts #
         ###############
+        # FIXME: second time typing input buggy
         # car width
-        self._text_car_width = Text(self._surface, "Width (cm)", center_x - car_size[0] - 50, center_y - 10, 30, (255, 255, 255))
+        self._text_car_width = Text(self._surface, "Width (cm)", center_x - car_size[1] / 2 - 70, center_y - 10, 30, (255, 255, 255))
         self._window.add_sprite("text_width", self._text_car_width)
 
-        self._field_car_width = TextField(self._surface, center_x - car_size[0] - 50, center_y + 20, 30, "18")
+        self._field_car_width = TextField(self._surface, center_x - car_size[1] / 2 - 70, center_y + 20, 30, "18")
         self._field_car_width.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_width.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_width", self._field_car_width)
         self._window.on_callback(TEXT_INPUT, self._field_car_width.update_text)
+
+        # car length
+        self._text_car_length = Text(self._surface, "Length (cm)", center_x, center_y - car_size[0] / 2 - 80, 30, (255, 255, 255))
+        self._window.add_sprite("text_length", self._text_car_length)
+
+        self._field_car_length = TextField(self._surface, center_x, center_y - car_size[0] / 2 - 50, 30, "18")
+        self._field_car_length.set_text_filter(TextField.FILTER_NUMBERS)
+        self._field_car_length.on_activated(self._window.toggle_text_capture)
+        self._window.add_sprite("field_length", self._field_car_length)
+        self._window.on_callback(TEXT_INPUT, self._field_car_length.update_text)
+
+        # car max turn
+        self._text_car_angle = Text(self._surface, "Angle (°)", center_x + car_size[1] / 2 + 80, center_y - 10, 30, (255, 255, 255))
+        self._window.add_sprite("text_angle", self._text_car_angle)
+
+        self._field_car_angle = TextField(self._surface, center_x + car_size[1] / 2 + 80, center_y + 20, 30, "18")
+        self._field_car_angle.set_text_filter(TextField.FILTER_NUMBERS)
+        self._field_car_angle.on_activated(self._window.toggle_text_capture)
+        self._window.add_sprite("field_angle", self._field_car_angle)
+        self._window.on_callback(TEXT_INPUT, self._field_car_angle.update_text)
 
         # shortcuts
         self._sensors_activated = False
