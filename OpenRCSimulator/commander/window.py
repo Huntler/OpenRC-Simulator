@@ -1,9 +1,9 @@
+from typing import List
 from OpenRCSimulator.graphics.window import BaseWindow
 import pygame as py
 
 
 MOUSE_CLICK = "mouse_click"
-TEXT_INPUT = "text_input"
 SHORTCUTS_UNTOGGLE = "untoggle_all"
 
 CREATOR_PLACE_CAR = "creator_place_car"
@@ -18,7 +18,11 @@ MANUAL_TURN_RIGHT = "turn_right"
 MANUAL_MOTOR_STOP = "motor_stop"
 
 SIMULATION_PAUSE = "pause"
+
 SENSORS_ACTIVATED = "sensors_activated"
+TEXT_INPUT_W = "text_input_width"
+TEXT_INPUT_L = "text_input_length"
+TEXT_INPUT_T = "text_input_turn"
 
 
 class SimulationWindow(BaseWindow):
@@ -29,10 +33,14 @@ class SimulationWindow(BaseWindow):
     def draw(self) -> None:
         pass
 
-    def _execute_callback(self, type: str) -> None:
+    def _execute_callback(self, type: str, param: dict = {}) -> None:
         func = self._callbacks.get(type, None)
         if func:
-            func()
+            func(**param)
+
+    def _execute_callbacks(self, types: List[str], param: dict = {}) -> None:
+        for CALLBACK in types:
+            self._execute_callback(CALLBACK, param)
 
     def event(self, event) -> None:
         super().event(event)
@@ -46,17 +54,15 @@ class SimulationWindow(BaseWindow):
                 if event.key == py.K_ESCAPE or event.key == py.K_RETURN:
                     self._text_input = False
                     self._text_cache = ""
-                    func = self._callbacks.get(TEXT_INPUT, None)
-                    if func:
-                        func("\n")
+                    self._execute_callbacks([TEXT_INPUT_W, TEXT_INPUT_L, TEXT_INPUT_T], 
+                                            {"text": "\n"})
 
                 elif event.key == py.K_BACKSPACE:
                     self._text_cache = self._text_cache[:-1]
                 else:
                     self._text_cache += event.unicode
-                    func = self._callbacks.get(TEXT_INPUT, None)
-                    if func:
-                        func(self._text_cache)
+                    self._execute_callbacks([TEXT_INPUT_W, TEXT_INPUT_L, TEXT_INPUT_T],
+                                            {"text": self._text_cache})
 
                 return
             

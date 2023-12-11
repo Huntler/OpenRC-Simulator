@@ -5,7 +5,7 @@ import pygame as py
 from typing import Dict, Tuple
 from OpenRCSimulator.commander import SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
 
-from OpenRCSimulator.commander.window import MOUSE_CLICK, SENSORS_ACTIVATED, TEXT_INPUT, SimulationWindow
+from OpenRCSimulator.commander.window import MOUSE_CLICK, SENSORS_ACTIVATED, TEXT_INPUT_W, TEXT_INPUT_L, TEXT_INPUT_T, SimulationWindow
 from OpenRCSimulator.graphics.objects.text_field import TextField
 from OpenRCSimulator.graphics.window import MUTEX
 from OpenRCSimulator.simulation.openrc import OpenRC
@@ -53,7 +53,7 @@ class GarageController(BaseSubController):
         self._field_car_width.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_width.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_width", self._field_car_width)
-        self._window.on_callback(TEXT_INPUT, self._field_car_width.update_text)
+        self._window.on_callback(TEXT_INPUT_W, self._field_car_width.update_text)
 
         # car length
         self._text_car_length = Text(self._surface, "Length (cm)", center_x, center_y - car_size[0] / 2 - 80, 30, (255, 255, 255))
@@ -63,7 +63,7 @@ class GarageController(BaseSubController):
         self._field_car_length.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_length.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_length", self._field_car_length)
-        self._window.on_callback(TEXT_INPUT, self._field_car_length.update_text)
+        self._window.on_callback(TEXT_INPUT_L, self._field_car_length.update_text)
 
         # car max turn
         self._text_car_angle = Text(self._surface, "Angle (°)", center_x + car_size[1] / 2 + 80, center_y - 10, 30, (255, 255, 255))
@@ -73,7 +73,7 @@ class GarageController(BaseSubController):
         self._field_car_angle.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_angle.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_angle", self._field_car_angle)
-        self._window.on_callback(TEXT_INPUT, self._field_car_angle.update_text)
+        self._window.on_callback(TEXT_INPUT_T, self._field_car_angle.update_text)
 
         # shortcuts
         self._sensors_activated = False
