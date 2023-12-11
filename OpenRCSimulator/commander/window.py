@@ -1,4 +1,4 @@
-from graphics.window import BaseWindow
+from OpenRCSimulator.graphics.window import BaseWindow
 import pygame as py
 
 

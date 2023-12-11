@@ -1,7 +1,7 @@
 from multiprocessing.spawn import freeze_support
 from threading import Thread
 
-from graphics.window import BaseWindow
+from OpenRCSimulator.graphics.window import BaseWindow
 
 
 class BaseController(Thread):

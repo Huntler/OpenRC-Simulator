@@ -2,8 +2,9 @@ import math
 from typing import List, Tuple
 
 import numpy as np
-from graphics import CENTIMETER_TO_PIXEL
-from graphics.objects.sprite import Sprite
+from OpenRCSimulator.state import ROOT_FOLDER
+from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL
+from OpenRCSimulator.graphics.objects.sprite import Sprite
 import pygame as py
 
 
@@ -18,7 +19,7 @@ class Car(Sprite):
         self._surface = surface
 
         # load the car's texture
-        self._car_surface = py.image.load("graphics/resources/car_white.png")
+        self._car_surface = py.image.load(f"{ROOT_FOLDER}/resources/car_white.png")
         self._car_surface = py.transform.rotate(self._car_surface, 90)
         self._car_surface = py.transform.smoothscale(self._car_surface, self._pixel_size)
 

@@ -3,15 +3,14 @@ from time import sleep
 import numpy as np
 import pygame as py
 from typing import Dict, Tuple
-from pygame import Surface
-from graphics.window import MUTEX
-from simulation.openrc import OpenRC
-from simulation import CHASSIS_SIZE
-from graphics.objects.car import Car
-from graphics.objects.text import ANCHOR_TOP_LEFT, Text
-from graphics.sub_controller import BaseSubController
-from commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from commander.window import CREATOR_PLACE_CAR, MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
+from OpenRCSimulator.graphics.window import MUTEX
+from OpenRCSimulator.simulation.openrc import OpenRC
+from OpenRCSimulator.simulation import CHASSIS_SIZE
+from OpenRCSimulator.graphics.objects.car import Car
+from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
+from OpenRCSimulator.graphics.sub_controller import BaseSubController
+from OpenRCSimulator.commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
+from OpenRCSimulator.commander.window import CREATOR_PLACE_CAR, MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
     SIMULATION_PAUSE, SimulationWindow
 
 

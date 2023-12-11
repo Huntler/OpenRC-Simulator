@@ -1,7 +1,7 @@
 from typing import List
 import yaml
 
-from simulation.map import Map
+from OpenRCSimulator.simulation.map import Map
 
 
 class Trainer:

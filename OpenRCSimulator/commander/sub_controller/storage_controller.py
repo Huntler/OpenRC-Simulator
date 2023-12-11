@@ -1,8 +1,9 @@
 from typing import List
-from graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
-from graphics.sub_controller import BaseSubController
-from commander import CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from commander.window import CREATOR_SAVE_MAP, SimulationWindow
+from OpenRCSimulator.state import ROOT_FOLDER
+from OpenRCSimulator.graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
+from OpenRCSimulator.graphics.sub_controller import BaseSubController
+from OpenRCSimulator.commander import CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from OpenRCSimulator.commander.window import CREATOR_SAVE_MAP, SimulationWindow
 import yaml
 
 
@@ -50,7 +51,7 @@ class StorageController(BaseSubController):
         for controller in controllers:
             dict_file = dict_file | controller.to_dict()
         
-        with open(f"maps/{file_name}.yaml", "w") as file:
+        with open(f"{ROOT_FOLDER}/maps/{file_name}.yaml", "w") as file:
             documents = yaml.dump(dict_file, file)
         
         self.changes(False)
@@ -62,7 +63,7 @@ class StorageController(BaseSubController):
             file_name (str): the yaml file name.
             controllers (List[BaseSubController]): The list of sub controllers.
         """
-        with open(f"maps/{file_name}.yaml", "r") as file:
+        with open(f"{ROOT_FOLDER}/maps/{file_name}.yaml", "r") as file:
             dict_file = yaml.load(file, Loader=yaml.FullLoader)
 
         # load the dict into each sub controller

@@ -2,9 +2,8 @@ from typing import List, Tuple
 
 import numpy as np
 import math
-from graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
-
-from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, SENSOR_POINTS, TURNING_BOUNDARIES, WEIGHT, WHEEL_DISTANCE
+from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
+from OpenRCSimulator.simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, SENSOR_POINTS, TURNING_BOUNDARIES, WEIGHT, WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
 
 

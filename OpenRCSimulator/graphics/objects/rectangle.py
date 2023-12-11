@@ -1,5 +1,5 @@
 from typing import Tuple
-from graphics.objects.sprite import Sprite
+from OpenRCSimulator.graphics.objects.sprite import Sprite
 import pygame as py
 
 

@@ -1,11 +1,11 @@
 import math
 import pygame as py
 from typing import Dict, Tuple
-from graphics.objects.text import ANCHOR_TOP_LEFT, Text
-from graphics.objects.wall import Wall
-from graphics.sub_controller import BaseSubController
-from commander import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from commander.window import CREATOR_PLACE_WALL, MOUSE_CLICK, SimulationWindow
+from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
+from OpenRCSimulator.graphics.objects.wall import Wall
+from OpenRCSimulator.graphics.sub_controller import BaseSubController
+from OpenRCSimulator.commander import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from OpenRCSimulator.commander.window import CREATOR_PLACE_WALL, MOUSE_CLICK, SimulationWindow
 
 
 WALL_COLOR = (255, 120, 120)

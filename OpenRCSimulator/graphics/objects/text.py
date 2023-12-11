@@ -2,7 +2,7 @@ import random
 from typing import Tuple
 
 import pygame as py
-from graphics.objects.sprite import Sprite
+from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 
 ANCHOR_TOP_LEFT = 0

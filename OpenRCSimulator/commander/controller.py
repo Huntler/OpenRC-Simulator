@@ -2,15 +2,16 @@ import time
 from typing import Tuple
 import pickle
 import pygame as py
-from graphics.controller import BaseController
-from graphics.objects.rectangle import Rectangle
-from graphics.objects.text import ANCHOR_TOP_LEFT, Text
-from graphics.sub_controller import BaseSubController
-from commander import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
-from commander.sub_controller.car_controller import CarController
-from commander.sub_controller.storage_controller import StorageController
-from commander.sub_controller.wall_controller import WallController
-from commander.window import SHORTCUTS_UNTOGGLE, SimulationWindow
+from OpenRCSimulator.state import ROOT_FOLDER
+from OpenRCSimulator.graphics.controller import BaseController
+from OpenRCSimulator.graphics.objects.rectangle import Rectangle
+from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
+from OpenRCSimulator.graphics.sub_controller import BaseSubController
+from OpenRCSimulator.commander import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.commander.sub_controller.car_controller import CarController
+from OpenRCSimulator.commander.sub_controller.storage_controller import StorageController
+from OpenRCSimulator.commander.sub_controller.wall_controller import WallController
+from OpenRCSimulator.commander.window import SHORTCUTS_UNTOGGLE, SimulationWindow
 
 
 class SimulationController(BaseController):
@@ -118,7 +119,7 @@ class SimulationController(BaseController):
         
         if car_name:
             # load the car's brain from file
-            filehandler = open(f"car_{car_name}.pkl", 'rb') 
+            filehandler = open(f"{ROOT_FOLDER}/models/car_{car_name}.pkl", 'rb') 
             genome = pickle.load(filehandler)
             self._car.set_brain(genome)
 

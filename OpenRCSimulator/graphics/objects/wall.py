@@ -2,7 +2,7 @@ from typing import Tuple
 
 import pygame as py
 from pygame import Surface
-from graphics.objects.sprite import Sprite
+from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 
 class Wall(Sprite):

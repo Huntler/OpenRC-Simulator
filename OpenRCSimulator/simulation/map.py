@@ -2,8 +2,8 @@ import yaml
 import pickle
 import numpy as np
 
-from simulation.openrc import OpenRC
-from simulation.wall import Wall
+from OpenRCSimulator.simulation.openrc import OpenRC
+from OpenRCSimulator.simulation.wall import Wall
 
 
 class Map:
