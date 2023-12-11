@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--train", help="Starts training a agent using EA on the provided map. Provded a config file!")
     parser.add_argument("--name", help="The name of a map (needed to create or load a map).")
     parser.add_argument("--model", help="The trained agent, this contains the NN for controlling the agent.")
+    parser.add_argument("--garage", help="Editor to adjust the car measurments and sensors.", action="store_true")
 
     args = parser.parse_args()
 
@@ -27,8 +28,11 @@ def main():
 
     if args.train:
         mode = commander.TRAIN
+
+    if args.garage:
+        mode = commander.GARAGE
         
-    if not args.name and mode != commander.TRAIN:
+    if not args.name and mode != commander.TRAIN and mode != commander.GARAGE:
         print("Provide a map. Exit.")
         quit()
 

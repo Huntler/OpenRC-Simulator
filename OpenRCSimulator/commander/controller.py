@@ -2,6 +2,7 @@ import time
 from typing import Tuple
 import pickle
 import pygame as py
+from OpenRCSimulator.commander.sub_controller.garage_controller import GarageController
 from OpenRCSimulator.state import get_data_folder, MODELS_FOLDER
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
@@ -57,8 +58,10 @@ class SimulationController(BaseController):
         self._storage = StorageController(self._window, mode)
         self._storage.on_toggle(self._save)
 
-        #keys = py.key.get_pressed()
-        #print(keys)
+        # create garage controller
+        self._garage = GarageController(self._window, mode, self._font)
+        self._garage.on_toggle(lambda x: x)
+
         self.mode(mode)
     
     def _sub_controller_toggled(self, sub_controller: BaseSubController) -> None:
@@ -98,12 +101,12 @@ class SimulationController(BaseController):
 
         # show background text
         # text describing the current mode (integrated into the background)
-        mode_text = ["SIMULATION", "CREATOR", "MANUAL", "TRAINING"]
+        mode_text = ["SIMULATION", "CREATOR", "MANUAL", "TRAINING", "GARAGE"]
         text_mode = Text(self._surface, mode_text[mode], cx, cy, 120, MODE_TEXT_COLOR)
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
         # show shortcut info for CREATOR mode
-        shortcuts_height = [80, 180, 110, 80]
+        shortcuts_height = [80, 180, 110, 80, 110]
         text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
         text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_shortcuts_title", text_shortcuts)
@@ -112,8 +115,10 @@ class SimulationController(BaseController):
         self._storage.save(self._file_name, [self._car, self._wall])
 
     def file(self, name: str, car_name: str = None) -> None:
+        if not name:
+            return
+        
         self._file_name = name
-
         if self._mode != CREATOR:
             self._storage.load(name, [self._car, self._wall])
         

@@ -3,6 +3,7 @@ SIMULATION = 0
 CREATOR = 1
 MANUAL = 2
 TRAIN = 3
+GARAGE = 4
 
 # visuals e.g.: colors
 BACKGROUND_COLOR = (30, 35, 35)

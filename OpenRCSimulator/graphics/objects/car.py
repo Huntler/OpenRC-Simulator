@@ -9,8 +9,13 @@ from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL
 from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 
+
 class Car(Sprite):
-    def __init__(self, surface, x: int, y: int, chassis_size: Tuple[float, float], font) -> None:
+
+    NORMAL = 0
+    CONFIG = 1
+
+    def __init__(self, surface, x: int, y: int, chassis_size: Tuple[float, float], font, mode: int = NORMAL) -> None:
         super().__init__()
 
         # get the chassis size in pixels
@@ -20,10 +25,12 @@ class Car(Sprite):
         self._surface = surface
 
         # load the car's texture
-        car_resource_path = "/".join(("resources", "car_white.png"))
+        image_name = "car_white.png" if mode == Car.NORMAL else "car_white_config.png"
+        car_resource_path = "/".join(("resources", image_name))
         self._car_surface = py.image.load(pkg_resources.resource_stream(ROOT_FOLDER, car_resource_path))
         self._car_surface = py.transform.rotate(self._car_surface, 90)
         self._car_surface = py.transform.smoothscale(self._car_surface, self._pixel_size)
+        self._car_surface = self._car_surface.convert_alpha()
 
         self._x = x
         self._y = y
@@ -65,6 +72,12 @@ class Car(Sprite):
             Tuple[int, int]: Position in (x, y)
         """
         return self._x, self._y
+
+    def set_alpha(self, alpha: float = 1.0) -> None:
+        if alpha < 0 or alpha > 1.0:
+            raise RuntimeError
+        
+        self._car_surface.set_alpha(math.ceil(alpha * 255))
 
     def set_sensors(self, sensors: List[Tuple[int, int]]):
         """Position of sensor given as a point (x, y)
