@@ -44,11 +44,19 @@ class BaseWindow:
         # set up everything else
         self._running = False
         self._callbacks = dict()
+        self._text_input = False
+        self._text_cache = ""
 
         # sprite containers
         self._sprites = {}
         self._sprite_list = []
     
+    def toggle_text_capture(self) -> None:
+        """Reads keyboard inputs to cache which can be received by utilizing a callback e.g. TEXT_INPUT. Caution: this may 
+        prevent shortcuts to work.
+        """
+        self._text_input = not self._text_input
+
     def get_surface(self) -> py.Surface:
         """Returns the surface which is used to create sprites.
 

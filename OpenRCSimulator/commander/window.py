@@ -3,6 +3,7 @@ import pygame as py
 
 
 MOUSE_CLICK = "mouse_click"
+TEXT_INPUT = "text_input"
 SHORTCUTS_UNTOGGLE = "untoggle_all"
 
 CREATOR_PLACE_CAR = "creator_place_car"
@@ -17,6 +18,7 @@ MANUAL_TURN_RIGHT = "turn_right"
 MANUAL_MOTOR_STOP = "motor_stop"
 
 SIMULATION_PAUSE = "pause"
+SENSORS_ACTIVATED = "sensors_activated"
 
 
 class SimulationWindow(BaseWindow):
@@ -39,6 +41,25 @@ class SimulationWindow(BaseWindow):
         mouse_buttons = py.mouse.get_pressed()
 
         if event.type == py.KEYDOWN:
+            # text input enabled, ignoring shortcuts        
+            if self._text_input:
+                if event.key == py.K_ESCAPE or event.key == py.K_RETURN:
+                    self._text_input = False
+                    self._text_cache = ""
+                    func = self._callbacks.get(TEXT_INPUT, None)
+                    if func:
+                        func("\n")
+
+                elif event.key == py.K_BACKSPACE:
+                    self._text_cache = self._text_cache[:-1]
+                else:
+                    self._text_cache += event.unicode
+                    func = self._callbacks.get(TEXT_INPUT, None)
+                    if func:
+                        func(self._text_cache)
+
+                return
+            
             # events when creator mode enabled
             # car movement
             if event.key == py.K_r:
@@ -55,12 +76,12 @@ class SimulationWindow(BaseWindow):
                 self._execute_callback(CREATOR_SAVE_MAP)
             
             # untoggle all
-            # FIXME: fix steering and acceleration model
             if event.key == py.K_ESCAPE:
                 self._execute_callback(SHORTCUTS_UNTOGGLE)
             
             if event.key == py.K_a:
                 self._execute_callback(MANUAL_TURN_LEFT)
+                self._execute_callback(SENSORS_ACTIVATED)
             
             if event.key == py.K_d:
                 self._execute_callback(MANUAL_TURN_RIGHT)
