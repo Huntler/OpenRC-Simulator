@@ -1,5 +1,5 @@
 from typing import List
-from OpenRCSimulator.state import ROOT_FOLDER
+from OpenRCSimulator.state import get_data_folder, MAPS_FOLDER
 from OpenRCSimulator.graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
 from OpenRCSimulator.commander import CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
@@ -51,7 +51,7 @@ class StorageController(BaseSubController):
         for controller in controllers:
             dict_file = dict_file | controller.to_dict()
         
-        with open(f"{ROOT_FOLDER}/maps/{file_name}.yaml", "w") as file:
+        with open(f"{get_data_folder(MAPS_FOLDER)}{file_name}.yaml", "w") as file:
             documents = yaml.dump(dict_file, file)
         
         self.changes(False)
@@ -63,7 +63,7 @@ class StorageController(BaseSubController):
             file_name (str): the yaml file name.
             controllers (List[BaseSubController]): The list of sub controllers.
         """
-        with open(f"{ROOT_FOLDER}/maps/{file_name}.yaml", "r") as file:
+        with open(f"{get_data_folder(MAPS_FOLDER)}{file_name}.yaml", "r") as file:
             dict_file = yaml.load(file, Loader=yaml.FullLoader)
 
         # load the dict into each sub controller

@@ -2,6 +2,7 @@ import yaml
 import pickle
 import numpy as np
 
+from OpenRCSimulator.state import get_data_folder, CONFIGS_FOLDER, MAPS_FOLDER
 from OpenRCSimulator.simulation.openrc import OpenRC
 from OpenRCSimulator.simulation.wall import Wall
 
@@ -17,7 +18,7 @@ class Map:
         self.__height = 0
     
     def _load_map(self) -> None:
-        with open(f"maps/{self.__map_name}.yaml", "r") as file:
+        with open(f"{get_data_folder(MAPS_FOLDER)}{self.__map_name}.yaml", "r") as file:
             dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
         
         # load car location/direction from map info

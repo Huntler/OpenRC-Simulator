@@ -1,6 +1,7 @@
 from typing import List
 import yaml
 
+from OpenRCSimulator.state import get_data_folder, CONFIGS_FOLDER, MAPS_FOLDER
 from OpenRCSimulator.simulation.map import Map
 
 
@@ -10,7 +11,7 @@ class Trainer:
         self.__map_name = map_name
     
     def _load_config(self) -> None:
-        with open(f"configs/{self.__config_name}.yaml", "r") as file:
+        with open(f"{get_data_folder(CONFIGS_FOLDER)}{self.__config_name}.yaml", "r") as file:
             dict_file: dict = yaml.load(file, Loader=yaml.FullLoader)
 
     def _get_maps(self) -> List[str]:
@@ -18,7 +19,7 @@ class Trainer:
         Get map names of files located in 'maps/'
         """
         import os
-        return [name.replace(".yaml", "") for name in os.listdir("maps")]
+        return [name.replace(".yaml", "") for name in os.listdir(get_data_folder(MAPS_FOLDER))]
 
     def train_map(self, map_name: str):
         map = Map(map_name)

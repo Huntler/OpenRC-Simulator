@@ -46,7 +46,7 @@ class OpenRC:
         return car
 
     def hard_stop(self):
-        self._velocity = np.array([0, 0], dtype=float)
+        self._velocity = 0
     
     def reset_acceleration(self):
         # simulate rear motor off
@@ -113,7 +113,7 @@ class OpenRC:
         velocity = self._velocity * self._acceleration
 
         # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
-        theta = self._theta + math.tanh(velocity * self._delta) / rear_radius if rear_radius != 0 else 0
+        theta = self._theta + math.tanh(velocity * self._delta) / rear_radius if rear_radius != 0 else self._theta
         theta = theta % (2 * math.pi)
         self._theta = theta
         

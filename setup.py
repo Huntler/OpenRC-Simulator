@@ -29,8 +29,10 @@ setup(
     packages=find_packages(include=[
         "OpenRCSimulator", "OpenRCSimulator.*"
     ]),
+    package_dir={"OpenRCSimulator": "OpenRCSimulator"},
+    package_data={"OpenRCSimulator": ["resources/*.png"]},
     include_package_data=True,
     url="https://github.com/Huntler/OpenRC-Simulator",
     version=version,
-    zip_safe=False
+    zip_safe=True
 )
