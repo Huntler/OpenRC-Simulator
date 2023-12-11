@@ -11,10 +11,12 @@ from graphics.objects.car import Car
 from graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from graphics.sub_controller import BaseSubController
 from commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from commander.window import CREATOR_PLACE_CAR, MANUAL_BOTH_DECREASE, MANUAL_BOTH_INCREASE, MANUAL_BOTH_ZERO, \
-    MANUAL_LEFT_DECREASE, MANUAL_LEFT_INCREASE, MANUAL_RIGHT_DECREASE, MANUAL_RIGHT_INCREASE, MOUSE_CLICK, \
+from commander.window import CREATOR_PLACE_CAR, MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
     SIMULATION_PAUSE, SimulationWindow
 
+
+ON, OFF = 1, 0
+FORWARD, BACKWARD = 2, 3
 
 
 class CarController(BaseSubController):
@@ -51,46 +53,45 @@ class CarController(BaseSubController):
             self._window.add_sprite("text_car", self._text_car)
             self._window.on_callback(SIMULATION_PAUSE, self._pause)
 
-            self._window.on_callback(MANUAL_LEFT_INCREASE, self._motor_left(1))
-            self._window.on_callback(MANUAL_LEFT_DECREASE, self._motor_left(-1))
-            self._window.on_callback(MANUAL_RIGHT_INCREASE, self._motor_right(1))
-            self._window.on_callback(MANUAL_RIGHT_DECREASE, self._motor_right(-1))
-            self._window.on_callback(MANUAL_BOTH_INCREASE, self._motors_both(1, 1))
-            self._window.on_callback(MANUAL_BOTH_DECREASE, self._motors_both(-1, -1))
-            self._window.on_callback(MANUAL_BOTH_ZERO, self._motors_both(0, 0))
+            self._window.on_callback(MANUAL_ACCELERATE, self._rear_motor(FORWARD))
+            self._window.on_callback(MANUAL_SLOWDOWN, self._rear_motor(BACKWARD))
+            self._window.on_callback(MANUAL_TURN_LEFT, self._front_motor(FORWARD))
+            self._window.on_callback(MANUAL_TURN_RIGHT, self._front_motor(BACKWARD))
+            self._window.on_callback(MANUAL_MOTOR_STOP, self._all_motors(OFF))
 
     def set_brain(self, genome) -> None:
         # TODO
         pass
 
-    def _motor_left(self, left: int):
+    def _rear_motor(self, state: int):
         def fire():
             with MUTEX:
-                if left == -1:
-                    self._car.slowdown_left()
-                if left == 1:
-                    self._car.accelerate_left()
+                if state == FORWARD:
+                    self._car.accelerate()
+                if state == BACKWARD:
+                    self._car.slowdown()
+                if state == OFF:
+                    self._car.reset_acceleration()
 
         return fire
 
-    def _motor_right(self, right: int):
+    def _front_motor(self, state: int):
         def fire():
             with MUTEX:
-                if right == -1:
-                    self._car.slowdown_right()
-                if right == 1:
-                    self._car.accelerate_right()
+                if state == FORWARD:
+                    self._car.turn_left()
+                if state == BACKWARD:
+                    self._car.turn_right()
+                if state == OFF:
+                    self._car.reset_turn()
 
         return fire
 
-    def _motors_both(self, left: int, right: int):
+    def _all_motors(self, mode: int):
         def fire():
-            if left == right and left == 0:
-                self._car.stop()
-                return
-
-            self._motor_left(left)()
-            self._motor_right(right)()
+            if mode == OFF:
+                self._car.reset_acceleration()
+                self._car.reset_turn()
 
         return fire
 

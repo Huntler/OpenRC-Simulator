@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import math
 from graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
 
-from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, SENSOR_POINTS, WEIGHT, WHEEL_DISTANCE
+from simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, SENSOR_POINTS, TURNING_BOUNDARIES, WEIGHT, WHEEL_DISTANCE
 from shapely.geometry import LineString, Point
 
 
@@ -22,7 +22,8 @@ class OpenRC:
         # acceleration is calculated based on weight and motor power
         # value in meter per second (already calculated with time)
         self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2 * delta
-        self._velocity = np.array([0, 0], dtype=float)
+        self._velocity = 0
+        self._turn_angle = 0
 
         # angle to coordinate system's x-axis
         self._theta = INITIAL_THETA
@@ -47,21 +48,26 @@ class OpenRC:
 
     def hard_stop(self):
         self._velocity = np.array([0, 0], dtype=float)
-
-    def stop(self):
+    
+    def reset_acceleration(self):
+        # simulate rear motor off
         self._stop = True
+    
+    def reset_turn(self):
+        # simulate stepper motor off
+        self._turn_angle = 0
 
-    def accelerate_left(self):
-        self._velocity[0] += 100
+    def accelerate(self):
+        self._velocity += 100
 
-    def slowdown_left(self):
-        self._velocity[0] -= 100
+    def slowdown(self):
+        self._velocity -= 100
 
-    def accelerate_right(self):
-        self._velocity[1] += 100
+    def turn_left(self):
+        self._turn_angle = min(TURNING_BOUNDARIES[1], self._turn_angle + 1)
 
-    def slowdown_right(self):
-        self._velocity[1] -= 100
+    def turn_right(self):
+        self._turn_angle = max(TURNING_BOUNDARIES[0], self._turn_angle - 1)
 
     def set_time_delta(self, delta: float):
         self._delta = delta
@@ -99,26 +105,33 @@ class OpenRC:
 
             self.sensor_lines[i] = sensor
 
-    def _rotate(self, lines):
+    def _update_state(self, lines) -> bool:
+        print("turn_angle", self._turn_angle)
+        # calculate Pro-Ackerman condition of car turning
+        turning_angle = math.radians(180 - 90 - (90 - self._turn_angle))
+        rear_radius = CHASSIS_SIZE[1] / math.tan(turning_angle) - 0.5 * CHASSIS_SIZE[0] if turning_angle != 0 else 0
+        print("rear_radius", rear_radius)
+
         # calculate the current velocity
-        vel_left = self._velocity[0] * self._acceleration
-        vel_right = self._velocity[1] * self._acceleration
+        velocity = self._velocity * self._acceleration
+
+        # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
+        self._theta += math.tanh(velocity * self._delta) / rear_radius if rear_radius != 0 else 0
+        self._theta = self._theta % (2 * math.pi)
+        print("theta", self._theta)
         
         # calculate the movement and rotation
         update_pos = np.zeros_like(self._pos)
-        update_pos[0] = +((vel_left + vel_right) / 2) * math.cos(self._theta) * self._delta
-        update_pos[1] = -((vel_left + vel_right) / 2) * math.sin(self._theta) * self._delta
-        self._pos += update_pos
+        update_pos[0] = velocity * math.cos(self._theta) * self._delta
+        update_pos[1] = -velocity * math.sin(self._theta) * self._delta
 
         # stop if a collision was detected
         collision_detected = self._collision(lines, update_pos)
         if collision_detected:
-            # rotate sensor lines
-            self._update_sensors(lines)
-            return
+            return False, np.zeros_like(self._pos)
 
-        self._theta += (vel_right - vel_left) / WHEEL_DISTANCE * self._delta
-        self._theta = self._theta % (2 * math.pi)
+        self._pos += update_pos
+        return True, update_pos
 
     def _calc_distance(self, lines, sensor_point: List[float]):
         """
@@ -126,7 +139,6 @@ class OpenRC:
         :param lines: the lines to which the distance is calculated
         """
         car = Point(self._pos)
-        factor = 2 * math.pi / SENSOR_POINTS
 
         # reset each sensor values
         sensor_line = LineString([self._pos, sensor_point])
@@ -204,11 +216,9 @@ class OpenRC:
                 self._stop = False
 
         # calculate the rotation and movement
-        self._rotate(lines)
+        if not self._update_state(lines):
+            self.hard_stop()
         self._update_sensors(lines)
-
-        # stop if there was a colision
-        # self._collision(lines)
 
         # transfer back to pixel data
         x = int(self._pos[0] * CENTIMETER_TO_PIXEL)

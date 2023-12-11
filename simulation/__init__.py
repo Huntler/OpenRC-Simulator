@@ -15,6 +15,7 @@ FRICTION = 1.15
 
 # angle to coordinate system's x-axis in degree
 INITIAL_THETA = math.radians(0)
+TURNING_BOUNDARIES = [-30, 30]
 
 SENSOR_DISTANCE = 500
 SENSOR_POINTS = 350
