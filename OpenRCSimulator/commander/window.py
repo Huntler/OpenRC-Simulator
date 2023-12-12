@@ -9,7 +9,7 @@ SHORTCUTS_UNTOGGLE = "untoggle_all"
 CREATOR_PLACE_CAR = "creator_place_car"
 CREATOR_PLACE_GOAL = "creator_place_goal"
 CREATOR_PLACE_WALL= "creator_place_wall"
-CREATOR_SAVE_MAP = "creato_save_map"
+STORAGE_SAVE = "creato_save_map"
 
 MANUAL_ACCELERATE = "accelerate_rear"
 MANUAL_SLOWDOWN = "slowdown_rear"
@@ -79,7 +79,7 @@ class SimulationWindow(BaseWindow):
             # save map
             if event.key == py.K_s:
                 self._execute_callback(MANUAL_SLOWDOWN)
-                self._execute_callback(CREATOR_SAVE_MAP)
+                self._execute_callback(STORAGE_SAVE)
             
             # untoggle all
             if event.key == py.K_ESCAPE:

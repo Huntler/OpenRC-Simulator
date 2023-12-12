@@ -44,7 +44,6 @@ class GarageController(BaseSubController):
         ###############
         # input texts #
         ###############
-        # FIXME: second time typing input buggy
         # car width
         self._text_car_width = Text(self._surface, "Width (cm)", center_x - car_size[1] / 2 - 70, center_y - 10, 30, (255, 255, 255))
         self._window.add_sprite("text_width", self._text_car_width)
@@ -78,7 +77,7 @@ class GarageController(BaseSubController):
         # shortcuts
         self._sensors_activated = False
         self._text_sensors = Text(self._surface, "'A' Activate sensors", 0, 0, 30, SHORTCUT_TEXT_COLOR)
-        self._text_sensors.set_position((20, self._wh - 50), ANCHOR_TOP_LEFT)
+        self._text_sensors.set_position((20, self._wh - 70), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_car", self._text_sensors)
         self._window.on_callback(SENSORS_ACTIVATED, self.toggle)
 
@@ -121,9 +120,9 @@ class GarageController(BaseSubController):
         x, y = self._sprite_car.get_position()
         dict_file = {}
         dict_file["car"] = {}
-        dict_file["car"]["x"] = x
-        dict_file["car"]["y"] = y
-        dict_file["car"]["direction"] = self._sprite_car.get_direction()
+        dict_file["car"]["rear_dist"] = self._field_car_width.get_text()
+        dict_file["car"]["front_rear_dist"] = self._field_car_length.get_text()
+        dict_file["car"]["max_turn_angle"] = self._field_car_angle.get_text()
         return dict_file
 
     def from_dict(self, d: Dict) -> None:
@@ -132,13 +131,9 @@ class GarageController(BaseSubController):
         Args:
             d (Dict): Corresponding dict.
         """
-        pos = (d["x"], d["y"])
-        dir = d["direction"]
-
-        self._sprite_car.set_position(pos)
-        self._sprite_car.set_direction(dir)
-
-        self._car = OpenRC(np.array([d["x"], d["y"]], dtype=float))
+        self._field_car_width.set_text(d["rear_dist"])
+        self._field_car_length.set_text(d["front_rear_dist"])
+        self._field_car_angle.set_text(d["max_turn_angle"])
 
     def loop(self) -> None:
         """

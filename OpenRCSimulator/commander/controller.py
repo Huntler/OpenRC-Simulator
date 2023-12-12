@@ -3,12 +3,12 @@ from typing import Tuple
 import pickle
 import pygame as py
 from OpenRCSimulator.commander.sub_controller.garage_controller import GarageController
-from OpenRCSimulator.state import get_data_folder, MODELS_FOLDER
+from OpenRCSimulator.state import MAPS_FOLDER, get_data_folder, MODELS_FOLDER
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.commander import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.commander import BACKGROUND_COLOR, CREATOR, GARAGE, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
 from OpenRCSimulator.commander.sub_controller.car_controller import CarController
 from OpenRCSimulator.commander.sub_controller.storage_controller import StorageController
 from OpenRCSimulator.commander.sub_controller.wall_controller import WallController
@@ -16,7 +16,7 @@ from OpenRCSimulator.commander.window import SHORTCUTS_UNTOGGLE, SimulationWindo
 
 
 class SimulationController(BaseController):
-    def __init__(self, window_size: Tuple[int, int], mode:int, flags: int = 0) -> None:
+    def __init__(self, window_size: Tuple[int, int], mode: int, flags: int = 0) -> None:
         """The SimulationController manages the SimulationWindow. This is a separate
         thread than the pygame one.
 
@@ -27,6 +27,7 @@ class SimulationController(BaseController):
         super().__init__()
         self._t = py.time.get_ticks()
         self._delta = 0.1
+        self._file_name = None
 
         self._width, self._height = window_size
         self._center = (self._width // 2, self._height // 2)
@@ -112,16 +113,17 @@ class SimulationController(BaseController):
         self._window.add_sprite("text_shortcuts_title", text_shortcuts)
     
     def _save(self) -> None:
-        self._storage.save(self._file_name, [self._car, self._wall])
+        self._storage.save(self._file_name, {
+            GARAGE: self._garage,
+            CREATOR: [self._car, self._wall]
+        })
 
-    def file(self, name: str, car_name: str = None) -> None:
-        if not name:
-            return
-        
+    def file(self, name: str, car_name: str = None) -> None:        
         self._file_name = name
         if self._mode != CREATOR:
-            self._storage.load(name, [self._car, self._wall])
-        
+            self._storage.load(get_data_folder(MAPS_FOLDER), name, [self._car, self._wall])
+            self._storage.load(get_data_folder(""), "car_config", [self._garage])
+
         if car_name:
             # load the car's brain from file
             filehandler = open(f"{get_data_folder(MODELS_FOLDER)}/car_{car_name}.pkl", 'rb') 
