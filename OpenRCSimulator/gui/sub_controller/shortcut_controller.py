@@ -9,6 +9,7 @@ class ShortcutController(BaseSubController):
         super().__init__()
 
         self._entries = {}
+        self._toggled = []
 
         # window and surface information
         self._window = window
@@ -44,18 +45,38 @@ class ShortcutController(BaseSubController):
             entry.set_position((20, entry_y), ANCHOR_TOP_LEFT)
             print(section_height, entry_y)
             
-    def add_shortcut(self, name: str, callback, title: str, key) -> None:    
+    def add_shortcut(self, name: str, callback, title: str, key, can_toggle: bool = False) -> None:    
         # add the shortcut text and callback
         shortcut = Text(self._surface, title, 0, 0, SHORTCUT_TEXT_COLOR, self._font_entry)       
         self._window.add_sprite(name, shortcut)
+
+        callback = callback if not can_toggle else self._toggle(name, callback)
         self._window.on_key_callback(key, name, callback)
 
         self._entries[name] = (len(self._entries) + 1, shortcut)
+        self._toggled.append(0)
 
         # calculate start display height of shortcut section
         self._update_positions()
     
     def remove_shortcut(self, name: str) -> None:
+        num, _ = self._entries[name]
         del self._entries[name]
+        self._toggled.pop(num - 1)
+
+    def _toggle(self, name: str, func) -> None:
+        def toggle_text():
+            num, entry = self._entries[name]
+            if self._toggled[num - 1] == 0:
+                self._toggled[num - 1] = 1
+                entry.set_color(SHORTCUT_TEXT_COLOR_ACTIVE)
+            else:
+                self._toggled[num - 1] = 0
+                entry.set_color(SHORTCUT_TEXT_COLOR)
+            
+            func()
+        
+        return toggle_text
+        
 
 

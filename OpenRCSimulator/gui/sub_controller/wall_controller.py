@@ -28,14 +28,6 @@ class WallController(BaseSubController):
         self._walls = []
         self._active_wall = None
 
-        # wall placement shortcuts
-        if app_mode == CREATOR:
-            self._text_wall = Text(self._surface, "'P' Start drawing a wall", 0, 0, 30, SHORTCUT_TEXT_COLOR)
-            self._text_wall.set_position((20, self._wh - 100), ANCHOR_TOP_LEFT)
-
-            self._window.add_sprite("text_wall", self._text_wall)
-            self._window.on_callback(CREATOR_PLACE_WALL, self.toggle)
-
     def get_walls(self):
         return self._walls
 
@@ -44,11 +36,9 @@ class WallController(BaseSubController):
 
         if self.is_toggled():
             self._window.on_callback(MOUSE_CLICK, self._on_mouse_click)
-            self._text_wall.set_color(SHORTCUT_TEXT_COLOR_ACTIVE)
 
         else:
             self._window.remove_callback(MOUSE_CLICK)
-            self._text_wall.set_color(SHORTCUT_TEXT_COLOR)
 
             # remove the latest wall which is never finished
             if self._active_wall:

@@ -7,11 +7,10 @@ from OpenRCSimulator.graphics.window import MUTEX
 from OpenRCSimulator.simulation.openrc import OpenRC
 from OpenRCSimulator.simulation import CHASSIS_SIZE
 from OpenRCSimulator.graphics.objects.car import Car
-from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import CREATOR, GARAGE, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
-    SIMULATION_PAUSE, MainWindow
+from OpenRCSimulator.gui import CREATOR, GARAGE, MANUAL, SIMULATION
+from OpenRCSimulator.gui.window import MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
+    MainWindow
 
 
 ON, OFF = 1, 0
@@ -31,7 +30,6 @@ class CarController(BaseSubController):
         self._window = window
         self._ww, self._wh = window.get_window_size()
         self._surface = window.get_surface()
-        self._shortcuts_font = window.get_font().copy(size=30)
         self._sensor_font = window.get_font().copy(size=12)
 
         # car sprite
@@ -41,19 +39,7 @@ class CarController(BaseSubController):
         self._sprite_position_set = True
 
         # car placement shortcuts
-        if app_mode == CREATOR:
-            self._text_car = Text(self._surface, "'R' Place the car", 0, 0, SHORTCUT_TEXT_COLOR, self._shortcuts_font)
-            self._text_car.set_position((20, self._wh - 130), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_car", self._text_car)
-            self._window.on_callback(CREATOR_PLACE_CAR, self.toggle)
-
         if app_mode == MANUAL:
-            self._is_paused = False
-            self._text_car = Text(self._surface, "'P' Pause simulation", 0, 0, SHORTCUT_TEXT_COLOR, self._shortcuts_font)
-            self._text_car.set_position((20, self._wh - 50), ANCHOR_TOP_LEFT)
-            self._window.add_sprite("text_car", self._text_car)
-            self._window.on_callback(SIMULATION_PAUSE, self._pause)
-
             self._window.on_callback(MANUAL_ACCELERATE, self._rear_motor(FORWARD))
             self._window.on_callback(MANUAL_SLOWDOWN, self._rear_motor(BACKWARD))
             self._window.on_callback(MANUAL_TURN_LEFT, self._front_motor(FORWARD))
@@ -96,7 +82,7 @@ class CarController(BaseSubController):
 
         return fire
 
-    def _pause(self) -> None:
+    def pause(self) -> None:
         self._is_paused = not self._is_paused
 
     def toggle(self, call: bool = True) -> None:
@@ -110,12 +96,10 @@ class CarController(BaseSubController):
 
         if self._toggled:
             self._window.on_callback(MOUSE_CLICK, self._on_mouse_click)
-            self._text_car.set_color(SHORTCUT_TEXT_COLOR_ACTIVE)
             self._sprite_position_set = False
 
         else:
             self._window.remove_callback(MOUSE_CLICK)
-            self._text_car.set_color(SHORTCUT_TEXT_COLOR)
 
     def _on_mouse_click(self, pos: Tuple[int, int]) -> None:
         """This method is executed, if the event was registered from inside this controller.

@@ -2,16 +2,17 @@ import time
 from typing import Tuple
 import pickle
 import pygame as py
+from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.state import MAPS_FOLDER, get_data_folder, MODELS_FOLDER
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.storage_controller import StorageController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
-from OpenRCSimulator.gui.window import SHORTCUTS_UNTOGGLE, MainWindow
+from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, CREATOR_PLACE_WALL, MANUAL_ACCELERATE, MANUAL_MOTOR_STOP, MANUAL_SLOWDOWN, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, SHORTCUTS_UNTOGGLE, SIMULATION_PAUSE, MainWindow
 
 
 class MainController(BaseController):
@@ -58,6 +59,16 @@ class MainController(BaseController):
         # create the storage controller
         self._storage = StorageController(self._window, mode)
         self._storage.on_toggle(self._save)
+
+        # create shortcuts
+        self._shortcuts = ShortcutController(self._window)
+        if mode == CREATOR:
+            self._shortcuts.add_shortcut(CREATOR_PLACE_WALL, self._wall.toggle, "'P' Start drawing a wall", py.K_p, can_toggle=True)
+            self._shortcuts.add_shortcut(CREATOR_PLACE_CAR, self._car.toggle, "'R' Place the car", py.K_r)
+        
+        if mode == MANUAL:
+            # driving shortcuts are defined in 'CarController'
+            self._shortcuts.add_shortcut(SIMULATION_PAUSE, self._car.pause, "'P' Pause simulation", py.K_p, can_toggle=True)
 
         self.mode(mode)
     
