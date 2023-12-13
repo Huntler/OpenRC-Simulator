@@ -2,20 +2,19 @@ import time
 from typing import Tuple
 import pickle
 import pygame as py
-from OpenRCSimulator.commander.sub_controller.garage_controller import GarageController
 from OpenRCSimulator.state import MAPS_FOLDER, get_data_folder, MODELS_FOLDER
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.commander import BACKGROUND_COLOR, CREATOR, GARAGE, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
-from OpenRCSimulator.commander.sub_controller.car_controller import CarController
-from OpenRCSimulator.commander.sub_controller.storage_controller import StorageController
-from OpenRCSimulator.commander.sub_controller.wall_controller import WallController
-from OpenRCSimulator.commander.window import SHORTCUTS_UNTOGGLE, SimulationWindow
+from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.gui.sub_controller.car_controller import CarController
+from OpenRCSimulator.gui.sub_controller.storage_controller import StorageController
+from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
+from OpenRCSimulator.gui.window import SHORTCUTS_UNTOGGLE, MainWindow
 
 
-class SimulationController(BaseController):
+class MainController(BaseController):
     def __init__(self, window_size: Tuple[int, int], mode: int, flags: int = 0) -> None:
         """The SimulationController manages the SimulationWindow. This is a separate
         thread than the pygame one.
@@ -34,10 +33,11 @@ class SimulationController(BaseController):
         self._flags = flags
 
         # create the window visuals
-        self._window = SimulationWindow(window_size=window_size, flags=flags)
+        self._window = MainWindow(window_size=window_size, flags=flags)
         self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
         self._surface = self._window.get_surface()
-        self._font = self._window.get_font()
+        self._title_font = self._window.get_font().copy(size=120)
+        self._shortcuts_font = self._window.get_font().copy(size=50)
 
         # create the sprites we want to use
         # background object (just a colored box)
@@ -48,7 +48,7 @@ class SimulationController(BaseController):
         self._active_sub_controller = None
 
         # create the car controller
-        self._car = CarController(self._window, mode, self._font)
+        self._car = CarController(self._window, mode)
         self._car.on_toggle(self._sub_controller_toggled)
 
         # create the wall controller
@@ -58,10 +58,6 @@ class SimulationController(BaseController):
         # create the storage controller
         self._storage = StorageController(self._window, mode)
         self._storage.on_toggle(self._save)
-
-        # create garage controller
-        self._garage = GarageController(self._window, mode, self._font)
-        self._garage.on_toggle(lambda x: x)
 
         self.mode(mode)
     
@@ -102,19 +98,18 @@ class SimulationController(BaseController):
 
         # show background text
         # text describing the current mode (integrated into the background)
-        mode_text = ["SIMULATION", "CREATOR", "MANUAL", "TRAINING", "GARAGE"]
-        text_mode = Text(self._surface, mode_text[mode], cx, cy, 120, MODE_TEXT_COLOR)
+        mode_text = ["SIMULATION", "CREATOR", "MANUAL", "TRAINING"]
+        text_mode = Text(self._surface, mode_text[mode], cx, cy, MODE_TEXT_COLOR, self._title_font)
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
         # show shortcut info for CREATOR mode
-        shortcuts_height = [80, 180, 110, 80, 110]
-        text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, 50, SHORTCUT_TEXT_COLOR)
+        shortcuts_height = [80, 180, 110, 80]
+        text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, SHORTCUT_TEXT_COLOR, self._shortcuts_font)
         text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_shortcuts_title", text_shortcuts)
     
     def _save(self) -> None:
         self._storage.save(self._file_name, {
-            GARAGE: self._garage,
             CREATOR: [self._car, self._wall]
         })
 
@@ -122,7 +117,6 @@ class SimulationController(BaseController):
         self._file_name = name
         if self._mode != CREATOR:
             self._storage.load(get_data_folder(MAPS_FOLDER), name, [self._car, self._wall])
-            self._storage.load(get_data_folder(""), "car_config", [self._garage])
 
         if car_name:
             # load the car's brain from file

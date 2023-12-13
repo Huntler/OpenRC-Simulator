@@ -1,7 +1,8 @@
 import argparse
 import pygame as py
-import OpenRCSimulator.commander as commander
-from OpenRCSimulator.commander.controller import SimulationController
+import OpenRCSimulator.gui as gui
+from OpenRCSimulator.gui.configurator_controller import ConfiguratorController
+from OpenRCSimulator.gui.main_controller import MainController
 from OpenRCSimulator.simulation.trainer import Trainer
 
 
@@ -19,26 +20,28 @@ def main():
 
     args = parser.parse_args()
 
-    mode = commander.SIMULATION
+    mode = gui.SIMULATION
     if args.create:
-        mode = commander.CREATOR
+        mode = gui.CREATOR
 
     if args.manual:
-        mode = commander.MANUAL
+        mode = gui.MANUAL
 
     if args.train:
-        mode = commander.TRAIN
+        mode = gui.TRAIN
 
     if args.garage:
-        mode = commander.GARAGE
+        application = ConfiguratorController(window_size=(1200, 900))
+        application.load()
+        application.boot()
         
-    if not args.name and mode != commander.TRAIN and mode != commander.GARAGE:
+    if not args.name and mode != gui.TRAIN and mode != gui.GARAGE:
         print("Provide a map. Exit.")
         quit()
 
     # create the visuals
-    if mode != commander.TRAIN:
-        application = SimulationController(window_size=(1200, 900), mode=mode)
+    if mode != gui.TRAIN:
+        application = MainController(window_size=(1200, 900), mode=mode)
         application.file(args.name, args.model)
         application.boot()
 

@@ -4,6 +4,7 @@ import pygame as py
 import numpy as np
 from typing import List, Tuple
 
+from OpenRCSimulator.graphics.font import FontWrapper
 from OpenRCSimulator.state import ROOT_FOLDER
 from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL
 from OpenRCSimulator.graphics.objects.sprite import Sprite
@@ -15,7 +16,7 @@ class Car(Sprite):
     NORMAL = 0
     CONFIG = 1
 
-    def __init__(self, surface, x: int, y: int, chassis_size: Tuple[float, float], font, mode: int = NORMAL) -> None:
+    def __init__(self, surface: py.Surface, x: int, y: int, chassis_size: Tuple[float, float], font: FontWrapper, mode: int = NORMAL) -> None:
         super().__init__()
 
         # get the chassis size in pixels
@@ -39,7 +40,7 @@ class Car(Sprite):
 
         self.set_direction(90)
 
-        self._font = font
+        self._font = font.unpack()
 
     def set_direction(self, angle: float) -> None:
         """Sets direction of the car in radians.

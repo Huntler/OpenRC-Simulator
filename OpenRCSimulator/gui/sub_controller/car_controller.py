@@ -9,9 +9,9 @@ from OpenRCSimulator.simulation import CHASSIS_SIZE
 from OpenRCSimulator.graphics.objects.car import Car
 from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.commander import CREATOR, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
-from OpenRCSimulator.commander.window import CREATOR_PLACE_CAR, MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
-    SIMULATION_PAUSE, SimulationWindow
+from OpenRCSimulator.gui import CREATOR, GARAGE, MANUAL, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, SIMULATION
+from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
+    SIMULATION_PAUSE, MainWindow
 
 
 ON, OFF = 1, 0
@@ -19,7 +19,7 @@ FORWARD, BACKWARD = 2, 3
 
 
 class CarController(BaseSubController):
-    def __init__(self, window: SimulationWindow, app_mode: int, font) -> None:
+    def __init__(self, window: MainWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
         self.dict_name = "car"
@@ -31,23 +31,25 @@ class CarController(BaseSubController):
         self._window = window
         self._ww, self._wh = window.get_window_size()
         self._surface = window.get_surface()
-        self._font = font
+        self._shortcuts_font = window.get_font().copy(size=30)
+        self._sensor_font = window.get_font().copy(size=12)
 
         # car sprite
-        self._sprite_car = Car(self._surface, -CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2, CHASSIS_SIZE, font)
+        car_mode = Car.CONFIG if self._app_mode == GARAGE else Car.NORMAL
+        self._sprite_car = Car(self._surface, -CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2, CHASSIS_SIZE, self._sensor_font, car_mode)
         self._window.add_sprite("sprite_car", self._sprite_car)
         self._sprite_position_set = True
 
         # car placement shortcuts
         if app_mode == CREATOR:
-            self._text_car = Text(self._surface, "'R' Place the car", 0, 0, 30, SHORTCUT_TEXT_COLOR)
+            self._text_car = Text(self._surface, "'R' Place the car", 0, 0, SHORTCUT_TEXT_COLOR, self._shortcuts_font)
             self._text_car.set_position((20, self._wh - 130), ANCHOR_TOP_LEFT)
             self._window.add_sprite("text_car", self._text_car)
             self._window.on_callback(CREATOR_PLACE_CAR, self.toggle)
 
         if app_mode == MANUAL:
             self._is_paused = False
-            self._text_car = Text(self._surface, "'P' Pause simulation", 0, 0, 30, SHORTCUT_TEXT_COLOR)
+            self._text_car = Text(self._surface, "'P' Pause simulation", 0, 0, SHORTCUT_TEXT_COLOR, self._shortcuts_font)
             self._text_car.set_position((20, self._wh - 50), ANCHOR_TOP_LEFT)
             self._window.add_sprite("text_car", self._text_car)
             self._window.on_callback(SIMULATION_PAUSE, self._pause)

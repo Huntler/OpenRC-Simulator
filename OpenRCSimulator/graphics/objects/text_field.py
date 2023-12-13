@@ -3,6 +3,7 @@ from typing import Tuple
 import re
 
 import pygame as py
+from OpenRCSimulator.graphics.font import FontWrapper
 from OpenRCSimulator.graphics.objects.text import Text
 
 
@@ -20,7 +21,7 @@ class TextField(Text):
     FILTER_TEXT = 1
     FILTER_NONE = -1
 
-    def __init__(self, surface: py.Surface, x: int, y: int, size: int, text: str = "") -> None:
+    def __init__(self, surface: py.Surface, x: int, y: int, text: str = "", fontwrapper: FontWrapper = None) -> None:
         # set default colors
         self._c = (0, 0, 0)
         self._bc = (200, 200, 200)
@@ -33,19 +34,7 @@ class TextField(Text):
         self._filter = -1
 
         # initilize
-        super().__init__(surface, text, x, y, size, self._c)
-        self._surface = surface
-
-        self._text = text
-        self._size = size
-        
-        try:
-            self._font = py.font.SysFont("ptsansnarrow", size)
-        except:
-            self._font = py.font.SysFont(py.font.get_default_font(), size)
-            
-        self._text_surface = self._font.render(text, False, self._c)
-        self.set_position((x, y))
+        super().__init__(surface, text, x, y, self._c, fontwrapper)
     
     def set_text_filter(self, filter: int = FILTER_NONE) -> None:
         """Filters text from update method.
@@ -66,7 +55,7 @@ class TextField(Text):
         """
         if mode == TextField.TEXT_COLOR:
             self._c = c
-            self._text_surface = self._font.render(self._text, False, self._c)
+            self._text_surface = self._font.render(self._text, self._antialiasing, self._c)
         elif mode == TextField.ACTIVATED_COLOR:
             self._ac = c
         elif mode == TextField.COLOR:
@@ -80,7 +69,7 @@ class TextField(Text):
         """
         # set the text
         self._text = text
-        self._text_surface = self._font.render(text, False, self._c)
+        self._text_surface = self._font.render(text, self._antialiasing, self._c)
 
         # calculate new box size
         w = self._text_surface.get_width()

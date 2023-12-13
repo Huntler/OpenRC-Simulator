@@ -4,8 +4,8 @@ from typing import Dict, Tuple
 from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.objects.wall import Wall
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.commander import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from OpenRCSimulator.commander.window import CREATOR_PLACE_WALL, MOUSE_CLICK, SimulationWindow
+from OpenRCSimulator.gui import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from OpenRCSimulator.gui.window import CREATOR_PLACE_WALL, MOUSE_CLICK, MainWindow
 
 
 WALL_COLOR = (255, 120, 120)
@@ -14,7 +14,7 @@ SNAP_THRESHOLD = 25
 
 
 class WallController(BaseSubController):
-    def __init__(self, window: SimulationWindow, app_mode: int) -> None:
+    def __init__(self, window: MainWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
         self.dict_name = "walls"

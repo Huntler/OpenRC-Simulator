@@ -25,7 +25,7 @@ TEXT_INPUT_L = "text_input_length"
 TEXT_INPUT_T = "text_input_turn"
 
 
-class SimulationWindow(BaseWindow):
+class MainWindow(BaseWindow):
     def sprites(self) -> None:
         # define sprites here
         pass

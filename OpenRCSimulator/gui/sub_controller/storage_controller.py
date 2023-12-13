@@ -3,13 +3,13 @@ from typing import List
 from OpenRCSimulator.state import ROOT_FOLDER, get_data_folder, MAPS_FOLDER
 from OpenRCSimulator.graphics.objects.text import ANCHOR_CENTER, ANCHOR_TOP_LEFT, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.commander import CREATOR, GARAGE, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from OpenRCSimulator.commander.window import STORAGE_SAVE, SimulationWindow
+from OpenRCSimulator.gui import CREATOR, GARAGE, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from OpenRCSimulator.gui.window import STORAGE_SAVE, MainWindow
 import yaml
 
 
 class StorageController(BaseSubController):
-    def __init__(self, window: SimulationWindow, app_mode: int) -> None:
+    def __init__(self, window: MainWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
         self._changes = "unsaved"
@@ -18,16 +18,17 @@ class StorageController(BaseSubController):
         self._window = window
         self._ww, self._wh = window.get_window_size()
         self._surface = window.get_surface()
+        self._font = window.get_font().copy(size=30)
         
         # texts
         if app_mode == CREATOR or app_mode == GARAGE:
             text = "'S' Save the map" if app_mode == CREATOR else "'S' Save configuration"
-            self._text_storage = Text(self._surface, text, 0, 0, 30, SHORTCUT_TEXT_COLOR)
+            self._text_storage = Text(self._surface, text, 0, 0, SHORTCUT_TEXT_COLOR, self._font)
             self._text_storage.set_position((20, self._wh - 40), ANCHOR_TOP_LEFT)
             self._window.add_sprite("text_storage", self._text_storage)
             self._window.on_callback(STORAGE_SAVE, self.toggle)
 
-            self._text_status = Text(self._surface, self._changes, 0, 0, 30, SHORTCUT_TEXT_COLOR)
+            self._text_status = Text(self._surface, self._changes, 0, 0, SHORTCUT_TEXT_COLOR, self._font)
             self._text_status.set_position((self._ww // 2, self._wh // 2 + 80), ANCHOR_CENTER)
             self._window.add_sprite("text_status", self._text_status, zindex=98)
     
@@ -35,6 +36,11 @@ class StorageController(BaseSubController):
         self._toggle_callback()
     
     def changes(self, value: bool) -> None:
+        """Displays 'unsaved' if changes were made.
+
+        Args:
+            value (bool): True if there are unsaved changes, else False.
+        """
         self._changes = "unsaved" if value else "saved"
         self._text_status.set_text(self._changes)
         self._text_status.set_color(SHORTCUT_TEXT_COLOR if value else MODE_TEXT_COLOR)
@@ -59,7 +65,7 @@ class StorageController(BaseSubController):
         
         else:
             dict_file = controllers[GARAGE].to_dict()
-            with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
+            with open(f"{get_data_folder('')}/{file_name}.yaml", "w") as file:
                 documents = yaml.dump(dict_file, file)
         
         self.changes(False)

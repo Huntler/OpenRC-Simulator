@@ -1,7 +1,7 @@
-import random
 from typing import Tuple
 
 import pygame as py
+from OpenRCSimulator.graphics.font import FontWrapper
 from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 
@@ -10,23 +10,17 @@ ANCHOR_CENTER = 1
 
 
 class Text(Sprite):
-    def __init__(self, surface: py.Surface, text: str, x: int, y: int, size: int, c: Tuple[int, int, int]) -> None:
+    def __init__(self, surface: py.Surface, text: str, x: int, y: int, c: Tuple[int, int, int], font: FontWrapper) -> None:
         super().__init__()
-        self._surface = surface
-
-        self._text = text
-        self._size = size
         
-        try:
-            self._font = py.font.SysFont("ptsansnarrow", size)
-        except:
-            self._font = py.font.SysFont(py.font.get_default_font(), size)
-            
-        self._text_surface = self._font.render(text, False, c)
-
-        self.set_position((x, y))
-
+        self._surface = surface
+        self._text = text
         self._c = c
+        self._antialiasing = True
+
+        self._font = font.unpack()
+        self._text_surface = self._font.render(text, self._antialiasing, c)
+        self.set_position((x, y))
     
     def set_color(self, c: Tuple[int, int, int]) -> None:
         """Changes the text color
@@ -35,7 +29,7 @@ class Text(Sprite):
             c (Tuple[int, int, int]): RGB values.
         """
         self._c = c
-        self._text_surface = self._font.render(self._text, False, self._c)
+        self._text_surface = self._font.render(self._text, self._antialiasing, self._c)
     
     def set_text(self, text: str) -> None:
         """Changes the text of this sprite.
@@ -44,7 +38,7 @@ class Text(Sprite):
             text (str): The text.
         """
         self._text = text
-        self._text_surface = self._font.render(text, False, self._c)
+        self._text_surface = self._font.render(text, self._antialiasing, self._c)
         # TODO: change psoition may be needed
 
     def get_text(self) -> str:
@@ -75,7 +69,6 @@ class Text(Sprite):
         raise RuntimeError("Wrong anchor point provided.")
     
     def get_position(self) -> Tuple[int, int]:
-        # TODO: depends on anchor
         return (self._x, self._y)
     
     def draw(self) -> None:
