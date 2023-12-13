@@ -54,7 +54,6 @@ class ShortcutController(BaseSubController):
         self._window.on_key_callback(key, name, callback)
 
         self._entries[name] = (len(self._entries) + 1, shortcut)
-        self._toggled.append(0)
 
         # calculate start display height of shortcut section
         self._update_positions()
@@ -63,15 +62,21 @@ class ShortcutController(BaseSubController):
         num, _ = self._entries[name]
         del self._entries[name]
         self._toggled.pop(num - 1)
+    
+    def untoggle_all(self) -> None:
+        for name in self._toggled:
+            self._entries[name][1].set_color(SHORTCUT_TEXT_COLOR)
+        
+        self._toggled = []
 
     def _toggle(self, name: str, func) -> None:
         def toggle_text():
             num, entry = self._entries[name]
-            if self._toggled[num - 1] == 0:
-                self._toggled[num - 1] = 1
+            if name not in self._toggled:
+                self._toggled.append(name)
                 entry.set_color(SHORTCUT_TEXT_COLOR_ACTIVE)
             else:
-                self._toggled[num - 1] = 0
+                self._toggled.remove(name)
                 entry.set_color(SHORTCUT_TEXT_COLOR)
             
             func()

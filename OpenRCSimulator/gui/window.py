@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 from OpenRCSimulator.graphics.window import BaseWindow
 import pygame as py
 
@@ -10,14 +10,6 @@ CREATOR_PLACE_CAR = "creator_place_car"
 CREATOR_PLACE_GOAL = "creator_place_goal"
 CREATOR_PLACE_WALL= "creator_place_wall"
 STORAGE_SAVE = "creato_save_map"
-
-MANUAL_ACCELERATE = "accelerate_rear"
-MANUAL_SLOWDOWN = "slowdown_rear"
-MANUAL_TURN_LEFT = "turn_left"
-MANUAL_TURN_RIGHT = "turn_right"
-MANUAL_MOTOR_STOP = "motor_stop"
-
-SIMULATION_PAUSE = "pause"
 
 SENSORS_ACTIVATED = "sensors_activated"
 TEXT_INPUT_W = "text_input_width"
@@ -63,24 +55,6 @@ class MainWindow(BaseWindow):
                     self._text_cache += event.unicode
                     self._execute_callbacks([TEXT_INPUT_W, TEXT_INPUT_L, TEXT_INPUT_T],
                                             {"text": self._text_cache})
-
-                return
-
-            # save map
-            if event.key == py.K_s:
-                self._execute_callback(MANUAL_SLOWDOWN)
-            
-            if event.key == py.K_a:
-                self._execute_callback(MANUAL_TURN_LEFT)
-            
-            if event.key == py.K_d:
-                self._execute_callback(MANUAL_TURN_RIGHT)
-            
-            if event.key == py.K_w:
-                self._execute_callback(MANUAL_ACCELERATE)
-
-            if event.key == py.K_x:
-                self._execute_callback(MANUAL_MOTOR_STOP)
         
         if mouse_buttons[0]:
             func = self._callbacks.get(MOUSE_CLICK, None)

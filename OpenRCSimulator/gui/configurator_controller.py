@@ -1,15 +1,13 @@
+import os
 from typing import Tuple
 import pygame as py
-from OpenRCSimulator.gui.sub_controller.garage_controller import GarageController
+import yaml
 from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.state import get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
-from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
-from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import BACKGROUND_COLOR, GARAGE, SHORTCUT_TEXT_COLOR
-from OpenRCSimulator.gui.sub_controller.storage_controller import StorageController
-from OpenRCSimulator.gui.window import MOUSE_CLICK, SENSORS_ACTIVATED, SHORTCUTS_UNTOGGLE, STORAGE_SAVE, MainWindow
+from OpenRCSimulator.gui import BACKGROUND_COLOR
+from OpenRCSimulator.gui.window import STORAGE_SAVE, MainWindow
 
 
 class ConfiguratorController(BaseController):
@@ -29,16 +27,20 @@ class ConfiguratorController(BaseController):
         self._center = (self._width // 2, self._height // 2)
         self._flags = flags
 
+        # create the configuration parameter dict
+        self._param = {}
+
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
         self._surface = self._window.get_surface()
         self._title_font = self._window.get_font().copy(size=120)
-        self._shortcuts_font = self._window.get_font().copy(size=50)
 
         # create the sprites we want to use
         # background object (just a colored box)
         background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
+
+        # TODO: create form
 
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
@@ -47,12 +49,20 @@ class ConfiguratorController(BaseController):
     def _save(self) -> None:
         """Save the current configuration.
         """
-        print("Save works")
+        with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
+            documents = yaml.dump(self._param, file)
 
     def load(self) -> None:        
         """Load the current configuration to be edited.
         """
-        pass
+        path = f"{get_data_folder('')}car_config.yaml"
+        if not os.path.exists(path):
+            return
+        
+        with open(path, "r") as file:
+            self._param = yaml.load(file, Loader=yaml.FullLoader)
+        
+        # TODO: self._param -> form
 
     def loop(self) -> None:
         pass

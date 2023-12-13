@@ -1,22 +1,21 @@
-import time
 from typing import Tuple
-import pickle
 import pygame as py
-from OpenRCSimulator.state import MAPS_FOLDER, get_data_folder, MODELS_FOLDER
+import yaml
+from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
+from OpenRCSimulator.state import MAPS_FOLDER, get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
-from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
+from OpenRCSimulator.graphics.objects.text import ANCHOR_CENTER, Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
-from OpenRCSimulator.gui.sub_controller.storage_controller import StorageController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
-from OpenRCSimulator.gui.window import SHORTCUTS_UNTOGGLE, MainWindow
+from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, CREATOR_PLACE_WALL, SHORTCUTS_UNTOGGLE, STORAGE_SAVE, MainWindow
 
 
 class CreatorController(BaseController):
     def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
-        """The CreatorController enables the user to create custom maps. This is a separate
+        """The CreatorController manages the MainWindow. This is a separate
         thread than the pygame one.
 
         Args:
@@ -31,35 +30,42 @@ class CreatorController(BaseController):
         self._width, self._height = window_size
         self._center = (self._width // 2, self._height // 2)
         self._flags = flags
+        self._saved_status = "unsaved"
 
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
         self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
         self._surface = self._window.get_surface()
         self._title_font = self._window.get_font().copy(size=120)
-        self._shortcuts_font = self._window.get_font().copy(size=50)
 
-        # create the sprites we want to use
         # background object (just a colored box)
         background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
+        text_mode = Text(self._surface, "CREATOR", self._center[0], self._center[1], MODE_TEXT_COLOR, self._title_font)
+        self._window.add_sprite("text_mode", text_mode, zindex=98)
+        
+        self._font_saved_status = self._window.get_font().copy(size=30)
+        self._text_status = Text(self._surface, self._saved_status, 0, 0, SHORTCUT_TEXT_COLOR, self._font_saved_status)
+        self._text_status.set_position((self._width // 2, self._height // 2 + 80), ANCHOR_CENTER)
+        self._window.add_sprite("text_status", self._text_status, zindex=98)
 
         # create sub controllers
         self._active_sub_controller = None
 
         # create the car controller
-        self._car = CarController(self._window, mode)
+        self._car = CarController(self._window, CREATOR)
         self._car.on_toggle(self._sub_controller_toggled)
 
         # create the wall controller
-        self._wall = WallController(self._window, mode)
+        self._wall = WallController(self._window, CREATOR)
         self._wall.on_toggle(self._sub_controller_toggled)
 
-        # create the storage controller
-        self._storage = StorageController(self._window, CREATOR)
-        self._storage.on_toggle(self._save)
-
-        self.mode(mode)
+        # create shortcuts
+        self._shortcuts = ShortcutController(self._window)
+        self._shortcuts.add_shortcut(CREATOR_PLACE_WALL, self._wall.toggle, "'P' Start drawing a wall", py.K_p, can_toggle=True)
+        self._shortcuts.add_shortcut(CREATOR_PLACE_CAR, self._car.toggle, "'R' Place the car", py.K_r)
+        self._shortcuts.add_shortcut(STORAGE_SAVE, self._save, "'S' Save the map", py.K_s)
+        self._shortcuts.add_shortcut(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller, "'ESC' Stop input", py.K_ESCAPE)
     
     def _sub_controller_toggled(self, sub_controller: BaseSubController) -> None:
         """This method executes if a subcontroller was toggled. In this case, this method 
@@ -68,7 +74,7 @@ class CreatorController(BaseController):
         # if the active sub controller was toggled again, then just unregister it
         if self._active_sub_controller == sub_controller:
             self._active_sub_controller = None
-            self._storage.changes(True)
+            self._changes(True)
             return
 
         # if there was an active sub controller, then toggle it again
@@ -85,46 +91,33 @@ class CreatorController(BaseController):
         if self._active_sub_controller:
             self._active_sub_controller.toggle(call=False)
             self._active_sub_controller = None
-            self._storage.changes(True)
+            self._changes(True)
+            self._shortcuts.untoggle_all()
     
-    def mode(self, mode: int) -> None:
-        """The applications mode (CREATOR, SIMULATION, MANUAL)
+    def _changes(self, value: bool) -> None:
+        """Changes the saved-status text displayed on screen.
 
         Args:
-            mode (int): The mode.
+            value (bool): saved or not.
         """
-        self._mode = mode
-        cx, cy = self._center
-
-        # show background text
-        # text describing the current mode (integrated into the background)
-        mode_text = ["SIMULATION", "CREATOR", "MANUAL", "TRAINING"]
-        text_mode = Text(self._surface, mode_text[mode], cx, cy, MODE_TEXT_COLOR, self._title_font)
-        self._window.add_sprite("text_mode", text_mode, zindex=98)
-
-        # show shortcut info for CREATOR mode
-        shortcuts_height = [80, 180, 110, 80]
-        text_shortcuts = Text(self._surface, "Shortcuts", 0, 0, SHORTCUT_TEXT_COLOR, self._shortcuts_font)
-        text_shortcuts.set_position((20, self._height - shortcuts_height[mode]), ANCHOR_TOP_LEFT)
-        self._window.add_sprite("text_shortcuts_title", text_shortcuts)
+        self._saved_status = "unsaved" if value else "saved"
+        self._text_status.set_text(self._saved_status)
+        self._text_status.set_color(SHORTCUT_TEXT_COLOR if value else MODE_TEXT_COLOR)
     
     def _save(self) -> None:
-        self._storage.save(self._file_name, {
-            CREATOR: [self._car, self._wall]
-        })
+        dict_file = {}
+        dict_file["app"] = {}
+        dict_file["app"]["width"] = self._ww
+        dict_file["app"]["height"] = self._wh
 
-    def file(self, name: str, car_name: str = None) -> None:        
+        for controller in [self._wall, self._car]:
+            dict_file = dict_file | controller.to_dict()
+        
+        with open(f"{get_data_folder(MAPS_FOLDER)}{self._file_name}.yaml", "w") as file:
+            documents = yaml.dump(dict_file, file)
+
+    def load(self, name: str) -> None:        
         self._file_name = name
-        if self._mode != CREATOR:
-            self._storage.load(get_data_folder(MAPS_FOLDER), name, [self._car, self._wall])
-
-        if car_name:
-            # load the car's brain from file
-            filehandler = open(f"{get_data_folder(MODELS_FOLDER)}/car_{car_name}.pkl", 'rb') 
-            genome = pickle.load(filehandler)
-            self._car.set_brain(genome)
-
-            print("Loaded trained car into simulation.")
 
     def loop(self) -> None:
         pass

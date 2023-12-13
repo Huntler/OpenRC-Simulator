@@ -1,9 +1,7 @@
 import argparse
-import pygame as py
-import OpenRCSimulator.gui as gui
 from OpenRCSimulator.gui.configurator_controller import ConfiguratorController
-from OpenRCSimulator.gui.main_controller import MainController
-from OpenRCSimulator.simulation.trainer import Trainer
+from OpenRCSimulator.gui.creator_controller import CreatorController
+from OpenRCSimulator.gui.simulation_controller import SimulationController
 
 
 def main():
@@ -20,36 +18,35 @@ def main():
 
     args = parser.parse_args()
 
-    mode = gui.SIMULATION
-    if args.create:
-        mode = gui.CREATOR
-
-    if args.manual:
-        mode = gui.MANUAL
-
-    if args.train:
-        mode = gui.TRAIN
-
+    # configure car
     if args.garage:
         application = ConfiguratorController(window_size=(1200, 900))
         application.load()
         application.boot()
         quit()
-        
-    if not args.name and mode != gui.TRAIN and mode != gui.GARAGE:
+    
+    # train an agent
+    if args.train:
+        # TODO
+        pass
+    
+    # all other modes depend on a map name
+    if not args.name:
         print("Provide a map. Exit.")
         quit()
 
-    # create the visuals
-    if mode != gui.TRAIN:
-        application = MainController(window_size=(1200, 900), mode=mode)
-        application.file(args.name, args.model)
+    # create a new map
+    if args.create:
+        application = CreatorController(window_size=(1200, 900))
+        application.load(args.name)
         application.boot()
+        quit()
 
-    else:
-        trainer = Trainer(args.train, args.name)
-        trainer.train()
-
+    # test an agent on a map, or test drive manually
+    application = SimulationController(window_size=(1200, 900))
+    application.load(args.name, args.model)
+    application.boot()
+    quit()
 
 if __name__ == "__main__":
     main()

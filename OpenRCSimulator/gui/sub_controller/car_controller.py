@@ -8,9 +8,8 @@ from OpenRCSimulator.simulation.openrc import OpenRC
 from OpenRCSimulator.simulation import CHASSIS_SIZE
 from OpenRCSimulator.graphics.objects.car import Car
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import CREATOR, GARAGE, MANUAL, SIMULATION
-from OpenRCSimulator.gui.window import MANUAL_SLOWDOWN, MANUAL_MOTOR_STOP, MANUAL_ACCELERATE, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, MOUSE_CLICK, \
-    MainWindow
+from OpenRCSimulator.gui import CREATOR, GARAGE, SIMULATION
+from OpenRCSimulator.gui.window import MOUSE_CLICK, MainWindow
 
 
 ON, OFF = 1, 0
@@ -38,49 +37,31 @@ class CarController(BaseSubController):
         self._window.add_sprite("sprite_car", self._sprite_car)
         self._sprite_position_set = True
 
-        # car placement shortcuts
-        if app_mode == MANUAL:
-            self._window.on_callback(MANUAL_ACCELERATE, self._rear_motor(FORWARD))
-            self._window.on_callback(MANUAL_SLOWDOWN, self._rear_motor(BACKWARD))
-            self._window.on_callback(MANUAL_TURN_LEFT, self._front_motor(FORWARD))
-            self._window.on_callback(MANUAL_TURN_RIGHT, self._front_motor(BACKWARD))
-            self._window.on_callback(MANUAL_MOTOR_STOP, self._all_motors(OFF))
+    def accelerate(self):
+        with MUTEX:
+            self._car.accelerate()
+    
+    def slowdown(self):
+        with MUTEX:
+            self._car.slowdown()
+
+    def turn_left(self):
+        with MUTEX:
+            self._car.turn_left()
+
+    def turn_right(self):
+        with MUTEX:
+            self._car.turn_right()
+    
+    def stop(self):
+        with MUTEX:
+            self._car.reset_acceleration()
+            self._car.reset_turn()
+
 
     def set_brain(self, genome) -> None:
         # TODO
         pass
-
-    def _rear_motor(self, state: int):
-        def fire():
-            with MUTEX:
-                if state == FORWARD:
-                    self._car.accelerate()
-                if state == BACKWARD:
-                    self._car.slowdown()
-                if state == OFF:
-                    self._car.reset_acceleration()
-
-        return fire
-
-    def _front_motor(self, state: int):
-        def fire():
-            with MUTEX:
-                if state == FORWARD:
-                    self._car.turn_left()
-                if state == BACKWARD:
-                    self._car.turn_right()
-                if state == OFF:
-                    self._car.reset_turn()
-
-        return fire
-
-    def _all_motors(self, mode: int):
-        def fire():
-            if mode == OFF:
-                self._car.reset_acceleration()
-                self._car.reset_turn()
-
-        return fire
 
     def pause(self) -> None:
         self._is_paused = not self._is_paused
