@@ -22,6 +22,10 @@ class Text(Sprite):
         self._text_surface = self._font.render(text, self._antialiasing, c)
         self.set_position((x, y))
     
+    @property
+    def size(self) -> Tuple[int, int]:
+        return self._font.size(self._text)
+    
     def set_color(self, c: Tuple[int, int, int]) -> None:
         """Changes the text color
 

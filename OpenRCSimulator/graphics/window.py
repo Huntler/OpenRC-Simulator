@@ -45,6 +45,7 @@ class BaseWindow:
         # set up everything else
         self._running = False
         self._callbacks = dict()
+        self._key_callbacks = dict()
         self._text_input = False
         self._text_cache = ""
 
@@ -125,6 +126,29 @@ class BaseWindow:
         comp = lambda sprite: sprite[0]
         self._sprite_list = list(self._sprites.values())
         self._sprite_list.sort(key=comp, reverse=True)
+    
+    def on_key_callback(self, key, type, func) -> None:
+        """Register a key pressed event
+
+        Args:
+            key (_type_): Pressed key.
+            type (_type_): Callback name.
+            func (_type_): Callback to execute.
+        """
+        registered = self._key_callbacks.get(key, {})
+        registered[type] = func
+        self._key_callbacks[key] = registered
+    
+    def remove_key_callback(self, key, type) -> None:
+        """Removes a key event.
+
+        Args:
+            key (_type_): Pressed key.
+            type (_type_): Callback name.
+        """
+        registered = self._key_callbacks[key]
+        del registered[type]
+        self._key_callbacks[key] = registered
 
     def on_callback(self, type, func) -> None:
         """
@@ -169,6 +193,12 @@ class BaseWindow:
             self._running = False
             if BaseWindow.QUIT in self._callbacks.keys():
                 self._callbacks[BaseWindow.QUIT]()
+        
+        if event.type == py.KEYDOWN:
+            for key, callbacks in self._key_callbacks.items():
+                if key == event.key:
+                    for name, callback in callbacks.items():
+                        callback()
     
     def draw(self) -> None:
         """

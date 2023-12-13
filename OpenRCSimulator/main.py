@@ -34,6 +34,7 @@ def main():
         application = ConfiguratorController(window_size=(1200, 900))
         application.load()
         application.boot()
+        quit()
         
     if not args.name and mode != gui.TRAIN and mode != gui.GARAGE:
         print("Provide a map. Exit.")

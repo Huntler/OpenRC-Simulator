@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from OpenRCSimulator.graphics.window import BaseWindow
 import pygame as py
 
