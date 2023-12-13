@@ -12,7 +12,7 @@ from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COL
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.storage_controller import StorageController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
-from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, CREATOR_PLACE_WALL, MANUAL_ACCELERATE, MANUAL_MOTOR_STOP, MANUAL_SLOWDOWN, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, SHORTCUTS_UNTOGGLE, SIMULATION_PAUSE, MainWindow
+from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, CREATOR_PLACE_WALL, MANUAL_ACCELERATE, MANUAL_MOTOR_STOP, MANUAL_SLOWDOWN, MANUAL_TURN_LEFT, MANUAL_TURN_RIGHT, SHORTCUTS_UNTOGGLE, SIMULATION_PAUSE, STORAGE_SAVE, MainWindow
 
 
 class MainController(BaseController):
@@ -65,6 +65,7 @@ class MainController(BaseController):
         if mode == CREATOR:
             self._shortcuts.add_shortcut(CREATOR_PLACE_WALL, self._wall.toggle, "'P' Start drawing a wall", py.K_p, can_toggle=True)
             self._shortcuts.add_shortcut(CREATOR_PLACE_CAR, self._car.toggle, "'R' Place the car", py.K_r)
+            self._shortcuts.add_shortcut(STORAGE_SAVE, self._save, "'S' Save the map", py.K_s)
         
         if mode == MANUAL:
             # driving shortcuts are defined in 'CarController'

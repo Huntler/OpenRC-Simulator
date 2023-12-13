@@ -65,29 +65,13 @@ class MainWindow(BaseWindow):
                                             {"text": self._text_cache})
 
                 return
-            
-            # events when creator mode enabled
-            # car movement
-            if event.key == py.K_r:
-                self._execute_callback(CREATOR_PLACE_CAR)
-
-            # wall placement
-            if event.key == py.K_p:
-                self._execute_callback(CREATOR_PLACE_WALL)
-                self._execute_callback(SIMULATION_PAUSE)
 
             # save map
             if event.key == py.K_s:
                 self._execute_callback(MANUAL_SLOWDOWN)
-                self._execute_callback(STORAGE_SAVE)
-            
-            # untoggle all
-            if event.key == py.K_ESCAPE:
-                self._execute_callback(SHORTCUTS_UNTOGGLE)
             
             if event.key == py.K_a:
                 self._execute_callback(MANUAL_TURN_LEFT)
-                self._execute_callback(SENSORS_ACTIVATED)
             
             if event.key == py.K_d:
                 self._execute_callback(MANUAL_TURN_RIGHT)
