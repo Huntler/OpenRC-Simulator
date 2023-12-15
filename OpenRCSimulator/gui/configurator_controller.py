@@ -1,9 +1,9 @@
 import os
-from typing import Tuple
+from typing import Any, Tuple
 import pygame as py
 import yaml
 from OpenRCSimulator.graphics.objects.text_field import TextField
-from OpenRCSimulator.gui.sub_controller.form_controller import FormController
+from OpenRCSimulator.gui.sub_controller.form_controller import FormController, FormListener
 from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.state import get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
@@ -19,10 +19,11 @@ STEERING_ANGLE = "steering_angle"
 WEIGTH = "weight"
 GEAR_RATIO = "gear_ratio"
 MOTOR_POWER = "motor_power"
-WHEEL_SIZE = "tire_size"
+WHEEL_DIAMETER = "tire_diameter"
+WHEEL_WIDTH = "tire_width"
 
 
-class ConfiguratorController(BaseController):
+class ConfiguratorController(BaseController, FormListener):
     def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
         """The ConfiguratorController manages the SimulationWindow. This is a separate
         thread than the pygame one.
@@ -50,11 +51,13 @@ class ConfiguratorController(BaseController):
         self._window.add_sprite("background", background, zindex=99)
 
         # create form
-        self._form = FormController(self._window, "Dimensions", (8, 8), (self._width // 2 - 16, self._height - 16))
+        self._form = FormController(self._window, "Dimensions", (8, 8), 
+                                    (self._width // 2 - 16, self._height - 16), listener=self)
 
         self._form.add_element(WHEELBASE, "Wheelbase (cm)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(WHEEL_SIZE, "Wheel Size (cm)", "0", TextField.FILTER_NUMBERS)
         self._form.add_element(TRACK_SPACING, "Track Spacing (cm)", "0", TextField.FILTER_NUMBERS)
+        self._form.add_element(WHEEL_DIAMETER, "Wheel Diameter (cm)", "0", TextField.FILTER_NUMBERS)
+        self._form.add_element(WHEEL_WIDTH, "Wheel Width (cm)", "0", TextField.FILTER_NUMBERS)
         self._form.add_element(STEERING_ANGLE, "Steering Angle (°)", "0", TextField.FILTER_NUMBERS)
         self._form.add_element(WEIGTH, "Total Weight (kg)", "0", TextField.FILTER_NUMBERS)
         self._form.add_element(MOTOR_POWER, "Motor Power (W)", "0", TextField.FILTER_NUMBERS)
@@ -65,6 +68,9 @@ class ConfiguratorController(BaseController):
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
         self._shortcuts.add_shortcut(SAVE, self._save, "'S' Save configuration", py.K_s)
+    
+    def on_form_change(self, name: str, value: Any) -> None:
+        print(name, value)
     
     def _save(self) -> None:
         """Save the current configuration.
