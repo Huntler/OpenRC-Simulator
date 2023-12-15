@@ -52,7 +52,7 @@ class ConfiguratorController(BaseController, FormListener):
         self._window.add_sprite("background", background, zindex=99)
 
         # create form
-        self._form = FormController(self._window, "Dimensions", (8, 8), 
+        self._form = FormController(self._window, "Configuration", (8, 8), 
                                     (self._width // 2 - 16, self._height - 16), listener=self)
 
         self._form.add_element(WHEELBASE, "Wheelbase (cm)", "0", TextField.FILTER_NUMBERS)
