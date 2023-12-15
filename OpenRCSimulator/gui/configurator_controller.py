@@ -60,7 +60,7 @@ class ConfiguratorController(BaseController):
         """Save the current configuration.
         """
         with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
-            documents = yaml.dump({}, file)
+            documents = yaml.dump(self._dimension_form.get_data(), file)
 
     def load(self) -> None:        
         """Load the current configuration to be edited.
@@ -70,9 +70,9 @@ class ConfiguratorController(BaseController):
             return
         
         with open(path, "r") as file:
-            todo = yaml.load(file, Loader=yaml.FullLoader)
+            data = yaml.load(file, Loader=yaml.FullLoader)
         
-        # TODO: self._param -> form
+        self._dimension_form.set_data(data)
 
     def loop(self) -> None:
         pass

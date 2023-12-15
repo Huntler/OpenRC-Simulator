@@ -130,3 +130,8 @@ class FormController(BaseSubController, TextListener):
             data[name] = value
         
         return data
+
+    def set_data(self, data: Dict[str, Any]) -> None:        
+        for name, (_, _, element) in self._elements.items():
+            value = str(data[name])
+            element.set_text(value)

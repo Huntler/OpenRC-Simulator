@@ -45,6 +45,10 @@ class TextField(Text):
             filter (int, optional): Text to filter. Defaults to FILTER_NONE.
         """
         self._filter = filter
+    
+    @property
+    def filter(self) -> int:
+        return self._filter
 
     def on_activated(self, callback) -> None:
         self._callback = callback
