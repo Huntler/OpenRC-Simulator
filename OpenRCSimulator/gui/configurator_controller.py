@@ -60,6 +60,8 @@ class ConfiguratorController(BaseController):
         self._form.add_element(MOTOR_POWER, "Motor Power (W)", "0", TextField.FILTER_NUMBERS)
         self._form.add_element(GEAR_RATIO, "Gear Ratio (1:X)", "0", TextField.FILTER_NUMBERS)
 
+        # add live preview of changes
+
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
         self._shortcuts.add_shortcut(SAVE, self._save, "'S' Save configuration", py.K_s)
