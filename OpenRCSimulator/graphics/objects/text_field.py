@@ -1,5 +1,4 @@
 from typing import Tuple
-
 import pygame as py
 from OpenRCSimulator.graphics.font import FontWrapper
 from OpenRCSimulator.graphics.objects.text import Text
@@ -7,6 +6,17 @@ from OpenRCSimulator.graphics.objects.text import Text
 
 ANCHOR_TOP_LEFT = 0
 ANCHOR_CENTER = 1
+
+def float_filter(text: str) -> str:
+    result = ""
+    no_dot = True
+    for c in text:
+        if str.isdigit(c):
+            result += c
+        if c == "." and no_dot:
+            result += c
+            no_dot = False
+    return result
 
 
 class TextField(Text):
@@ -102,7 +112,7 @@ class TextField(Text):
             if self._filter == TextField.FILTER_TEXT:
                 text = "".join(filter(str.isalpha, text))
             elif self._filter == TextField.FILTER_NUMBERS:
-                text = "".join(filter(str.isnumeric, text))
+                text = float_filter(text)
 
             self.set_text(text)
     
@@ -157,5 +167,5 @@ class TextField(Text):
 
     def _clicked(self) -> None:
         if self.collidepoint(py.mouse.get_pos()):
-            self._active = True
             self._callback()
+            self._active = True

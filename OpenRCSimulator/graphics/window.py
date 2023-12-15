@@ -51,10 +51,6 @@ class BaseWindow:
         self._sprites = {}
         self._sprite_list = []
     
-    def reset_text_input(self) -> None:
-        self._text_cache = ""
-        self._text_input = False
-    
     def toggle_text_capture(self, overwrite: bool = None) -> None:
         """Reads keyboard inputs to cache which can be received by utilizing a callback e.g. TEXT_INPUT. Caution: this may 
         prevent shortcuts to work.
@@ -208,7 +204,7 @@ class BaseWindow:
                     self._text_cache += event.unicode
                     if event.key == py.K_BACKSPACE:
                         self._text_cache = self._text_cache[:-2]
-                        
+
                     for object, callback in self._callbacks:
                         if TextListener.__name__ in self._get_listeners(callback):
                             callback.on_text_changed(object, self._text_cache)
