@@ -2,12 +2,19 @@ import os
 from typing import Tuple
 import pygame as py
 import yaml
+from OpenRCSimulator.graphics.objects.text_field import TextField
+from OpenRCSimulator.gui.sub_controller.form_controller import FormController
 from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.state import get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.gui import BACKGROUND_COLOR
 from OpenRCSimulator.gui.window import STORAGE_SAVE, MainWindow
+
+
+DIMENSION_WHEELBASE = "wheelbase"
+DIMENSION_TRACK_SPACING = "track_spacing"
+DIMENSION_STEERING_ANGLE = "steering_angle"
 
 
 class ConfiguratorController(BaseController):
@@ -27,9 +34,6 @@ class ConfiguratorController(BaseController):
         self._center = (self._width // 2, self._height // 2)
         self._flags = flags
 
-        # create the configuration parameter dict
-        self._param = {}
-
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
         self._surface = self._window.get_surface()
@@ -40,7 +44,12 @@ class ConfiguratorController(BaseController):
         background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
 
-        # TODO: create form
+        # create form
+        self._dimension_form = FormController(self._window, "Dimensions", (8, 8), (self._width // 2 - 16, self._height - 16))
+
+        self._dimension_form.add_element(DIMENSION_WHEELBASE, "Wheelbase (cm)", "0", TextField.FILTER_NUMBERS)
+        self._dimension_form.add_element(DIMENSION_TRACK_SPACING, "Track Spacing (cm)", "0", TextField.FILTER_NUMBERS)
+        self._dimension_form.add_element(DIMENSION_STEERING_ANGLE, "Steering Angle (°)", "0", TextField.FILTER_NUMBERS)
 
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
@@ -50,7 +59,7 @@ class ConfiguratorController(BaseController):
         """Save the current configuration.
         """
         with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
-            documents = yaml.dump(self._param, file)
+            documents = yaml.dump({}, file)
 
     def load(self) -> None:        
         """Load the current configuration to be edited.
@@ -60,7 +69,7 @@ class ConfiguratorController(BaseController):
             return
         
         with open(path, "r") as file:
-            self._param = yaml.load(file, Loader=yaml.FullLoader)
+            todo = yaml.load(file, Loader=yaml.FullLoader)
         
         # TODO: self._param -> form
 

@@ -1,6 +1,4 @@
-import random
 from typing import Tuple
-import re
 
 import pygame as py
 from OpenRCSimulator.graphics.font import FontWrapper
@@ -32,9 +30,13 @@ class TextField(Text):
         self._callback = lambda _: _
 
         self._filter = -1
+        self._box = (0, 0, 0, 0)
 
         # initilize
         super().__init__(surface, text, x, y, self._c, fontwrapper)
+    
+    def get_size(self) -> Tuple[int, int]:
+        return (self._box[2], self._box[3])
     
     def set_text_filter(self, filter: int = FILTER_NONE) -> None:
         """Filters text from update method.
@@ -76,6 +78,12 @@ class TextField(Text):
         h = self._text_surface.get_height()
         self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
     
+    def is_activated(self) -> bool:
+        return self._active
+
+    def deactivate(self) -> None:
+        self._active = False
+
     def update_text(self, text: str) -> None:
         """Sets text if field is active.
 
