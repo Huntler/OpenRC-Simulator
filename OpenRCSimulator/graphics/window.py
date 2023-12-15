@@ -51,11 +51,20 @@ class BaseWindow:
         self._sprites = {}
         self._sprite_list = []
     
-    def toggle_text_capture(self) -> None:
+    def reset_text_input(self) -> None:
+        self._text_cache = ""
+        self._text_input = False
+    
+    def toggle_text_capture(self, overwrite: bool = None) -> None:
         """Reads keyboard inputs to cache which can be received by utilizing a callback e.g. TEXT_INPUT. Caution: this may 
         prevent shortcuts to work.
         """
-        self._text_input = not self._text_input
+        self._text_cache = ""
+
+        if overwrite is None:
+            self._text_input = not self._text_input
+        else:
+            self._text_input = overwrite
 
     def get_surface(self) -> py.Surface:
         """Returns the surface which is used to create sprites.
@@ -195,11 +204,11 @@ class BaseWindow:
                         if TextListener.__name__ in self._get_listeners(callback):
                             callback.on_text_end(object)
                     self._text_cache = ""
-
-                elif event.key == py.K_BACKSPACE:
-                    self._text_cache = self._text_cache[:-1]
-                else:                
+                else:
                     self._text_cache += event.unicode
+                    if event.key == py.K_BACKSPACE:
+                        self._text_cache = self._text_cache[:-2]
+                        
                     for object, callback in self._callbacks:
                         if TextListener.__name__ in self._get_listeners(callback):
                             callback.on_text_changed(object, self._text_cache)
