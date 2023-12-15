@@ -1,4 +1,3 @@
-from distutils.text_file import TextFile
 from typing import Any, Dict, List, Tuple
 from OpenRCSimulator.graphics.callback import TextListener
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
@@ -49,10 +48,19 @@ class FormController(BaseSubController, TextListener):
     
     def on_text_changed(self, object: TextField, text: str) -> None:
         if object.is_activated():
-            object.set_text(text)
+            object.update_text(text)
     
     def on_text_end(self, object: TextField) -> None:
         object.deactivate()
+    
+    def _activate_element(self) -> None:
+        """Deactivate input fields if a new one gets selected.
+        """
+        for name, object in self._elements.items():
+            _, _, element = object
+            element.deactivate()
+
+        self._window.toggle_text_capture(overwrite=True)
     
     def _update_positions(self) -> None:
         if len(self._elements) == 0:
@@ -98,7 +106,8 @@ class FormController(BaseSubController, TextListener):
         # element title
         element_title = Text(self._surface, title, 0, 0, FORM_TEXT_COLOR, self._font_element_title)       
         element = TextField(self._surface, 0, 0, default, self._font_element)
-        element.on_activated(self._window.toggle_text_capture)
+
+        element.on_activated(self._activate_element)
         element.set_text_filter(filter)
 
         # setup on window
@@ -133,5 +142,6 @@ class FormController(BaseSubController, TextListener):
 
     def set_data(self, data: Dict[str, Any]) -> None:        
         for name, (_, _, element) in self._elements.items():
-            value = str(data[name])
-            element.set_text(value)
+            value = data.get(name, None)
+            if value:
+                element.set_text(str(value))
