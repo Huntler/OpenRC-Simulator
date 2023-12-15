@@ -80,7 +80,7 @@ class TextField(Text):
         # calculate new box size
         w = self._text_surface.get_width()
         h = self._text_surface.get_height()
-        self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+        self._box = (self._x, self._y, w + self._margin[2], h + self._margin[3])
     
     def is_activated(self) -> bool:
         return self._active
@@ -121,14 +121,18 @@ class TextField(Text):
 
         if anchor == ANCHOR_TOP_LEFT:
             self._x, self._y = pos
-            self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+            self._box = (self._x, self._y, w + self._margin[2], h + self._margin[3])
+            self._x += self._margin[0]
+            self._y += self._margin[1]
             return
 
         if anchor == ANCHOR_CENTER:
             _x, _y = pos
             self._x = _x - w // 2
             self._y = _y - h // 2
-            self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+            self._box = (self._x, self._y, w + self._margin[2], h + self._margin[3])
+            self._x += self._margin[0]
+            self._y += self._margin[1]
             return
         
         raise RuntimeError("Wrong anchor point provided.")
