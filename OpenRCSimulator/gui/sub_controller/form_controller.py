@@ -10,6 +10,11 @@ from OpenRCSimulator.graphics.sub_controller import BaseSubController
 from OpenRCSimulator.gui import FORM_TITLE_SEPARATION, FORM_BACKGROUND_COLOR, FORM_ELEMENT_SEPARATION, FORM_MARGIN, FORM_TEXT_COLOR
 
 
+class FormListener:
+    def on_form_change(self, name: str, value: Any) -> None:
+        pass
+
+
 class FormController(BaseSubController, TextListener):
 
     LEFT_ALIGNED = 0
@@ -17,10 +22,11 @@ class FormController(BaseSubController, TextListener):
     RIGHT_ALIGNED = 2
 
     def __init__(self, window: BaseWindow, title: str, position: Tuple[int, int], size: Tuple[int, int], 
-                 alignment: int = 0) -> None:
+                 alignment: int = 0, listener: FormListener = None) -> None:
         super().__init__()
         self._window = window
         self._surface = self._window.get_surface()
+        self._listener = listener
 
         # configure the form
         self._elements: Dict[str: Tuple[int, Text, TextField]]= {}
@@ -48,7 +54,24 @@ class FormController(BaseSubController, TextListener):
     
     def on_text_changed(self, object: TextField, text: str) -> None:
         if object.is_activated():
+            # update the text of the active element
             object.update_text(text)
+
+            if not self._listener:
+                return
+            
+            # get the register name of the active element
+            name = ""
+            for name, tuple_object in self._elements.items():
+                _, _, element = tuple_object
+                if element == object:
+                    break
+                    
+            # inform the upper controller that something has changed
+            value = text
+            if object.filter == TextField.FILTER_NUMBERS and value != "":
+                value = float(text)
+            self._listener.on_form_change(name, value)
     
     def on_text_end(self, object: TextField) -> None:
         object.deactivate()
