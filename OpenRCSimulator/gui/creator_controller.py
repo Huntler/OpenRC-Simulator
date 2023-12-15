@@ -5,12 +5,18 @@ from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutContr
 from OpenRCSimulator.state import MAPS_FOLDER, get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
-from OpenRCSimulator.graphics.objects.text import ANCHOR_CENTER, Text
+from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MANUAL, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
-from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, CREATOR_PLACE_WALL, SHORTCUTS_UNTOGGLE, STORAGE_SAVE, MainWindow
+from OpenRCSimulator.gui.window import MainWindow
+
+
+CREATOR_PLACE_WALL = "place_wall"
+CREATOR_PLACE_CAR = "place_car"
+STORAGE_SAVE = "save_map"
+SHORTCUTS_UNTOGGLE = "untoggle"
 
 
 class CreatorController(BaseController):
@@ -34,7 +40,7 @@ class CreatorController(BaseController):
 
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
-        self._window.on_callback(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller)
+        self._window.set_listener(self)
         self._surface = self._window.get_surface()
         self._title_font = self._window.get_font().copy(size=120)
 
@@ -46,7 +52,7 @@ class CreatorController(BaseController):
         
         self._font_saved_status = self._window.get_font().copy(size=30)
         self._text_status = Text(self._surface, self._saved_status, 0, 0, SHORTCUT_TEXT_COLOR, self._font_saved_status)
-        self._text_status.set_position((self._width // 2, self._height // 2 + 80), ANCHOR_CENTER)
+        self._text_status.set_position((self._width // 2, self._height // 2 + 80), Text.ANCHOR_CENTER)
         self._window.add_sprite("text_status", self._text_status, zindex=98)
 
         # create sub controllers

@@ -1,8 +1,9 @@
 import os
-from typing import Tuple
+from typing import Callable, Dict, Tuple
 import pygame as py
 import yaml
-from OpenRCSimulator.graphics.objects.text import ANCHOR_CENTER, Text
+from OpenRCSimulator.graphics.callback import KeyListener
+from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
@@ -21,7 +22,7 @@ MANUAL_MOTOR_STOP = "motor_stop"
 SIMULATION_PAUSE = "pause"
 
 
-class SimulationController(BaseController):
+class SimulationController(BaseController, KeyListener):
     def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
         """The ManualController manages the MainWindow. This is a separate
         thread than the pygame one.
@@ -38,6 +39,7 @@ class SimulationController(BaseController):
         self._center = (self._width // 2, self._height // 2)
         self._flags = flags
         self._active_sub_controller = None
+        self._callback_register: Dict[int, Callable] = {}
 
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
@@ -60,6 +62,10 @@ class SimulationController(BaseController):
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
         self._shortcuts.add_shortcut(SIMULATION_PAUSE, self._car.pause, "'P' Pause", py.K_p)
+    
+    def on_key_pressed(self, key: int) -> None:
+        if key in self._callback_register.keys():
+            self._callback_register[key]()
 
     def load(self, map_name: str, car_name: str) -> None:
         """Load the the given map to control the car on. If a car name is given, then the manual control is 
@@ -86,14 +92,16 @@ class SimulationController(BaseController):
 
             # change the background text
             self._text_mode.set_text("SIMULATION")
-            self._text_mode.set_position((0, 0), ANCHOR_CENTER)
+            self._text_mode.set_position((0, 0), Text.ANCHOR_CENTER)
         else:
-            # if no agent is present, load manual controls
-            self._window.on_key_callback(py.K_w, MANUAL_ACCELERATE, self._car.accelerate)
-            self._window.on_key_callback(py.K_s, MANUAL_SLOWDOWN, self._car.slowdown)
-            self._window.on_key_callback(py.K_a, MANUAL_TURN_LEFT, self._car.turn_left)
-            self._window.on_key_callback(py.K_d, MANUAL_TURN_RIGHT, self._car.turn_right)
-            self._window.on_key_callback(py.K_x, MANUAL_MOTOR_STOP, self._car.stop)
+            # if no agent is present, load manual controls by enabling key listener
+            self._window.set_listener(self)
+            
+            self._callback_register[py.K_w] = self._car.accelerate
+            self._callback_register[py.K_s] = self._car.slowdown
+            self._callback_register[py.K_a] = self._car.turn_left
+            self._callback_register[py.K_d] = self._car.turn_right
+            self._callback_register[py.K_x] = self._car.stop
 
     def loop(self) -> None:
         # calculate the time delta

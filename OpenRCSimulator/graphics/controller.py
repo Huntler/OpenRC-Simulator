@@ -1,10 +1,17 @@
 from multiprocessing.spawn import freeze_support
 from threading import Thread
 
-from OpenRCSimulator.graphics.window import BaseWindow
+from OpenRCSimulator.graphics.callback import WindowListener
+
+
+class DummyListener(WindowListener):
+    pass
 
 
 class BaseController(Thread):
+
+    QUIT = "quit_app"
+
     def __init__(self) -> None:
         """
         This class represents a controller that connects the game logic to the GUI object.
@@ -14,14 +21,15 @@ class BaseController(Thread):
         
         self._running = False
         self._window = None
+        self._listener = DummyListener()
+        self._listener.on_quit = self.stop
     
     def boot(self) -> None:
         """
         This method is important, because with this, the controller and GUI will be started.
         """
         self.start()
-
-        self._window.on_callback(BaseWindow.QUIT, self.stop)
+        self._window.set_listener(self._listener)
         self._window.start()
     
     def is_alive(self) -> bool:

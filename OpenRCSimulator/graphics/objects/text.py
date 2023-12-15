@@ -5,11 +5,11 @@ from OpenRCSimulator.graphics.font import FontWrapper
 from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 
-ANCHOR_TOP_LEFT = 0
-ANCHOR_CENTER = 1
-
-
 class Text(Sprite):
+
+    ANCHOR_TOP_LEFT = 0
+    ANCHOR_CENTER = 1
+
     def __init__(self, surface: py.Surface, text: str, x: int, y: int, c: Tuple[int, int, int], font: FontWrapper) -> None:
         super().__init__()
         
@@ -22,8 +22,11 @@ class Text(Sprite):
         self._text_surface = self._font.render(text, self._antialiasing, c)
         self.set_position((x, y))
     
-    @property
-    def size(self) -> Tuple[int, int]:
+    def set_font(self, font: FontWrapper) -> None:
+        self._font = font.unpack()
+        self._text_surface = self._font.render(self._text, self._antialiasing, self._c)
+
+    def get_size(self) -> Tuple[int, int]:
         return self._font.size(self._text)
     
     def set_color(self, c: Tuple[int, int, int]) -> None:
@@ -58,11 +61,11 @@ class Text(Sprite):
         Raises:
             RuntimeError: Occurs if the anchor point was defined incorrectly.
         """
-        if anchor == ANCHOR_TOP_LEFT:
+        if anchor == Text.ANCHOR_TOP_LEFT:
             self._x, self._y = pos
             return
 
-        if anchor == ANCHOR_CENTER:
+        if anchor == Text.ANCHOR_CENTER:
             w = self._text_surface.get_width()
             h = self._text_surface.get_height()
             _x, _y = pos

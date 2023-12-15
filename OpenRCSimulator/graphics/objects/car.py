@@ -41,6 +41,9 @@ class Car(Sprite):
         self.set_direction(90)
 
         self._font = font.unpack()
+    
+    def get_size(self) -> Tuple[int, int]:
+        return self._car_surface.get_size()
 
     def set_direction(self, angle: float) -> None:
         """Sets direction of the car in radians.

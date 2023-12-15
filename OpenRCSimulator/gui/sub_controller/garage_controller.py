@@ -58,7 +58,7 @@ class GarageController(BaseSubController):
         self._field_car_width.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_width.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_width", self._field_car_width)
-        self._window.on_callback(TEXT_INPUT_W, self._field_car_width.update_text)
+        self._window.register_callback(TEXT_INPUT_W, self._field_car_width.update_text)
 
         # car length
         car_length_y = center_y - car_size[0] / 2 - 80
@@ -69,7 +69,7 @@ class GarageController(BaseSubController):
         self._field_car_length.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_length.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_length", self._field_car_length)
-        self._window.on_callback(TEXT_INPUT_L, self._field_car_length.update_text)
+        self._window.register_callback(TEXT_INPUT_L, self._field_car_length.update_text)
 
         # car max turn
         car_angle_x = center_x + car_size[1] / 2 + 80
@@ -80,14 +80,14 @@ class GarageController(BaseSubController):
         self._field_car_angle.set_text_filter(TextField.FILTER_NUMBERS)
         self._field_car_angle.on_activated(self._window.toggle_text_capture)
         self._window.add_sprite("field_angle", self._field_car_angle)
-        self._window.on_callback(TEXT_INPUT_T, self._field_car_angle.update_text)
+        self._window.register_callback(TEXT_INPUT_T, self._field_car_angle.update_text)
 
         # shortcuts
         self._sensors_activated = False
         self._text_sensors = Text(self._surface, "'A' Activate sensors", 0, 0, SHORTCUT_TEXT_COLOR, self._text_field_font)
         self._text_sensors.set_position((20, self._wh - 70), ANCHOR_TOP_LEFT)
         self._window.add_sprite("text_car", self._text_sensors)
-        self._window.on_callback(SENSORS_ACTIVATED, self.toggle)
+        self._window.register_callback(SENSORS_ACTIVATED, self.toggle)
 
     def toggle(self, call: bool = True) -> None:
         """This method toggles a special mode for this controller. In CREATOR mode, the car's 

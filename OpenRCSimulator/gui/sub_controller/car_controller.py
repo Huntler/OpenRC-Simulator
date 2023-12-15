@@ -3,20 +3,21 @@ from time import sleep
 import numpy as np
 import pygame as py
 from typing import Dict, Tuple
+from OpenRCSimulator.graphics.callback import MouseListener
 from OpenRCSimulator.graphics.window import MUTEX
 from OpenRCSimulator.simulation.openrc import OpenRC
 from OpenRCSimulator.simulation import CHASSIS_SIZE
 from OpenRCSimulator.graphics.objects.car import Car
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
 from OpenRCSimulator.gui import CREATOR, GARAGE, SIMULATION
-from OpenRCSimulator.gui.window import MOUSE_CLICK, MainWindow
+from OpenRCSimulator.gui.window import MainWindow
 
 
 ON, OFF = 1, 0
 FORWARD, BACKWARD = 2, 3
 
 
-class CarController(BaseSubController):
+class CarController(BaseSubController, MouseListener):
     def __init__(self, window: MainWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
@@ -76,23 +77,28 @@ class CarController(BaseSubController):
         super().toggle(call)
 
         if self._toggled:
-            self._window.on_callback(MOUSE_CLICK, self._on_mouse_click)
+            self._window.set_listener(self)
             self._sprite_position_set = False
 
         else:
-            self._window.remove_callback(MOUSE_CLICK)
+            self._window.remove_listener(self)
 
-    def _on_mouse_click(self, pos: Tuple[int, int]) -> None:
-        """This method is executed, if the event was registered from inside this controller.
-
-        Args:
-            pos (Tuple[int, int]): The mouse position.
-        """
+    def on_click(self, buttons: Tuple[bool, bool, bool], position: Tuple[int, int]) -> None:
         if not self._sprite_position_set:
             self._sprite_position_set = True
         else:
             self.toggle()
         sleep(0.2)
+    
+    def on_movement(self, position: Tuple[int, int], delta: Tuple[int, int]) -> None:
+        if self.is_toggled():
+            # set position
+            if not self._sprite_position_set:
+                self._sprite_car.set_position(position)
+
+            # set angle to mouse
+            angle = math.atan2(position[1] - self._sprite_car.get_position()[1], position[0] - self._sprite_car.get_position()[0])
+            self._sprite_car.set_direction(angle)
 
     def to_dict(self) -> Dict:
         x, y = self._sprite_car.get_position()
@@ -116,16 +122,6 @@ class CarController(BaseSubController):
         """
         This loop is always executed by the main controller.
         """
-        if self.is_toggled():
-            mouse_pos = py.mouse.get_pos()
-
-            # set position
-            if not self._sprite_position_set:
-                self._sprite_car.set_position(mouse_pos)
-
-            # set angle to mouse
-            angle = math.atan2(mouse_pos[1] - self._sprite_car.get_position()[1], mouse_pos[0] - self._sprite_car.get_position()[0])
-            self._sprite_car.set_direction(angle)
         
         if self._app_mode != CREATOR:
             # get the simulations info about the car and update the sprite

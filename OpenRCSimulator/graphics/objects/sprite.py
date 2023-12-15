@@ -5,12 +5,16 @@ import pygame as py
 class Sprite:
     def __init__(self) -> None:
         self._button_down = False
+        self._size = None
 
     def set_position(self, pos: Tuple[int, int]) -> None:
         raise NotImplemented
 
     def get_position(self) -> Tuple[int, int]:
         raise NotImplemented
+
+    def get_size(self) -> Tuple[int, int]:
+        return self._size
 
     def draw(self) -> None:
         mouse_pos = py.mouse.get_pos()

@@ -1,7 +1,4 @@
-import random
 from typing import Tuple
-import re
-
 import pygame as py
 from OpenRCSimulator.graphics.font import FontWrapper
 from OpenRCSimulator.graphics.objects.text import Text
@@ -9,6 +6,17 @@ from OpenRCSimulator.graphics.objects.text import Text
 
 ANCHOR_TOP_LEFT = 0
 ANCHOR_CENTER = 1
+
+def float_filter(text: str) -> str:
+    result = ""
+    no_dot = True
+    for c in text:
+        if str.isdigit(c):
+            result += c
+        if c == "." and no_dot:
+            result += c
+            no_dot = False
+    return result
 
 
 class TextField(Text):
@@ -32,9 +40,13 @@ class TextField(Text):
         self._callback = lambda _: _
 
         self._filter = -1
+        self._box = (0, 0, 0, 0)
 
         # initilize
         super().__init__(surface, text, x, y, self._c, fontwrapper)
+    
+    def get_size(self) -> Tuple[int, int]:
+        return (self._box[2], self._box[3])
     
     def set_text_filter(self, filter: int = FILTER_NONE) -> None:
         """Filters text from update method.
@@ -43,6 +55,10 @@ class TextField(Text):
             filter (int, optional): Text to filter. Defaults to FILTER_NONE.
         """
         self._filter = filter
+    
+    @property
+    def filter(self) -> int:
+        return self._filter
 
     def on_activated(self, callback) -> None:
         self._callback = callback
@@ -74,8 +90,14 @@ class TextField(Text):
         # calculate new box size
         w = self._text_surface.get_width()
         h = self._text_surface.get_height()
-        self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+        self._box = (self._x, self._y, w + self._margin[2], h + self._margin[3])
     
+    def is_activated(self) -> bool:
+        return self._active
+
+    def deactivate(self) -> None:
+        self._active = False
+
     def update_text(self, text: str) -> None:
         """Sets text if field is active.
 
@@ -90,7 +112,7 @@ class TextField(Text):
             if self._filter == TextField.FILTER_TEXT:
                 text = "".join(filter(str.isalpha, text))
             elif self._filter == TextField.FILTER_NUMBERS:
-                text = "".join(filter(str.isnumeric, text))
+                text = float_filter(text)
 
             self.set_text(text)
     
@@ -109,14 +131,18 @@ class TextField(Text):
 
         if anchor == ANCHOR_TOP_LEFT:
             self._x, self._y = pos
-            self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+            self._box = (self._x, self._y, w + self._margin[2], h + self._margin[3])
+            self._x += self._margin[0]
+            self._y += self._margin[1]
             return
 
         if anchor == ANCHOR_CENTER:
             _x, _y = pos
             self._x = _x - w // 2
             self._y = _y - h // 2
-            self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+            self._box = (self._x, self._y, w + self._margin[2], h + self._margin[3])
+            self._x += self._margin[0]
+            self._y += self._margin[1]
             return
         
         raise RuntimeError("Wrong anchor point provided.")
@@ -141,5 +167,5 @@ class TextField(Text):
 
     def _clicked(self) -> None:
         if self.collidepoint(py.mouse.get_pos()):
-            self._active = True
             self._callback()
+            self._active = True

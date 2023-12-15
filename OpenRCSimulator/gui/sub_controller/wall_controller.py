@@ -1,11 +1,10 @@
 import math
 import pygame as py
 from typing import Dict, Tuple
-from OpenRCSimulator.graphics.objects.text import ANCHOR_TOP_LEFT, Text
+from OpenRCSimulator.graphics.callback import MouseListener
 from OpenRCSimulator.graphics.objects.wall import Wall
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import CREATOR, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
-from OpenRCSimulator.gui.window import CREATOR_PLACE_WALL, MOUSE_CLICK, MainWindow
+from OpenRCSimulator.gui.window import MainWindow
 
 
 WALL_COLOR = (255, 120, 120)
@@ -13,7 +12,7 @@ WALL_THICKNESS = 11
 SNAP_THRESHOLD = 25
 
 
-class WallController(BaseSubController):
+class WallController(BaseSubController, MouseListener):
     def __init__(self, window: MainWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
@@ -35,10 +34,9 @@ class WallController(BaseSubController):
         super().toggle(call)
 
         if self.is_toggled():
-            self._window.on_callback(MOUSE_CLICK, self._on_mouse_click)
-
+            self._window.set_listener(self)
         else:
-            self._window.remove_callback(MOUSE_CLICK)
+            self._window.remove_listener(self)
 
             # remove the latest wall which is never finished
             if self._active_wall:
@@ -56,24 +54,32 @@ class WallController(BaseSubController):
         self._window.add_sprite(f"sprite_wall_{len(self._walls)}", wall, zindex=2)
 
         self._active_wall = wall
-        
-    def _on_mouse_click(self, pos: Tuple[int, int]) -> None:
-        if self.is_toggled():
+    
+    def on_click(self, buttons: Tuple[bool, bool, bool], position: Tuple[int, int]) -> None:
+        if self.is_toggled() and buttons[0]:
             if not self._active_wall:
-                self._new_wall(pos)
+                self._new_wall(position)
 
                 # set start point of last added wall
                 self._start_point_set = True
-                pos = self._snap(pos)
+                pos = self._snap(position)
                 self._active_wall.set_start(pos)
             else:
                 # set end point of last added wall
-                pos = self._snap(pos)
+                pos = self._snap(position)
                 self._active_wall.set_end(pos)
 
                 # create a new wall to continue
                 self._new_wall(pos)
                 self._active_wall.set_start(pos)
+    
+    def on_movement(self, position: Tuple[int, int], delta: Tuple[int, int]) -> None:
+        # draw the latest wall from the last click position to the current
+        # cursor position
+        if self.is_toggled():
+            snap_pos = self._snap(position)
+            if self._active_wall:
+                self._active_wall.set_end(snap_pos)
 
     def _snap(self, pos: Tuple[int, int]) -> Tuple[int, int]:
         """This method snaps a position to a wall's position given some threshold.
@@ -104,13 +110,7 @@ class WallController(BaseSubController):
         self._app_mode = mode
     
     def loop(self) -> None:
-        # draw the latest wall from the last click position to the current
-        # cursor position
-        if self.is_toggled():
-            mouse_pos = py.mouse.get_pos()
-            snap_pos = self._snap(mouse_pos)
-            if self._active_wall:
-                self._active_wall.set_end(snap_pos)
+        pass
     
     def to_dict(self) -> Dict:
         dict_file = {}

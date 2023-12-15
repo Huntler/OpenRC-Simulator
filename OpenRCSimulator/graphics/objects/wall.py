@@ -15,6 +15,10 @@ class Wall(Sprite):
         self._t = thickness
         self._c = c
     
+    def get_size(self) -> Tuple[int, int]:
+        return (max(self._sx, self._ex) - min(self._sx, self._ex), 
+                max(self._sy, self._ey) - min(self._sy, self._ey))
+    
     def set_start(self, pos: Tuple[int, int]) -> None:
         self._sx, self._sy = pos
     

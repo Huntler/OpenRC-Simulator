@@ -16,6 +16,9 @@ class Rectangle(Sprite):
         self._c = c
         self._clicked_c = c
     
+    def get_size(self) -> Tuple[int, int]:
+        return (self._w, self._h)
+    
     def set_position(self, pos: Tuple[int, int]) -> None:
         self._x, self._y = pos
     
