@@ -21,10 +21,8 @@ class CarBase(Sprite):
         self._w, self._h = size
 
         self._steering_length = 50
-        self._y += self._steering_length
         self._x += self._steering_length
         self._w -= self._steering_length
-        self._h -= self._steering_length
 
         self._data: Dict[str, int] = {}
 
@@ -79,9 +77,9 @@ class CarBase(Sprite):
     
     def _calculate_steering(self) -> Tuple:
         # calculate angle of line
-        start = np.array((self._x + self._wheel_width / 2, self._y))
-        end = np.array((self._x + self._wheel_width / 2, self._y - self._steering_length))
-        offset = np.array((self._track_spacing - self._wheel_width / 2, 0))
+        start = np.array((self._x, self._y + self._wheel_diameter // 2))
+        end = np.array((self._x, self._y))
+        offset = np.array((self._track_spacing - self._wheel_width // 2, 0))
 
         vec = start - end        
         p_x = vec[0] * math.cos(self._angle) - vec[1] * math.sin(self._angle)
@@ -93,7 +91,13 @@ class CarBase(Sprite):
         # draw lines
         return start, angeled, start + offset, angeled + offset
 
-    def draw(self) -> None:
+    def draw(self) -> None:        
+        # draw steering
+        if self._angle_coordinates:
+            s1, e1, s2, e2 = self._angle_coordinates
+            py.draw.line(self._surface, (255, 255, 255), s1, e1, width = 5)
+            py.draw.line(self._surface, (255, 255, 255), s2, e2, width = 5)
+
         # draw axis
         front_axis, rear_axis, center = self._get_axis_position()
         py.draw.line(self._surface, (255, 255, 255), front_axis[:2], front_axis[2:], width = 5)
@@ -103,9 +107,3 @@ class CarBase(Sprite):
         # draw wheels
         for wheel in self._get_wheels():
             wheel.draw()
-        
-        # draw steering
-        if self._angle_coordinates:
-            s1, e1, s2, e2 = self._angle_coordinates
-            py.draw.line(self._surface, (255, 255, 255), s1, e1, width = 5)
-            py.draw.line(self._surface, (255, 255, 255), s2, e2, width = 5)
