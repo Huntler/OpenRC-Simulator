@@ -1,6 +1,7 @@
 from multiprocessing import Lock
-from typing import Tuple
+from typing import Dict, List, Tuple, Type, Any
 import pygame as py
+from OpenRCSimulator.graphics.callback import BaseListener, KeyListener, MouseListener, TextListener, WindowListener
 
 from OpenRCSimulator.graphics.objects.sprite import Sprite
 from OpenRCSimulator.graphics.font import FontWrapper
@@ -10,9 +11,6 @@ MUTEX = Lock()
 
 
 class BaseWindow:
-
-    QUIT = py.QUIT
-
     def __init__(self, window_size: Tuple[int, int], draw_area: Tuple[int, int] = None, frame_rate: int = 60, flags: int = 0) -> None:
         """This class structurizes a game and the corresponding GUI for 
         it. The main loop will block the main thread, so be sure to 
@@ -36,7 +34,7 @@ class BaseWindow:
         # define the screen on which all sprites are rendered
         self._flags = flags#py.FULLSCREEN | py.HWSURFACE | py.DOUBLEBUF# | py.SCALED 
         self._screen = py.display.set_mode(self._window_size, self._flags)
-        self._font = FontWrapper("dejavusansmono", 14)
+        self._font = FontWrapper(name="dejavusansmono", size=14)
 
         # define a clock to limit the frames per second
         self._clock = py.time.Clock()
@@ -44,10 +42,10 @@ class BaseWindow:
 
         # set up everything else
         self._running = False
-        self._callbacks = dict()
-        self._key_callbacks = dict()
+        self._callbacks: List[Tuple[Any, BaseListener]] = []
         self._text_input = False
         self._text_cache = ""
+        self._mous_pos = py.mouse.get_pos()
 
         # sprite containers
         self._sprites = {}
@@ -126,42 +124,33 @@ class BaseWindow:
         comp = lambda sprite: sprite[0]
         self._sprite_list = list(self._sprites.values())
         self._sprite_list.sort(key=comp, reverse=True)
-    
-    def on_key_callback(self, key, type, func) -> None:
-        """Register a key pressed event
 
-        Args:
-            key (_type_): Pressed key.
-            type (_type_): Callback name.
-            func (_type_): Callback to execute.
-        """
-        registered = self._key_callbacks.get(key, {})
-        registered[type] = func
-        self._key_callbacks[key] = registered
-    
-    def remove_key_callback(self, key, type) -> None:
-        """Removes a key event.
-
-        Args:
-            key (_type_): Pressed key.
-            type (_type_): Callback name.
-        """
-        registered = self._key_callbacks[key]
-        del registered[type]
-        self._key_callbacks[key] = registered
-
-    def on_callback(self, type, func) -> None:
+    def set_listener(self, listener: BaseListener, object: Any = None) -> None:
         """
         Using this method, callbacks can be registered. If the 
         defined event occurs, then the given function is executed.
         """
-        self._callbacks[type] = func
+        self._callbacks.append((object, listener))
     
-    def remove_callback(self, type) -> None:
+    def remove_listener(self, listener: BaseListener, object: Any = None) -> None:
         """
         This method removes a registered callback
         """
-        del self._callbacks[type]
+        if len(self._callbacks) != 0:
+            if object:
+                for i, (registered_object, _) in enumerate(self._callbacks):
+                    if object == registered_object:
+                        self._callbacks.pop(i)
+                        break
+                return
+            
+            for i, (_, registered_listener) in enumerate(self._callbacks):
+                if listener == registered_listener:
+                    self._callbacks.pop(i)
+                    break
+    
+    def _get_listeners(self, listener: object) -> List[str]:
+        return [c.__name__ for c in listener.__class__.__bases__]
 
     def start(self) -> None:
         """
@@ -191,14 +180,51 @@ class BaseWindow:
         """
         if event.type == py.QUIT:
             self._running = False
-            if BaseWindow.QUIT in self._callbacks.keys():
-                self._callbacks[BaseWindow.QUIT]()
+            
+            for object, callback in self._callbacks:
+                if WindowListener.__name__ in self._get_listeners(callback):
+                    callback.on_quit()
         
+        # keyboard input
         if event.type == py.KEYDOWN:
-            for key, callbacks in self._key_callbacks.items():
-                if key == event.key:
-                    for name, callback in callbacks.items():
-                        callback()
+            # text input enabled, ignoring shortcuts      
+            if self._text_input:
+                if event.key == py.K_ESCAPE or event.key == py.K_RETURN:
+                    self._text_input = False
+                    for object, callback in self._callbacks:
+                        if TextListener.__name__ in self._get_listeners(callback):
+                            callback.on_text_end(object)
+                    self._text_cache = ""
+
+                elif event.key == py.K_BACKSPACE:
+                    self._text_cache = self._text_cache[:-1]
+                else:                
+                    self._text_cache += event.unicode
+                    for object, callback in self._callbacks:
+                        if TextListener.__name__ in self._get_listeners(callback):
+                            callback.on_text_changed(object, self._text_cache)
+            
+            else:
+                # execute a key pressed callback, the name has to be the key name
+                for object, callback in self._callbacks:
+                    if KeyListener.__name__ in self._get_listeners(callback):
+                        callback.on_key_pressed(event.key)
+
+        # mouse input
+        mouse_pos = py.mouse.get_pos()
+        mouse_buttons = py.mouse.get_pressed()
+        
+        if True in mouse_buttons:
+            for object, callback in self._callbacks:
+                if MouseListener.__name__ in self._get_listeners(callback):
+                    callback.on_click(mouse_buttons, mouse_pos)
+
+        if mouse_pos != self._mous_pos:
+            delta = (self._mous_pos[0] - mouse_pos[0], self._mous_pos[1] - mouse_pos[1])
+            self._mous_pos = mouse_pos
+            for object, callback in self._callbacks:
+                if MouseListener.__name__ in self._get_listeners(callback):
+                    callback.on_movement(self._mous_pos, delta)
     
     def draw(self) -> None:
         """
