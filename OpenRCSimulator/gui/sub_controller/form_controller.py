@@ -69,7 +69,7 @@ class FormController(BaseSubController, TextListener):
                     
             # inform the upper controller that something has changed
             value = text
-            if object.filter == TextField.FILTER_NUMBERS:
+            if object.filter == TextField.FILTER_NUMBERS and value != "":
                 value = float(text)
             self._listener.on_form_change(name, value)
     

@@ -4,10 +4,8 @@ import pygame as py
 
 
 class Rectangle(Sprite):
-    def __init__(self, surface, x: int, y: int, w: int, h: int, c: Tuple[int, int, int]) -> None:
-        super().__init__()
-
-        self._surface = surface
+    def __init__(self, surface: py.Surface, x: int, y: int, w: int, h: int, c: Tuple[int, int, int]) -> None:
+        super().__init__(surface)
 
         self._x = x
         self._y = y

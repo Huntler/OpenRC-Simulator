@@ -3,7 +3,9 @@ import pygame as py
 
 
 class Sprite:
-    def __init__(self) -> None:
+    def __init__(self, surface: py.Surface) -> None:
+        self._surface = surface
+        self._active = False
         self._button_down = False
         self._size = None
 

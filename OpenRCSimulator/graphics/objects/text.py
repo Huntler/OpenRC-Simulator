@@ -11,9 +11,8 @@ class Text(Sprite):
     ANCHOR_CENTER = 1
 
     def __init__(self, surface: py.Surface, text: str, x: int, y: int, c: Tuple[int, int, int], font: FontWrapper) -> None:
-        super().__init__()
+        super().__init__(surface)
         
-        self._surface = surface
         self._text = text
         self._c = c
         self._antialiasing = True

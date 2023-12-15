@@ -17,13 +17,10 @@ class Car(Sprite):
     CONFIG = 1
 
     def __init__(self, surface: py.Surface, x: int, y: int, chassis_size: Tuple[float, float], font: FontWrapper, mode: int = NORMAL) -> None:
-        super().__init__()
+        super().__init__(surface)
 
         # get the chassis size in pixels
         self._pixel_size = np.array(chassis_size) * CENTIMETER_TO_PIXEL
-
-        # set drawing surface
-        self._surface = surface
 
         # load the car's texture
         image_name = "car_white.png" if mode == Car.NORMAL else "car_white_config.png"

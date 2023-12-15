@@ -7,9 +7,8 @@ from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 class Wall(Sprite):
     def __init__(self, surface: Surface, start_pos: Tuple[int, int], end_pos: Tuple[int, int], c: Tuple[int, int ,int], thickness: int = 5) -> None:
-        super().__init__()
+        super().__init__(surface)
 
-        self._surface = surface
         self._sx, self._sy = start_pos
         self._ex, self._ey = end_pos
         self._t = thickness
