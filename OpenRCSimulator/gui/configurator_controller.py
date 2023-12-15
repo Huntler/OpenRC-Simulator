@@ -9,8 +9,9 @@ from OpenRCSimulator.state import get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.gui import BACKGROUND_COLOR
-from OpenRCSimulator.gui.window import STORAGE_SAVE, MainWindow
+from OpenRCSimulator.gui.window import MainWindow
 
+SAVE = "save_configuration"
 
 DIMENSION_WHEELBASE = "wheelbase"
 DIMENSION_TRACK_SPACING = "track_spacing"
@@ -53,7 +54,7 @@ class ConfiguratorController(BaseController):
 
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
-        self._shortcuts.add_shortcut(STORAGE_SAVE, self._save, "'S' Save configuration", py.K_s)
+        self._shortcuts.add_shortcut(SAVE, self._save, "'S' Save configuration", py.K_s)
     
     def _save(self) -> None:
         """Save the current configuration.

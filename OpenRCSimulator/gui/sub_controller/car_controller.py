@@ -10,7 +10,7 @@ from OpenRCSimulator.simulation import CHASSIS_SIZE
 from OpenRCSimulator.graphics.objects.car import Car
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
 from OpenRCSimulator.gui import CREATOR, GARAGE, SIMULATION
-from OpenRCSimulator.gui.window import MOUSE_CLICK, MainWindow
+from OpenRCSimulator.gui.window import MainWindow
 
 
 ON, OFF = 1, 0

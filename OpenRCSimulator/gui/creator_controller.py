@@ -10,7 +10,13 @@ from OpenRCSimulator.graphics.sub_controller import BaseSubController
 from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
-from OpenRCSimulator.gui.window import CREATOR_PLACE_CAR, CREATOR_PLACE_WALL, SHORTCUTS_UNTOGGLE, STORAGE_SAVE, MainWindow
+from OpenRCSimulator.gui.window import MainWindow
+
+
+CREATOR_PLACE_WALL = "place_wall"
+CREATOR_PLACE_CAR = "place_car"
+STORAGE_SAVE = "save_map"
+SHORTCUTS_UNTOGGLE = "untoggle"
 
 
 class CreatorController(BaseController):
