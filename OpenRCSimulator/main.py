@@ -20,7 +20,7 @@ def main():
 
     # configure car
     if args.garage:
-        application = ConfiguratorController(window_size=(1200, 900))
+        application = ConfiguratorController(window_size=(1600, 900))
         application.load()
         application.boot()
         quit()

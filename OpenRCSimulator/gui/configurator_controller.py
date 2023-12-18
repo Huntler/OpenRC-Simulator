@@ -23,6 +23,9 @@ MOTOR_POWER = "motor_power"
 WHEEL_DIAMETER = "tire_diameter"
 WHEEL_WIDTH = "tire_width"
 
+CHASSIS_FRONT = "chassis_front"
+CHASSIS_REAR = "chassis_rear"
+
 
 class ConfiguratorController(BaseController, FormListener):
     def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
@@ -52,22 +55,28 @@ class ConfiguratorController(BaseController, FormListener):
         self._window.add_sprite("background", background, zindex=99)
 
         # create form
-        self._form = FormController(self._window, "Configuration", (8, 8), 
-                                    (self._width // 2 - 16, self._height - 16), listener=self)
+        self._base_form = FormController(self._window, "Base", (8, 8), 
+                                    (self._width // 3 - 8, self._height - 16), listener=self)
+        self._base_form.add_element(WHEELBASE, "Wheelbase (cm)", "0", TextField.FILTER_NUMBERS)
+        self._base_form.add_element(TRACK_SPACING, "Track Spacing (cm)", "0", TextField.FILTER_NUMBERS)
+        self._base_form.add_element(WHEEL_DIAMETER, "Wheel Diameter (cm)", "0", TextField.FILTER_NUMBERS)
+        self._base_form.add_element(WHEEL_WIDTH, "Wheel Width (cm)", "0", TextField.FILTER_NUMBERS)
+        self._base_form.add_element(STEERING_ANGLE, "Steering Angle (°)", "0", TextField.FILTER_NUMBERS)
 
-        self._form.add_element(WHEELBASE, "Wheelbase (cm)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(TRACK_SPACING, "Track Spacing (cm)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(WHEEL_DIAMETER, "Wheel Diameter (cm)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(WHEEL_WIDTH, "Wheel Width (cm)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(STEERING_ANGLE, "Steering Angle (°)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(WEIGTH, "Total Weight (kg)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(MOTOR_POWER, "Motor Power (W)", "0", TextField.FILTER_NUMBERS)
-        self._form.add_element(GEAR_RATIO, "Gear Ratio (1:X)", "0", TextField.FILTER_NUMBERS)
+        self._chassis_form = FormController(self._window, "Chassis", (self._width // 3 + 8, 8), 
+                                            (self._width // 3 - 8, self._height // 2 - 16), listener=self)        
+        self._chassis_form.add_element(CHASSIS_FRONT, "Chassis Front (cm)", "0", TextField.FILTER_NUMBERS)
+        self._chassis_form.add_element(CHASSIS_REAR, "Chassis Rear (cm)", "0", TextField.FILTER_NUMBERS)
+
+        self._motor_form = FormController(self._window, "Motor", (self._width // 3 + 8, self._height // 2),
+                                          (self._width // 3 - 8, self._height // 2 - 8), listener=self)
+        self._motor_form.add_element(WEIGTH, "Total Weight (kg)", "0", TextField.FILTER_NUMBERS)
+        self._motor_form.add_element(MOTOR_POWER, "Motor Power (W)", "0", TextField.FILTER_NUMBERS)
+        self._motor_form.add_element(GEAR_RATIO, "Gear Ratio (1:X)", "0", TextField.FILTER_NUMBERS)
 
         # add live preview of changes
-        preview_size = ((self._width // 2) * 0.8, self._height * 0.7)
-        anchor = (self._width // 2 + self._width // 2 * 0.1, self._height * 0.15)
-        self._car_base = CarBase(self._surface, anchor, preview_size)
+        self._car_base = CarBase(self._surface, ((self._width // 3 + 8) * 2, 8), 
+                                 (self._width // 3 - 16, self._height - 16))
 
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
@@ -81,7 +90,7 @@ class ConfiguratorController(BaseController, FormListener):
         """Save the current configuration.
         """
         with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
-            documents = yaml.dump(self._form.get_data(), file)
+            documents = yaml.dump(self._base_form.get_data(), file)
 
     def load(self) -> None:        
         """Load the current configuration to be edited.
@@ -93,7 +102,7 @@ class ConfiguratorController(BaseController, FormListener):
         with open(path, "r") as file:
             data = yaml.load(file, Loader=yaml.FullLoader)
         
-        self._form.set_data(data)
+        self._base_form.set_data(data)
         for key, value in data.items():
             self._car_base.set_value(key, value)
 
