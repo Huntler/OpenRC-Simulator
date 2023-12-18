@@ -11,7 +11,8 @@ MUTEX = Lock()
 
 
 class BaseWindow:
-    def __init__(self, window_size: Tuple[int, int], draw_area: Tuple[int, int] = None, frame_rate: int = 60, flags: int = 0) -> None:
+    def __init__(self, window_size: Tuple[int, int], draw_area: Tuple[int, int] = None, title: str = "",
+                 frame_rate: int = 60, flags: int = 0) -> None:
         """This class structurizes a game and the corresponding GUI for 
         it. The main loop will block the main thread, so be sure to 
         specify all callbacks before.
@@ -34,6 +35,7 @@ class BaseWindow:
         # define the screen on which all sprites are rendered
         self._flags = flags#py.FULLSCREEN | py.HWSURFACE | py.DOUBLEBUF# | py.SCALED 
         self._screen = py.display.set_mode(self._window_size, self._flags)
+        py.display.set_caption(title)
         self._font = FontWrapper(name="dejavusansmono", size=14)
 
         # define a clock to limit the frames per second
@@ -50,6 +52,14 @@ class BaseWindow:
         # sprite containers
         self._sprites = {}
         self._sprite_list = []
+    
+    def set_title(self, title: str) -> None:
+        """Sets the window's title
+
+        Args:
+            title (str): The window title.
+        """
+        py.display.set_caption(title)
     
     def toggle_text_capture(self, overwrite: bool = None) -> None:
         """Reads keyboard inputs to cache which can be received by utilizing a callback e.g. TEXT_INPUT. Caution: this may 

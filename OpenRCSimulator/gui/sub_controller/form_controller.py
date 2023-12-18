@@ -35,9 +35,9 @@ class FormController(BaseSubController, TextListener):
         self._w, self._h = size
 
         # define fonts
-        self._font_form_title = self._window.get_font().copy(size=40)
-        self._font_element_title = self._window.get_font().copy(size=32)
-        self._font_element = self._window.get_font().copy(size=28)
+        self._font_form_title = self._window.get_font().copy(size=18)
+        self._font_element_title = self._window.get_font().copy(size=16)
+        self._font_element = self._window.get_font().copy(size=14)
 
         # get font heights
         self._height_form_title = self._font_form_title.unpack().size("Example")[1]

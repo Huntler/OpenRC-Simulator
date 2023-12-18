@@ -36,12 +36,16 @@ class CreatorController(BaseController):
         self._width, self._height = window_size
         self._center = (self._width // 2, self._height // 2)
         self._flags = flags
-        self._saved_status = "unsaved"
+        self._is_saved = False
 
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
         self._window.set_listener(self)
         self._surface = self._window.get_surface()
+
+        self._window_title = "Map Creator"
+        self._window.set_title(self._window_title + " (unsaved)")
+
         self._title_font = self._window.get_font().copy(size=120)
 
         # background object (just a colored box)
@@ -49,11 +53,6 @@ class CreatorController(BaseController):
         self._window.add_sprite("background", background, zindex=99)
         text_mode = Text(self._surface, "CREATOR", self._center[0], self._center[1], MODE_TEXT_COLOR, self._title_font)
         self._window.add_sprite("text_mode", text_mode, zindex=98)
-        
-        self._font_saved_status = self._window.get_font().copy(size=30)
-        self._text_status = Text(self._surface, self._saved_status, 0, 0, SHORTCUT_TEXT_COLOR, self._font_saved_status)
-        self._text_status.set_position((self._width // 2, self._height // 2 + 80), Text.ANCHOR_CENTER)
-        self._window.add_sprite("text_status", self._text_status, zindex=98)
 
         # create sub controllers
         self._active_sub_controller = None
@@ -80,7 +79,7 @@ class CreatorController(BaseController):
         # if the active sub controller was toggled again, then just unregister it
         if self._active_sub_controller == sub_controller:
             self._active_sub_controller = None
-            self._changes(True)
+            self._changes()
             return
 
         # if there was an active sub controller, then toggle it again
@@ -97,30 +96,36 @@ class CreatorController(BaseController):
         if self._active_sub_controller:
             self._active_sub_controller.toggle(call=False)
             self._active_sub_controller = None
-            self._changes(True)
+            self._changes()
             self._shortcuts.untoggle_all()
     
-    def _changes(self, value: bool) -> None:
+    def _changes(self) -> None:
         """Changes the saved-status text displayed on screen.
 
         Args:
             value (bool): saved or not.
         """
-        self._saved_status = "unsaved" if value else "saved"
-        self._text_status.set_text(self._saved_status)
-        self._text_status.set_color(SHORTCUT_TEXT_COLOR if value else MODE_TEXT_COLOR)
+        self._window.set_title(self._window_title + " (unsaved)")
     
     def _save(self) -> None:
+        # create the dict to store
         dict_file = {}
         dict_file["app"] = {}
-        dict_file["app"]["width"] = self._ww
-        dict_file["app"]["height"] = self._wh
 
+        width, height = self._surface.get_size()
+        dict_file["app"]["width"] = width
+        dict_file["app"]["height"] = height
+
+        # get subcontroller infos, such as car position, walls, ...
         for controller in [self._wall, self._car]:
             dict_file = dict_file | controller.to_dict()
         
+        # save the dict
         with open(f"{get_data_folder(MAPS_FOLDER)}{self._file_name}.yaml", "w") as file:
             documents = yaml.dump(dict_file, file)
+        
+        # show saved status
+        self._window.set_title(self._window_title)
 
     def load(self, name: str) -> None:        
         self._file_name = name
