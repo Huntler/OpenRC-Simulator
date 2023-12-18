@@ -68,9 +68,9 @@ class FormController(BaseSubController, TextListener):
                     break
                     
             # inform the upper controller that something has changed
-            value = text
+            value = object.get_text()
             if object.filter == TextField.FILTER_NUMBERS and value != "":
-                value = float(text)
+                value = float(value)
             self._listener.on_form_change(name, value)
     
     def on_text_end(self, object: TextField) -> None:
@@ -122,7 +122,7 @@ class FormController(BaseSubController, TextListener):
         self._background.set_position((self._x, self._y))
 
         # warn if size exceeds initial definition
-        if self._h < y:
+        if self._h + self._y < y:
             print(f"Element {self._title.get_text()} oversaturated.")
     
     def add_element(self, name: str, title: str, default: str = "", filter: int = TextField.FILTER_NONE) -> None:
