@@ -27,6 +27,18 @@
                 "SimpleMap"
             ],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Create",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--create",
+                "--name",
+                "Test"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
