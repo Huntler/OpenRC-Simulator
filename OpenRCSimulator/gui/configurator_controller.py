@@ -76,7 +76,7 @@ class ConfiguratorController(BaseController, FormListener):
 
         # add live preview of changes
         self._car_base = CarBase(self._surface, ((self._width // 3 + 8) * 2 - 8, 8), 
-                                 (self._width // 3 - 16, self._height - 16))
+                                 (self._width // 3 - 16, self._height - 16), margins=(0, 50, 0, 50))
         self._window.add_sprite("live_preview", self._car_base)
 
         # show shortcut info
@@ -90,8 +90,12 @@ class ConfiguratorController(BaseController, FormListener):
     def _save(self) -> None:
         """Save the current configuration.
         """
+        data = {}
+        for d in [self._base_form.get_data(), self._chassis_form.get_data(), self._motor_form.get_data()]:
+            data.update(d)
+
         with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
-            documents = yaml.dump(self._base_form.get_data(), file)
+            documents = yaml.dump(data, file)
 
     def load(self) -> None:        
         """Load the current configuration to be edited.
@@ -104,6 +108,8 @@ class ConfiguratorController(BaseController, FormListener):
             data = yaml.load(file, Loader=yaml.FullLoader)
         
         self._base_form.set_data(data)
+        self._chassis_form.set_data(data)
+        self._motor_form.set_data(data)
         for key, value in data.items():
             self._car_base.set_value(key, value)
 

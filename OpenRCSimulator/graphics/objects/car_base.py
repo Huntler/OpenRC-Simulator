@@ -17,16 +17,23 @@ class CarBase(Sprite):
     CHASSIS_FRONT = "chassis_front"
     CHASSIS_REAR = "chassis_rear"
 
-    def __init__(self, surface: py.Surface, position: Tuple[int, int], size: Tuple[int, int]) -> None:
+    def __init__(self, surface: py.Surface, position: Tuple[int, int], size: Tuple[int, int], 
+                 margins: Tuple[int, int, int, int] = (0, 0, 0, 0)) -> None:
         super().__init__(surface)
 
         # store the original sprite's position and size
         self._x, self._y = position
         self._w, self._h = size
 
+        self._x += margins[0]
+        self._y += margins[1]
+        self._w -= (margins[2] + margins[0])
+        self._h -= (margins[3] + margins[1])
+        print(self._h, size)
+
         # store the internal sprite's position and size as the sprite is always centered
-        self.__x, self.__y = position
-        self.__w, self.__h = size
+        self.__x, self.__y = self._x, self._y
+        self.__w, self.__h = self._w, self._h
 
         # add margins required for steering visualization
         self._steering_length = 50
@@ -34,7 +41,7 @@ class CarBase(Sprite):
         self.__w -= self._steering_length
 
         # add sprites
-        self._background = Rectangle(self._surface, self._x, self._y, self._w, self._h, (40, 45, 45))
+        self._background = Rectangle(self._surface, position[0], position[1], size[0], size[1], (40, 45, 45))
 
         # data container for car configuration in centimeter to pixel dimension
         self._data: Dict[str, List[float, int]] = {
@@ -57,19 +64,23 @@ class CarBase(Sprite):
     def _get_car_size(self) -> Tuple[float, float]:
         # get car width and height based on track spacing and wheelbase
         car_width = self._data[CarBase.TRACK_SPACING][0] + self._data[CarBase.WHEEL_WIDTH][0]
-        car_height = self._data[CarBase.WHEELBASE][0] + self._data[CarBase.WHEEL_DIAMENTER][0]
+        car_height = self._data[CarBase.WHEELBASE][0] + self._data[CarBase.WHEEL_DIAMENTER][0] + \
+                     self._data[CarBase.CHASSIS_FRONT][0] + self._data[CarBase.CHASSIS_REAR][0]
         if car_height == 0 or car_width == 0:
             return 0, 0, 1
         
         # calculate the centimeter to pixel multiplier based on preview surface size and car size
-        multiplier = min((self.__h / car_height), (self.__w / car_width))        
+        multiplier = min((self._h / car_height), (self._w / car_width))        
         return car_width * multiplier, car_height * multiplier, multiplier
     
     def _center_sprite(self) -> None:
         # center align the car based on its size and the preview's position and size
         car_width, car_height, _ = self._get_car_size()
-        self.__x = self._x + (self.__w - car_width) // 2 + self._steering_length
-        self.__y = self._y + (self.__h - car_height) // 2
+        self.__x = self._x + (self._w - car_width) / 2 + self._steering_length / 2
+        self.__y = self._y + (self._h - car_height) / 2 + self._data[CarBase.CHASSIS_FRONT][1]
+
+        self.__w = car_width - self._data[CarBase.WHEEL_WIDTH][1]
+        self.__h = car_height
     
     def _update_sizes(self) -> None:
         # calculate the multiplier to fit dimensions to the sprite's available surface area
@@ -79,6 +90,9 @@ class CarBase(Sprite):
         self._data[CarBase.WHEELBASE][1] = self._data[CarBase.WHEELBASE][0] * multiplier
         self._data[CarBase.WHEEL_DIAMENTER][1] = self._data[CarBase.WHEEL_DIAMENTER][0] * multiplier
         self._data[CarBase.WHEEL_WIDTH][1] = self._data[CarBase.WHEEL_WIDTH][0] * multiplier
+
+        self._data[CarBase.CHASSIS_FRONT][1] = self._data[CarBase.CHASSIS_FRONT][0] * multiplier
+        self._data[CarBase.CHASSIS_REAR][1] = self._data[CarBase.CHASSIS_REAR][0] * multiplier
 
         # update internal x and y position
         self._center_sprite()
@@ -93,8 +107,13 @@ class CarBase(Sprite):
     
     def _get_chassis_position(self) -> Tuple:
         # get front and rear bumper position
-        front = ((self.__x, self.__y - 10), (self.__x + self.__w, self.__y - 10))
-        rear = ((self.__x, self._y + self.__h), (self.__x + self.__w, self._y + self.__h))
+        x = self.__x
+        y = self.__y - self._data[CarBase.CHASSIS_FRONT][1]
+        w = x + self.__w
+        h = y + self.__h
+
+        front = ((x, y), (w, y))
+        rear = ((x, h), (w, h))
         return front, rear
     
     def _get_axis_position(self) -> Tuple:
@@ -127,7 +146,7 @@ class CarBase(Sprite):
     
     def _calculate_steering(self) -> Tuple:
         # define start and end of a vector [0, 1]
-        start = np.array((self.__x, self.__y + self._data[CarBase.WHEEL_DIAMENTER][1] // 2))
+        start = np.array((self.__x, self.__y + self._data[CarBase.WHEEL_DIAMENTER][1] / 2))
         end = np.array((self.__x, self.__y))
         offset = np.array((self._data[CarBase.TRACK_SPACING][1] - self._data[CarBase.WHEEL_WIDTH][1], 0))
         angle = self._data[CarBase.STEERING_ANGLE][1]
@@ -149,6 +168,11 @@ class CarBase(Sprite):
 
     def draw(self) -> None:       
         self._background.draw()
+        
+        # draw chassis bonds
+        (f1, f2), (r1, r2) = self._get_chassis_position()
+        py.draw.line(self._surface, (255, 255, 255), f1, f2, width=5)
+        py.draw.line(self._surface, (255, 255, 255), r1, r2, width=5)
 
         # draw steering
         if self._angle_coordinates:
