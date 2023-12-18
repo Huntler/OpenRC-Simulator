@@ -10,7 +10,7 @@ class CarBase(Sprite):
 
     TRACK_SPACING = "track_spacing"
     WHEELBASE = "wheelbase"
-    WHEEL_DIAMENTER = "tire_diameter"
+    WHEEL_DIAMETER = "tire_diameter"
     WHEEL_WIDTH = "tire_width"
     STEERING_ANGLE = "steering_angle"
     
@@ -47,7 +47,7 @@ class CarBase(Sprite):
         self._data: Dict[str, List[float, int]] = {
             CarBase.TRACK_SPACING: [0, 0],
             CarBase.WHEELBASE: [0, 0],
-            CarBase.WHEEL_DIAMENTER: [0, 0],
+            CarBase.WHEEL_DIAMETER: [0, 0],
             CarBase.WHEEL_WIDTH: [0, 0],
             CarBase.STEERING_ANGLE: [0, 0],
             CarBase.CHASSIS_FRONT: [0, 0],
@@ -64,7 +64,7 @@ class CarBase(Sprite):
     def _get_car_size(self) -> Tuple[float, float]:
         # get car width and height based on track spacing and wheelbase
         car_width = self._data[CarBase.TRACK_SPACING][0] + self._data[CarBase.WHEEL_WIDTH][0]
-        car_height = self._data[CarBase.WHEELBASE][0] + self._data[CarBase.WHEEL_DIAMENTER][0] + \
+        car_height = self._data[CarBase.WHEELBASE][0] + self._data[CarBase.WHEEL_DIAMETER][0] + \
                      self._data[CarBase.CHASSIS_FRONT][0] + self._data[CarBase.CHASSIS_REAR][0]
         if car_height == 0 or car_width == 0:
             return 0, 0, 1
@@ -88,7 +88,7 @@ class CarBase(Sprite):
         
         self._data[CarBase.TRACK_SPACING][1] = self._data[CarBase.TRACK_SPACING][0] * multiplier
         self._data[CarBase.WHEELBASE][1] = self._data[CarBase.WHEELBASE][0] * multiplier
-        self._data[CarBase.WHEEL_DIAMENTER][1] = self._data[CarBase.WHEEL_DIAMENTER][0] * multiplier
+        self._data[CarBase.WHEEL_DIAMETER][1] = self._data[CarBase.WHEEL_DIAMETER][0] * multiplier
         self._data[CarBase.WHEEL_WIDTH][1] = self._data[CarBase.WHEEL_WIDTH][0] * multiplier
 
         self._data[CarBase.CHASSIS_FRONT][1] = self._data[CarBase.CHASSIS_FRONT][0] * multiplier
@@ -119,7 +119,7 @@ class CarBase(Sprite):
     def _get_axis_position(self) -> Tuple:
         # calculate position of the axis
         x = self.__x + self._data[CarBase.WHEEL_WIDTH][1] / 2
-        y = self.__y + self._data[CarBase.WHEEL_DIAMENTER][1] / 2
+        y = self.__y + self._data[CarBase.WHEEL_DIAMETER][1] / 2
         w = x + self._data[CarBase.TRACK_SPACING][1] - self._data[CarBase.WHEEL_WIDTH][1]
         h = y + self._data[CarBase.WHEELBASE][1]
 
@@ -134,7 +134,7 @@ class CarBase(Sprite):
         x1, x2 = self.__x, self.__x + self._data[CarBase.TRACK_SPACING][1] - self._data[CarBase.WHEEL_WIDTH][1]
         y1, y2 = self.__y, self.__y + self._data[CarBase.WHEELBASE][1]
         w = self._data[CarBase.WHEEL_WIDTH][1]
-        h = self._data[CarBase.WHEEL_DIAMENTER][1]
+        h = self._data[CarBase.WHEEL_DIAMETER][1]
 
         # create wheel objects
         fl = Rectangle(self._surface, x1, y1, w, h, (255, 255, 255))
@@ -146,7 +146,7 @@ class CarBase(Sprite):
     
     def _calculate_steering(self) -> Tuple:
         # define start and end of a vector [0, 1]
-        start = np.array((self.__x, self.__y + self._data[CarBase.WHEEL_DIAMENTER][1] / 2))
+        start = np.array((self.__x, self.__y + self._data[CarBase.WHEEL_DIAMETER][1] / 2))
         end = np.array((self.__x, self.__y))
         offset = np.array((self._data[CarBase.TRACK_SPACING][1] - self._data[CarBase.WHEEL_WIDTH][1], 0))
         angle = self._data[CarBase.STEERING_ANGLE][1]
