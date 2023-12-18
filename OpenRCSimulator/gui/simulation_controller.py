@@ -44,6 +44,10 @@ class SimulationController(BaseController, KeyListener):
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
         self._surface = self._window.get_surface()
+
+        self._window_title = "Simulation"
+        self._window.set_title(self._window_title)
+
         self._title_font = self._window.get_font().copy(size=120)
 
         # background object (just a colored box)
@@ -102,6 +106,8 @@ class SimulationController(BaseController, KeyListener):
             self._callback_register[py.K_a] = self._car.turn_left
             self._callback_register[py.K_d] = self._car.turn_right
             self._callback_register[py.K_x] = self._car.stop
+
+            self._window.set_title(self._window_title + " (Manual Controls)")
 
     def loop(self) -> None:
         # calculate the time delta

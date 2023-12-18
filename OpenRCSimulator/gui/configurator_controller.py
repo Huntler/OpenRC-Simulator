@@ -44,7 +44,11 @@ class ConfiguratorController(BaseController, FormListener):
         # create the window visuals
         self._window = MainWindow(window_size=window_size, flags=flags)
         self._surface = self._window.get_surface()
-        self._title_font = self._window.get_font().copy(size=120)
+
+        self._window_title = "Car Configurator"
+        self._window.set_title(self._window_title + " (unsaved)")
+
+        self._title_font = self._window.get_font().copy(size=14)
 
         # create the sprites we want to use
         # background object (just a colored box)
@@ -76,12 +80,15 @@ class ConfiguratorController(BaseController, FormListener):
     def on_form_change(self, name: str, value: Any) -> None:
         if value:
             self._car_base.set_value(name, float(value))
+            self._window.set_title(self._window_title + " (unsaved)")
     
     def _save(self) -> None:
         """Save the current configuration.
         """
         with open(f"{get_data_folder('')}/car_config.yaml", "w") as file:
             documents = yaml.dump(self._form.get_data(), file)
+
+        self._window.set_title(self._window_title)
 
     def load(self) -> None:        
         """Load the current configuration to be edited.
@@ -96,6 +103,8 @@ class ConfiguratorController(BaseController, FormListener):
         self._form.set_data(data)
         for key, value in data.items():
             self._car_base.set_value(key, value)
+            
+        self._window.set_title(self._window_title)
 
     def loop(self) -> None:
         self._car_base.draw()

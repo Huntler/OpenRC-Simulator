@@ -21,8 +21,8 @@ class ShortcutController(BaseSubController, KeyListener):
         self._surface = window.get_surface()
 
         # define fonts
-        self._font_title = window.get_font().copy(size=36)
-        self._font_entry = window.get_font().copy(size=30)
+        self._font_title = window.get_font().copy(size=16)
+        self._font_entry = window.get_font().copy(size=14)
 
         # get font heights
         self._title_height = self._font_title.unpack().size("Example")[1]
