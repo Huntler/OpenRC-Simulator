@@ -76,7 +76,7 @@ class CarBase(Sprite):
     def _center_sprite(self) -> None:
         # center align the car based on its size and the preview's position and size
         car_width, car_height, _ = self._get_car_size()
-        self.__x = self._x + (self._w - car_width) / 2 + self._steering_length / 2
+        self.__x = self._x + (self._w - car_width) / 2 + self._steering_length
         self.__y = self._y + (self._h - car_height) / 2 + self._data[CarBase.CHASSIS_FRONT][1]
 
         self.__w = car_width - self._data[CarBase.WHEEL_WIDTH][1]
