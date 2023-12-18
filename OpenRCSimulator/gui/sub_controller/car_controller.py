@@ -1,8 +1,9 @@
+"""This module communicates between the car's simulation and the car's 
+visualization."""
 import math
 from time import sleep
-import numpy as np
-import pygame as py
 from typing import Dict, Tuple
+import numpy as np
 from OpenRCSimulator.graphics.callback import MouseListener
 from OpenRCSimulator.graphics.window import MUTEX
 from OpenRCSimulator.simulation.openrc import OpenRC
@@ -18,13 +19,21 @@ FORWARD, BACKWARD = 2, 3
 
 
 class CarController(BaseSubController, MouseListener):
+    """This controller class connects the car's simulation and visualization. Also,
+    it enables manual control over the car, if the app_mode is 'MANUAL' (int = 2).
+
+    Args:
+        BaseSubController (BaseSubController): Base class.
+        MouseListener (MouseListener): The controller reacts on mouse events.
+    """
     def __init__(self, window: MainWindow, app_mode: int) -> None:
         super().__init__()
         self._app_mode = app_mode
         self.dict_name = "car"
         self._is_paused = False
 
-        self._car = OpenRC(np.array([-CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2]))
+        self._car = OpenRC(
+            np.array([-CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2]))
 
         # window and surface information
         self._window = window
@@ -34,37 +43,46 @@ class CarController(BaseSubController, MouseListener):
 
         # car sprite
         car_mode = Car.CONFIG if self._app_mode == GARAGE else Car.NORMAL
-        self._sprite_car = Car(self._surface, -CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2, CHASSIS_SIZE, self._sensor_font, car_mode)
+        self._sprite_car = Car(
+            self._surface, -CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2, CHASSIS_SIZE,
+            self._sensor_font, car_mode)
         self._window.add_sprite("sprite_car", self._sprite_car)
         self._sprite_position_set = True
 
     def accelerate(self):
+        """This method calls the simulation to accelerate the car.
+        """
         with MUTEX:
             self._car.accelerate()
-    
+
     def slowdown(self):
+        """This method calls the simulation to slowdown the car.
+        """
         with MUTEX:
             self._car.slowdown()
 
     def turn_left(self):
+        """This method calls the simulation to turn the car left.
+        """
         with MUTEX:
             self._car.turn_left()
 
     def turn_right(self):
+        """This method calls the simulation to trun the car right.
+        """
         with MUTEX:
             self._car.turn_right()
-    
+
     def stop(self):
+        """This method calls the simulation to stop the car.
+        """
         with MUTEX:
             self._car.reset_acceleration()
             self._car.reset_turn()
 
-
-    def set_brain(self, genome) -> None:
-        # TODO
-        pass
-
     def pause(self) -> None:
+        """This method pauses the simulation.
+        """
         self._is_paused = not self._is_paused
 
     def toggle(self, call: bool = True) -> None:
@@ -72,7 +90,8 @@ class CarController(BaseSubController, MouseListener):
         position can be changed.
 
         Args:
-            call (bool, optional): If false, then the registered callback is not executed. Defaults to True.
+            call (bool, optional): If false, then the registered callback is not 
+            executed. Defaults to True.
         """
         super().toggle(call)
 
@@ -89,7 +108,7 @@ class CarController(BaseSubController, MouseListener):
         else:
             self.toggle()
         sleep(0.2)
-    
+
     def on_movement(self, position: Tuple[int, int], delta: Tuple[int, int]) -> None:
         if self.is_toggled():
             # set position
@@ -97,7 +116,8 @@ class CarController(BaseSubController, MouseListener):
                 self._sprite_car.set_position(position)
 
             # set angle to mouse
-            angle = math.atan2(position[1] - self._sprite_car.get_position()[1], position[0] - self._sprite_car.get_position()[0])
+            angle = math.atan2(position[1] - self._sprite_car.get_position()[
+                               1], position[0] - self._sprite_car.get_position()[0])
             self._sprite_car.set_direction(angle)
 
     def to_dict(self) -> Dict:
@@ -110,11 +130,11 @@ class CarController(BaseSubController, MouseListener):
         return dict_file
 
     def from_dict(self, d: Dict) -> None:
-        pos = (d["x"], d["y"])
-        dir = d["direction"]
+        position = (d["x"], d["y"])
+        direction = d["direction"]
 
-        self._sprite_car.set_position(pos)
-        self._sprite_car.set_direction(dir)
+        self._sprite_car.set_position(position)
+        self._sprite_car.set_direction(direction)
 
         self._car = OpenRC(np.array([d["x"], d["y"]], dtype=float))
 
@@ -122,7 +142,7 @@ class CarController(BaseSubController, MouseListener):
         """
         This loop is always executed by the main controller.
         """
-        
+
         if self._app_mode != CREATOR:
             # get the simulations info about the car and update the sprite
             if self._is_paused:
@@ -136,10 +156,8 @@ class CarController(BaseSubController, MouseListener):
             self._sprite_car.set_direction(angle)
             self._sprite_car.set_sensors(sensor_lines)
             self._sprite_car.set_distances(distances)
-            
+
         if self._app_mode == SIMULATION:
-            # pass through the sensors to the trained robocart and use its decision to controll the car
-            pass
-
-
-        
+            # pass through the sensors to the trained robocart and use its decision
+            # to controll the car
+            print("Simulation not implemented. WIP")

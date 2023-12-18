@@ -13,20 +13,21 @@ class Rectangle(Sprite):
         self._h = h
         self._c = c
         self._clicked_c = c
-    
+
     def get_size(self) -> Tuple[int, int]:
         return (self._w, self._h)
-    
+
     def set_position(self, pos: Tuple[int, int]) -> None:
         self._x, self._y = pos
-    
+
     def get_position(self) -> Tuple[int, int]:
         return (self._x, self._y)
-    
+
     def draw(self) -> None:
-        py.draw.rect(self._surface, self._c, rect=(self._x, self._y, self._w, self._h))
+        py.draw.rect(self._surface, self._c, rect=(
+            self._x, self._y, self._w, self._h))
         super().draw()
-    
+
     def collidepoint(self, point: Tuple[int, int]) -> bool:
         x, y = point
         if self._x < x and self._x + self._w > x:
@@ -38,5 +39,5 @@ class Rectangle(Sprite):
         self._clicked_c = c
 
     def _clicked(self) -> None:
-        py.draw.rect(self._surface, self._clicked_c, rect=(self._x, self._y, self._w, self._h))
-
+        py.draw.rect(self._surface, self._clicked_c,
+                     rect=(self._x, self._y, self._w, self._h))

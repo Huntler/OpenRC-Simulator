@@ -1,3 +1,5 @@
+"""This module contains the simulation's required attributes. To be removed 
+in the future [todo]"""
 import math
 
 # in centimeters

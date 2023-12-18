@@ -7,6 +7,7 @@ from OpenRCSimulator.graphics.objects.text import Text
 ANCHOR_TOP_LEFT = 0
 ANCHOR_CENTER = 1
 
+
 def float_filter(text: str) -> str:
     result = ""
     no_dot = True
@@ -43,11 +44,12 @@ class TextField(Text):
         self._box = (0, 0, 0, 0)
 
         # initilize
-        super().__init__(surface, text, x + self._margin[0], y + self._margin[1], self._c, fontwrapper)
-    
+        super().__init__(surface, text, x +
+                         self._margin[0], y + self._margin[1], self._c, fontwrapper)
+
     def get_size(self) -> Tuple[int, int]:
         return (self._box[2], self._box[3])
-    
+
     def set_text_filter(self, filter: int = FILTER_NONE) -> None:
         """Filters text from update method.
 
@@ -55,14 +57,14 @@ class TextField(Text):
             filter (int, optional): Text to filter. Defaults to FILTER_NONE.
         """
         self._filter = filter
-    
+
     @property
     def filter(self) -> int:
         return self._filter
 
     def on_activated(self, callback) -> None:
         self._callback = callback
-    
+
     def set_color(self, c: Tuple[int, int, int], mode: int = TEXT_COLOR) -> None:
         """Changes the color
 
@@ -71,12 +73,13 @@ class TextField(Text):
         """
         if mode == TextField.TEXT_COLOR:
             self._c = c
-            self._text_surface = self._font.render(self._text, self._antialiasing, self._c)
+            self._text_surface = self._font.render(
+                self._text, self._antialiasing, self._c)
         elif mode == TextField.ACTIVATED_COLOR:
             self._ac = c
         elif mode == TextField.COLOR:
             self._bc = c
-    
+
     def set_text(self, text: str) -> None:
         """Changes the text of this sprite.
 
@@ -85,13 +88,15 @@ class TextField(Text):
         """
         # set the text
         self._text = text
-        self._text_surface = self._font.render(text, self._antialiasing, self._c)
+        self._text_surface = self._font.render(
+            text, self._antialiasing, self._c)
 
         # calculate new box size
         w = self._text_surface.get_width()
         h = self._text_surface.get_height()
-        self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
-    
+        self._box = (self._x - self._margin[0], self._y -
+                     self._margin[1], w + self._margin[2], h + self._margin[3])
+
     def is_activated(self) -> bool:
         return self._active
 
@@ -108,14 +113,14 @@ class TextField(Text):
             if text == "\n":
                 self._active = False
                 return
-            
+
             if self._filter == TextField.FILTER_TEXT:
                 text = "".join(filter(str.isalpha, text))
             elif self._filter == TextField.FILTER_NUMBERS:
                 text = float_filter(text)
 
             self.set_text(text)
-    
+
     def set_position(self, pos: Tuple[int, int], anchor: int = ANCHOR_CENTER) -> None:
         """This method sets the position of the text based on its text and anchor point.
 
@@ -133,7 +138,8 @@ class TextField(Text):
             self._x, self._y = pos
             self._x += self._margin[0]
             self._y += self._margin[1]
-            self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+            self._box = (self._x - self._margin[0], self._y -
+                         self._margin[1], w + self._margin[2], h + self._margin[3])
             return
 
         if anchor == ANCHOR_CENTER:
@@ -142,11 +148,12 @@ class TextField(Text):
             self._y = _y - h // 2
             self._x += self._margin[0]
             self._y += self._margin[1]
-            self._box = (self._x - self._margin[0], self._y - self._margin[1], w + self._margin[2], h + self._margin[3])
+            self._box = (self._x - self._margin[0], self._y -
+                         self._margin[1], w + self._margin[2], h + self._margin[3])
             return
-        
+
         raise RuntimeError("Wrong anchor point provided.")
-    
+
     def draw(self) -> None:
         super().draw()
 
@@ -156,7 +163,6 @@ class TextField(Text):
 
         # draw the text
         self._surface.blit(self._text_surface, (self._x, self._y))
-
 
     def collidepoint(self, point: Tuple[int, int]) -> bool:
         x, y = point

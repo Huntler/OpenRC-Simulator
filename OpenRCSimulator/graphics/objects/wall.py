@@ -6,21 +6,21 @@ from OpenRCSimulator.graphics.objects.sprite import Sprite
 
 
 class Wall(Sprite):
-    def __init__(self, surface: Surface, start_pos: Tuple[int, int], end_pos: Tuple[int, int], c: Tuple[int, int ,int], thickness: int = 5) -> None:
+    def __init__(self, surface: Surface, start_pos: Tuple[int, int], end_pos: Tuple[int, int], c: Tuple[int, int, int], thickness: int = 5) -> None:
         super().__init__(surface)
 
         self._sx, self._sy = start_pos
         self._ex, self._ey = end_pos
         self._t = thickness
         self._c = c
-    
+
     def get_size(self) -> Tuple[int, int]:
-        return (max(self._sx, self._ex) - min(self._sx, self._ex), 
+        return (max(self._sx, self._ex) - min(self._sx, self._ex),
                 max(self._sy, self._ey) - min(self._sy, self._ey))
-    
+
     def set_start(self, pos: Tuple[int, int]) -> None:
         self._sx, self._sy = pos
-    
+
     def get_start(self) -> Tuple[int, int]:
         return self._sx, self._sy
 
@@ -36,9 +36,12 @@ class Wall(Sprite):
     def draw(self) -> None:
         super().draw()
 
-        py.draw.line(self._surface, self._c, (self._sx, self._sy), (self._ex, self._ey), self._t)
-        py.draw.circle(self._surface, self._c, (self._sx, self._sy), self._t // 2)
-        py.draw.circle(self._surface, self._c, (self._ex, self._ey), self._t // 2)
-    
+        py.draw.line(self._surface, self._c, (self._sx, self._sy),
+                     (self._ex, self._ey), self._t)
+        py.draw.circle(self._surface, self._c,
+                       (self._sx, self._sy), self._t // 2)
+        py.draw.circle(self._surface, self._c,
+                       (self._ex, self._ey), self._t // 2)
+
     def collidepoint(self, point: Tuple[int, int]) -> bool:
         pass

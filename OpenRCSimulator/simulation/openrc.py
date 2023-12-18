@@ -1,15 +1,22 @@
+"""This module represents the car used within the backend simulation, including the physics."""
 from typing import List, Tuple
-
-import numpy as np
 import math
-from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
-from OpenRCSimulator.simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, SENSOR_DISTANCE, SENSOR_POINTS, TURNING_BOUNDARIES, WEIGHT, WHEEL_DISTANCE
+
 from shapely.geometry import LineString, Point
+import numpy as np
+
+from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
+from OpenRCSimulator.simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, \
+    SENSOR_DISTANCE, SENSOR_POINTS, TURNING_BOUNDARIES, WEIGHT
 
 
 class OpenRC:
-    dict_name = "open-rc"
+    """This class simulates the racing car based on the car's configuration such as size and weight.
+    The car is able to drive forwards, backwards, steer to both sides, and it can break.
+    """
+
     def __init__(self, pixel_pos: np.array, delta: float = 0.1):
+        self._dict_name = "open-rc"
         # handling coordinate system in pixel diemnsion
         # calculation:
         #  - pixel-radius * 2 to get car's size in pixel
@@ -31,44 +38,89 @@ class OpenRC:
         self._delta = delta
 
         # create distance sensorsa
-        self.sensor_lines = np.array([np.zeros(2) for _ in range(SENSOR_POINTS)])
-        self._distances = np.array([SENSOR_DISTANCE for sensor in self.sensor_lines])
+        self.sensor_lines = np.array([np.zeros(2)
+                                     for _ in range(SENSOR_POINTS)])
+        self._distances = np.array(
+            [SENSOR_DISTANCE for sensor in self.sensor_lines])
 
         self._stop = False
-    
-    @staticmethod
-    def copy(car: "OpenRC") -> "OpenRC":
-        pos = car._pos
-        delta = car._delta
-        size = car._size
-        car = OpenRC([0, 0], size, delta)
-        car._pos = pos
+
+    @property
+    def dict_name(self) -> str:
+        """The dict name is handy to pickle this object.
+
+        Returns:
+            str: The name of this class.
+        """
+        return self._dict_name
+
+    def set_position(self, position: Tuple[float, float], pixel: bool = False) -> None:
+        """This method places the car to a specified (real-world/pixel) coordinate.
+
+        Args:
+            position (Tuple[float, float]): The coordinate.
+            pixel (bool, optional): If true, the given coordinates are pixels, otherwise 
+            centimeter coordinates. Defaults to False.
+        """
+        if pixel:
+            self._pos = position
+        else:
+            self._pos = position * CENTIMETER_TO_PIXEL
+
+    def copy(self) -> "OpenRC":
+        """Copies this object.
+
+        Returns:
+            OpenRC: The copied object.
+        """
+        delta = self._delta
+        car = OpenRC([0, 0], delta)
+        car.set_position(self._pos)
+
         return car
 
     def hard_stop(self):
+        """This method instantly stops the car, ignoring physics.
+        """
         self._velocity = 0
-    
+
     def reset_acceleration(self):
-        # simulate rear motor off
+        """This method simulates motors turned off.
+        """
         self._stop = True
-    
+
     def reset_turn(self):
-        # simulate stepper motor off
+        """This method simulates leaving the steering wheel.
+        """
         self._turn_angle = 0
 
     def accelerate(self):
+        """This method accelerates the car by a fixed amount.
+        """
         self._velocity += 100
 
     def slowdown(self):
+        """This method slows down the car by a fixed amount.
+        """
         self._velocity -= 100
 
     def turn_left(self):
+        """This method turns the car left.
+        """
         self._turn_angle = min(TURNING_BOUNDARIES[1], self._turn_angle + 1)
 
     def turn_right(self):
+        """This method turns the car right.
+        """
         self._turn_angle = max(TURNING_BOUNDARIES[0], self._turn_angle - 1)
 
     def set_time_delta(self, delta: float):
+        """This method sets the delta time between each frame, which is needed to decouple
+        simulation and visualization. A smaller delta means more frequent simulation calls.
+
+        Args:
+            delta (float): Should be low if the simulation is executed frequently.
+        """
         self._delta = delta
 
         # update the acceleration for the frame which has been drawn in delta time
@@ -91,8 +143,10 @@ class OpenRC:
 
             # create a temporary sensor
             temp_sensor = sensor.copy()
-            temp_sensor[0] += math.cos(factor * i - self._theta) * SENSOR_DISTANCE
-            temp_sensor[1] += math.sin(factor * i - self._theta) * SENSOR_DISTANCE
+            temp_sensor[0] += math.cos(factor * i -
+                                       self._theta) * SENSOR_DISTANCE
+            temp_sensor[1] += math.sin(factor * i -
+                                       self._theta) * SENSOR_DISTANCE
 
             # calculate distances
             distance = self._calc_distance(lines, temp_sensor)
@@ -107,26 +161,29 @@ class OpenRC:
     def _update_state(self, lines) -> bool:
         # calculate Pro-Ackerman condition of car turning
         turning_angle = math.radians(180 - 90 - (90 - self._turn_angle))
-        rear_radius = CHASSIS_SIZE[1] / math.tan(turning_angle) - 0.5 * CHASSIS_SIZE[0] if turning_angle != 0 else 0
+        rear_radius = CHASSIS_SIZE[1] / math.tan(
+            turning_angle) - 0.5 * CHASSIS_SIZE[0] if turning_angle != 0 else 0
 
         # calculate the current velocity
         velocity = self._velocity * self._acceleration
 
         # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
-        theta = self._theta + math.tanh(velocity * self._delta) / rear_radius if rear_radius != 0 else self._theta
+        theta = self._theta + \
+            math.tanh(velocity * self._delta) / \
+            rear_radius if rear_radius != 0 else self._theta
         theta = theta % (2 * math.pi)
         self._theta = theta
-        
+
         # calculate the movement and rotation
         update_pos = np.zeros_like(self._pos)
         update_pos[0] = velocity * math.cos(theta) * self._delta
         update_pos[1] = -velocity * math.sin(theta) * self._delta
 
         # stop if a collision was detected
-        collision_detected = self._collision(lines, update_pos, theta)
+        collision_detected = self._collision(lines, theta)
         if collision_detected:
             return False, np.zeros_like(self._pos)
-        
+
         # update position and agle
         self._pos += update_pos
 
@@ -151,10 +208,10 @@ class OpenRC:
             if hit:
                 # change distance if it is less than the found distance so far
                 min_distance = min(min_distance, car.distance(hit))
-        
+
         return min_distance
 
-    def _collision(self, lines, update_pos, theta) -> bool:
+    def _collision(self, lines, theta) -> bool:
         """
          calculates collision points of car with all lines
          :param lines: the lines the car collided with
@@ -171,7 +228,7 @@ class OpenRC:
         vect = vect / np.linalg.norm(vect)
 
         # calc points in sensor directions for second shapely line
-        car = Point(self._pos)# + update_pos)
+        car = Point(self._pos)  # + update_pos)
         for wall in lines:
             line = LineString(wall)
             wall = np.asarray(wall)
@@ -183,18 +240,22 @@ class OpenRC:
                 line_vect = [wall[1][0] - wall[0][0], wall[1][1] - wall[0][1]]
                 if line_vect[0] == 0 and line_vect[1] == 0:
                     continue
-                
+
                 line_vect = line_vect / np.linalg.norm(line_vect)
-                line_vect = line_vect * np.dot(vect * velocity, line_vect) / np.dot(line_vect, line_vect)
+                line_vect = line_vect * \
+                    np.dot(vect * velocity, line_vect) / \
+                    np.dot(line_vect, line_vect)
 
                 # check if the car is within the range of the wall
                 update_x = car.x + line_vect[0]
-                if update_x > min(wall[0][0], wall[1][0]) - CHASSIS_SIZE[0] / 2 and update_x < max(wall[0][0], wall[1][0]) + CHASSIS_SIZE[0] / 2 :
+                if update_x > min(wall[0][0], wall[1][0]) - CHASSIS_SIZE[0] / 2 and \
+                        update_x < max(wall[0][0], wall[1][0]) + CHASSIS_SIZE[0] / 2:
                     update_y = car.y + line_vect[1]
-                    if update_y > min(wall[0][1], wall[1][1]) - CHASSIS_SIZE[1] / 2 and update_y < max(wall[0][1], wall[1][1]) + CHASSIS_SIZE[1] / 2:
+                    if update_y > min(wall[0][1], wall[1][1]) - CHASSIS_SIZE[1] / 2 and \
+                            update_y < max(wall[0][1], wall[1][1]) + CHASSIS_SIZE[1] / 2:
                         # move car along side the wall
-                        car = Point(car.x + line_vect[0], car.y + line_vect[1])    
-                          
+                        car = Point(car.x + line_vect[0], car.y + line_vect[1])
+
                 collision = True
 
         if collision:
@@ -202,7 +263,16 @@ class OpenRC:
 
         return collision
 
-    def drive(self, lines):
+    def drive(self, lines: List):
+        """This method simulates one simulation tick. To be accurate with the real time,
+        a tick should happen every self.delta seconds. Use the set_time_delta() method.
+
+        Args:
+            lines (List): A list of points representing the walls on the map.   
+
+        Returns:
+            Tuple: Current orientation, x, y, sensors, measured distances
+        """
         # transferr walls into the simulations coordinate system
         lines = np.array(lines) * PIXEL_TO_CENTIMETER
 

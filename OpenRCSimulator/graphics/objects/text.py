@@ -12,7 +12,7 @@ class Text(Sprite):
 
     def __init__(self, surface: py.Surface, text: str, x: int, y: int, c: Tuple[int, int, int], font: FontWrapper) -> None:
         super().__init__(surface)
-        
+
         self._text = text
         self._c = c
         self._antialiasing = True
@@ -20,14 +20,15 @@ class Text(Sprite):
         self._font = font.unpack()
         self._text_surface = self._font.render(text, self._antialiasing, c)
         self.set_position((x, y))
-    
+
     def set_font(self, font: FontWrapper) -> None:
         self._font = font.unpack()
-        self._text_surface = self._font.render(self._text, self._antialiasing, self._c)
+        self._text_surface = self._font.render(
+            self._text, self._antialiasing, self._c)
 
     def get_size(self) -> Tuple[int, int]:
         return self._font.size(self._text)
-    
+
     def set_color(self, c: Tuple[int, int, int]) -> None:
         """Changes the text color
 
@@ -35,8 +36,9 @@ class Text(Sprite):
             c (Tuple[int, int, int]): RGB values.
         """
         self._c = c
-        self._text_surface = self._font.render(self._text, self._antialiasing, self._c)
-    
+        self._text_surface = self._font.render(
+            self._text, self._antialiasing, self._c)
+
     def set_text(self, text: str) -> None:
         """Changes the text of this sprite.
 
@@ -44,12 +46,13 @@ class Text(Sprite):
             text (str): The text.
         """
         self._text = text
-        self._text_surface = self._font.render(text, self._antialiasing, self._c)
+        self._text_surface = self._font.render(
+            text, self._antialiasing, self._c)
         # TODO: change psoition may be needed
 
     def get_text(self) -> str:
         return self._text
-    
+
     def set_position(self, pos: Tuple[int, int], anchor: int = ANCHOR_CENTER) -> None:
         """This method sets the position of the text based on its text and anchor point.
 
@@ -71,12 +74,12 @@ class Text(Sprite):
             self._x = _x - w // 2
             self._y = _y - h // 2
             return
-        
+
         raise RuntimeError("Wrong anchor point provided.")
-    
+
     def get_position(self) -> Tuple[int, int]:
         return (self._x, self._y)
-    
+
     def draw(self) -> None:
         super().draw()
 
