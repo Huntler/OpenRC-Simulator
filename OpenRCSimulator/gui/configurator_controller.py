@@ -77,6 +77,7 @@ class ConfiguratorController(BaseController, FormListener):
         # add live preview of changes
         self._car_base = CarBase(self._surface, ((self._width // 3 + 8) * 2 - 8, 8), 
                                  (self._width // 3 - 16, self._height - 16))
+        self._window.add_sprite("live_preview", self._car_base)
 
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
@@ -107,4 +108,4 @@ class ConfiguratorController(BaseController, FormListener):
             self._car_base.set_value(key, value)
 
     def loop(self) -> None:
-        self._car_base.draw()
+        pass
