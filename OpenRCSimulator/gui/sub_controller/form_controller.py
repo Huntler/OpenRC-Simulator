@@ -68,9 +68,9 @@ class FormController(BaseSubController, TextListener):
                     break
                     
             # inform the upper controller that something has changed
-            value = text
+            value = object.get_text()
             if object.filter == TextField.FILTER_NUMBERS and value != "":
-                value = float(text)
+                value = float(value)
             self._listener.on_form_change(name, value)
     
     def on_text_end(self, object: TextField) -> None:
