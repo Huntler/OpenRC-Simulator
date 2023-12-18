@@ -20,7 +20,7 @@ class FontWrapper:
 
     def copy(self, name: str = None, size: int = None) -> "FontWrapper":
         if not name:
-            name = self.size
+            name = self.name
         
         if not size:
             size = self.size
