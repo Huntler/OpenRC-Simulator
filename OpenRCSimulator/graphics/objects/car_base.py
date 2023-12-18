@@ -29,14 +29,13 @@ class CarBase(Sprite):
         self._y += margins[1]
         self._w -= (margins[2] + margins[0])
         self._h -= (margins[3] + margins[1])
-        print(self._h, size)
 
         # store the internal sprite's position and size as the sprite is always centered
         self.__x, self.__y = self._x, self._y
         self.__w, self.__h = self._w, self._h
 
         # add margins required for steering visualization
-        self._steering_length = 50
+        self._steering_length = 0
         self.__x += self._steering_length
         self.__w -= self._steering_length
 
@@ -74,9 +73,11 @@ class CarBase(Sprite):
         return car_width * multiplier, car_height * multiplier, multiplier
     
     def _center_sprite(self) -> None:
-        # center align the car based on its size and the preview's position and size
         car_width, car_height, _ = self._get_car_size()
-        self.__x = self._x + (self._w - car_width) / 2 + self._steering_length
+
+        # center align the car based on its size and the preview's position and size
+        self.__x = self._x + (self._w - car_width - self._data[CarBase.WHEEL_WIDTH][1] / 2) / 2 + \
+            self._data[CarBase.WHEEL_DIAMETER][1] / 2
         self.__y = self._y + (self._h - car_height) / 2 + self._data[CarBase.CHASSIS_FRONT][1]
 
         self.__w = car_width - self._data[CarBase.WHEEL_WIDTH][1]
@@ -142,29 +143,40 @@ class CarBase(Sprite):
         rl = Rectangle(self._surface, x1, y2, w, h, (255, 255, 255))
         rr = Rectangle(self._surface, x2, y2, w, h, (255, 255, 255))
 
-        return fl, fr, rl, rr
+        return rl, rr
     
     def _calculate_steering(self) -> Tuple:
-        # define start and end of a vector [0, 1]
-        start = np.array((self.__x, self.__y + self._data[CarBase.WHEEL_DIAMETER][1] / 2))
-        end = np.array((self.__x, self.__y))
-        offset = np.array((self._data[CarBase.TRACK_SPACING][1] - self._data[CarBase.WHEEL_WIDTH][1], 0))
         angle = self._data[CarBase.STEERING_ANGLE][1]
 
-        # rotate vector by angle
-        vec = start - end        
-        p_x = vec[0] * math.cos(angle) - vec[1] * math.sin(angle)
-        p_y = vec[0] * math.sin(angle) + vec[1] * math.cos(angle)
+        # get center of line
+        cx = self.__x + self._data[CarBase.WHEEL_WIDTH][1] / 2
+        cy = self.__y + self._data[CarBase.WHEEL_DIAMETER][1] / 2
 
-        # norm the length of the vector
-        vec = np.array([p_x, p_y])
-        if vec[0] == 0 and vec[1] == 0:
-            return None
-        
-        angeled = (vec / np.linalg.norm(vec)) * self._steering_length + start
+        # calculate coordinates of front left wheel
+        # start point
+        x1 = self.__x + self._data[CarBase.WHEEL_WIDTH][1] / 2
+        y1 = self.__y
 
-        # draw lines
-        return start, angeled, start + offset, angeled + offset
+        px1 = ((x1 - cx) * math.cos(angle) + (y1 - cy) * math.sin(angle)) + cx
+        py1 = (-(x1 - cx) * math.sin(angle) + (y1 - cy) * math.cos(angle)) + cy
+
+        # end point
+        x2 = self.__x + self._data[CarBase.WHEEL_WIDTH][1] / 2
+        y2 = self.__y + self._data[CarBase.WHEEL_DIAMETER][1]
+
+        px2 = ((x2 - cx) * math.cos(angle) + (y2 - cy) * math.sin(angle)) + cx
+        py2 = (-(x2 - cx) * math.sin(angle) + (y2 - cy) * math.cos(angle)) + cy
+
+        # create the line coordinates
+        left_start = np.array([px1, py1])
+        left_end = np.array([px2, py2])
+
+        # calculate the offset between both wheels
+        offset = np.array((self._data[CarBase.TRACK_SPACING][1] - self._data[CarBase.WHEEL_WIDTH][1], 0))
+        right_start = left_start + offset
+        right_end = left_end + offset
+
+        return left_start, left_end, right_start, right_end
 
     def draw(self) -> None:       
         self._background.draw()
@@ -177,8 +189,8 @@ class CarBase(Sprite):
         # draw steering
         if self._angle_coordinates:
             s1, e1, s2, e2 = self._angle_coordinates
-            py.draw.line(self._surface, (255, 255, 255), s1, e1, width = 5)
-            py.draw.line(self._surface, (255, 255, 255), s2, e2, width = 5)
+            py.draw.line(self._surface, (255, 255, 255), s1, e1, width = int(self._data[CarBase.WHEEL_WIDTH][1]))
+            py.draw.line(self._surface, (255, 255, 255), s2, e2, width = int(self._data[CarBase.WHEEL_WIDTH][1]))
 
         # draw axis
         front_axis, rear_axis, center = self._get_axis_position()
