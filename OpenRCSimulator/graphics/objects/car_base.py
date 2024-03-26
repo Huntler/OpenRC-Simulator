@@ -29,6 +29,15 @@ class CarBase(Sprite):
 
     def __init__(self, surface: py.Surface, position: Tuple[int, int], size: Tuple[int, int],
                  margins: Tuple[int, int, int, int] = (0, 0, 0, 0)) -> None:
+        """Initializes the car's configuration on a surface given the size, position and optional margins.
+
+        Args:
+            surface (py.Surface): The surface to displayed on.
+            position (Tuple[int, int]): The x and y position.
+            size (Tuple[int, int]): The width and height.
+            margins (Tuple[int, int, int, int], optional): The margins (left, top, right, bottom). Defaults 
+            to (0, 0, 0, 0).
+        """
         super().__init__(surface)
 
         # store the original sprite's position and size
@@ -72,6 +81,11 @@ class CarBase(Sprite):
         self._update_sizes()
 
     def _get_car_size(self) -> Tuple[float, float]:
+        """Calculates the width and height of the car in pixels.
+
+        Returns:
+            Tuple[float, float]: The width and height of the car in pixels.
+        """
         # get car width and height based on track spacing and wheelbase
         car_width = self._data[CarBase.TRACK_SPACING][0] + \
             self._data[CarBase.WHEEL_WIDTH][0]
@@ -86,6 +100,8 @@ class CarBase(Sprite):
         return car_width * multiplier, car_height * multiplier, multiplier
 
     def _center_sprite(self) -> None:
+        """Centers the sprite on its canvas (not the whole surface).
+        """
         car_width, car_height, _ = self._get_car_size()
 
         # center align the car based on its size and the preview's position and size
@@ -98,6 +114,8 @@ class CarBase(Sprite):
         self.__h = car_height
 
     def _update_sizes(self) -> None:
+        """Updates all sizes of the car in centimeter's dimension.
+        """
         # calculate the multiplier to fit dimensions to the sprite's available surface area
         _, _, multiplier = self._get_car_size()
 
@@ -128,6 +146,11 @@ class CarBase(Sprite):
         self._update_sizes()
 
     def _get_chassis_position(self) -> Tuple:
+        """Returns the car's front and rear chassis position measured from each axis.
+
+        Returns:
+            Tuple: The front and rear distance.
+        """
         # get front and rear bumper position
         x = self.__x
         y = self.__y - self._data[CarBase.CHASSIS_FRONT][1]
@@ -139,6 +162,11 @@ class CarBase(Sprite):
         return front, rear
 
     def _get_axis_position(self) -> Tuple:
+        """Returns the front and rear axis position. 
+
+        Returns:
+            Tuple: Position of the front, rear and center axis.
+        """
         # calculate position of the axis
         x = self.__x + self._data[CarBase.WHEEL_WIDTH][1] / 2
         y = self.__y + self._data[CarBase.WHEEL_DIAMETER][1] / 2
@@ -153,6 +181,11 @@ class CarBase(Sprite):
         return front, rear, center
 
     def _get_wheels(self) -> Tuple:
+        """Returns the position and size of all wheels.
+
+        Returns:
+            Tuple: The wheels position and size.
+        """
         # calculate positions of wheels
         x1, x2 = self.__x, self.__x + \
             self._data[CarBase.TRACK_SPACING][1] - \
@@ -168,6 +201,11 @@ class CarBase(Sprite):
         return rl, rr
 
     def _calculate_steering(self) -> Tuple:
+        """Calculate the front steering angle.
+
+        Returns:
+            Tuple: The start and end position of each front wheel representing the steering angle.
+        """
         angle = self._data[CarBase.STEERING_ANGLE][1]
 
         # get center of line
@@ -202,6 +240,8 @@ class CarBase(Sprite):
         return left_start, left_end, right_start, right_end
 
     def draw(self) -> None:
+        """Draw the car, 11 calls needed.
+        """
         self._background.draw()
 
         # draw chassis bonds
