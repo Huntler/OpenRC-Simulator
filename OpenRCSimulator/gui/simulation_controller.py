@@ -1,3 +1,5 @@
+"""This module handles the simulation's visualization and enables manual play,
+as well as watching the AI drive."""
 import os
 from typing import Callable, Dict, Tuple
 import pygame as py
@@ -23,14 +25,14 @@ SIMULATION_PAUSE = "pause"
 
 
 class SimulationController(BaseController, KeyListener):
-    def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
-        """The ManualController manages the MainWindow. This is a separate
-        thread than the pygame one.
+    """The SimulationController manages the MainWindow. This is a separate
+    thread than the pygame one.
 
-        Args:
-            window_size (Tuple[int, int]): Width and height of the window.
-            flags (int, optional): Fullscreen, hardware acceleration, ... Defaults to 0.
-        """
+    Args:
+        window_size (Tuple[int, int]): Width and height of the window.
+        flags (int, optional): Fullscreen, hardware acceleration, ... Defaults to 0.
+    """
+    def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
         super().__init__()
         self._t = py.time.get_ticks()
         self._file_name = None
@@ -51,12 +53,15 @@ class SimulationController(BaseController, KeyListener):
         self._title_font = self._window.get_font().copy(size=120)
 
         # background object (just a colored box)
-        background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
+        background = Rectangle(self._surface, 0, 0,
+                               self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
-        
-        background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
+
+        background = Rectangle(self._surface, 0, 0,
+                               self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
-        self._text_mode = Text(self._surface, "MANUAL", self._center[0], self._center[1], MODE_TEXT_COLOR, self._title_font)
+        self._text_mode = Text(
+            self._surface, "MANUAL", self._center[0], self._center[1], MODE_TEXT_COLOR, self._title_font)
         self._window.add_sprite("text_mode", self._text_mode, zindex=98)
 
         # create simulation objects
@@ -65,10 +70,11 @@ class SimulationController(BaseController, KeyListener):
 
         # show shortcut info
         self._shortcuts = ShortcutController(self._window)
-        self._shortcuts.add_shortcut(SIMULATION_PAUSE, self._car.pause, "'P' Pause", py.K_p)
-    
+        self._shortcuts.add_shortcut(
+            SIMULATION_PAUSE, self._car.pause, "'P' Pause", py.K_p)
+
     def on_key_pressed(self, key: int) -> None:
-        if key in self._callback_register.keys():
+        if key in self._callback_register:
             self._callback_register[key]()
 
     def load(self, map_name: str, car_name: str) -> None:
@@ -82,17 +88,18 @@ class SimulationController(BaseController, KeyListener):
         path = f"{get_data_folder(MAPS_FOLDER)}/{map_name}.yaml"
         if not os.path.exists(path):
             return
-        
+
         # load the car's position and map
-        with open(path, "r") as file:
+        with open(path, "r", encoding="UTF-8") as file:
             dict_file = yaml.load(file, Loader=yaml.FullLoader)
             self._car.from_dict(dict_file["car"])
             self._wall.from_dict(dict_file["walls"])
-        
-        # load the agent if given
+
+        # load the agent if given [todo]
         path = f"{get_data_folder(MODELS_FOLDER)}/car_{car_name}.pkl"
         if car_name and os.path.exists(path):
-            filehandler = open(f"{get_data_folder(MODELS_FOLDER)}/car_{car_name}.pkl", 'rb')
+            _ = open(
+                f"{get_data_folder(MODELS_FOLDER)}/car_{car_name}.pkl", 'rb')
 
             # change the background text
             self._text_mode.set_text("SIMULATION")
@@ -100,7 +107,7 @@ class SimulationController(BaseController, KeyListener):
         else:
             # if no agent is present, load manual controls by enabling key listener
             self._window.set_listener(self)
-            
+
             self._callback_register[py.K_w] = self._car.accelerate
             self._callback_register[py.K_s] = self._car.slowdown
             self._callback_register[py.K_a] = self._car.turn_left

@@ -1,3 +1,4 @@
+"""This module handles the map creation."""
 from typing import Tuple
 import pygame as py
 import yaml
@@ -7,7 +8,7 @@ from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
-from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR, SHORTCUT_TEXT_COLOR
+from OpenRCSimulator.gui import BACKGROUND_COLOR, CREATOR, MODE_TEXT_COLOR
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
 from OpenRCSimulator.gui.window import MainWindow
@@ -20,14 +21,15 @@ SHORTCUTS_UNTOGGLE = "untoggle"
 
 
 class CreatorController(BaseController):
-    def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
-        """The CreatorController manages the MainWindow. This is a separate
-        thread than the pygame one.
+    """The CreatorController manages the MainWindow. This is a separate
+    thread than the pygame one.
 
-        Args:
-            window_size (Tuple[int, int]): Width and height of the window.
-            flags (int, optional): Fullscreen, hardware acceleration, ... Defaults to 0.
-        """
+    Args:
+        window_size (Tuple[int, int]): Width and height of the window.
+        flags (int, optional): Fullscreen, hardware acceleration, ... Defaults to 0.
+    """
+
+    def __init__(self, window_size: Tuple[int, int], flags: int = 0) -> None:
         super().__init__()
         self._t = py.time.get_ticks()
         self._delta = 0.1
@@ -49,9 +51,11 @@ class CreatorController(BaseController):
         self._title_font = self._window.get_font().copy(size=120)
 
         # background object (just a colored box)
-        background = Rectangle(self._surface, 0, 0, self._width, self._height, BACKGROUND_COLOR)
+        background = Rectangle(self._surface, 0, 0,
+                               self._width, self._height, BACKGROUND_COLOR)
         self._window.add_sprite("background", background, zindex=99)
-        text_mode = Text(self._surface, "CREATOR", self._center[0], self._center[1], MODE_TEXT_COLOR, self._title_font)
+        text_mode = Text(self._surface, "CREATOR", self._center[0], self._center[1],
+                         MODE_TEXT_COLOR, self._title_font)
         self._window.add_sprite("text_mode", text_mode, zindex=98)
 
         # create sub controllers
@@ -67,11 +71,15 @@ class CreatorController(BaseController):
 
         # create shortcuts
         self._shortcuts = ShortcutController(self._window)
-        self._shortcuts.add_shortcut(CREATOR_PLACE_WALL, self._wall.toggle, "'P' Start drawing a wall", py.K_p, can_toggle=True)
-        self._shortcuts.add_shortcut(CREATOR_PLACE_CAR, self._car.toggle, "'R' Place the car", py.K_r)
-        self._shortcuts.add_shortcut(STORAGE_SAVE, self._save, "'S' Save the map", py.K_s)
-        self._shortcuts.add_shortcut(SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller, "'ESC' Stop input", py.K_ESCAPE)
-    
+        self._shortcuts.add_shortcut(
+            CREATOR_PLACE_WALL, self._wall.toggle, "'P' Start drawing a wall", py.K_p, can_toggle=True)
+        self._shortcuts.add_shortcut(
+            CREATOR_PLACE_CAR, self._car.toggle, "'R' Place the car", py.K_r)
+        self._shortcuts.add_shortcut(
+            STORAGE_SAVE, self._save, "'S' Save the map", py.K_s)
+        self._shortcuts.add_shortcut(
+            SHORTCUTS_UNTOGGLE, self._untoggle_all_sub_controller, "'ESC' Stop input", py.K_ESCAPE)
+
     def _sub_controller_toggled(self, sub_controller: BaseSubController) -> None:
         """This method executes if a subcontroller was toggled. In this case, this method 
         disables all other subcontrollers.
@@ -86,10 +94,10 @@ class CreatorController(BaseController):
         if self._active_sub_controller:
             self._active_sub_controller.toggle(call=False)
             self._active_sub_controller = None
-        
+
         if sub_controller.is_toggled():
             self._active_sub_controller = sub_controller
-    
+
     def _untoggle_all_sub_controller(self) -> None:
         """This method untoggles all controller.
         """
@@ -98,7 +106,7 @@ class CreatorController(BaseController):
             self._active_sub_controller = None
             self._changes()
             self._shortcuts.untoggle_all()
-    
+
     def _changes(self) -> None:
         """Changes the saved-status text displayed on screen.
 
@@ -106,7 +114,7 @@ class CreatorController(BaseController):
             value (bool): saved or not.
         """
         self._window.set_title(self._window_title + " (unsaved)")
-    
+
     def _save(self) -> None:
         # create the dict to store
         dict_file = {}
@@ -119,15 +127,21 @@ class CreatorController(BaseController):
         # get subcontroller infos, such as car position, walls, ...
         for controller in [self._wall, self._car]:
             dict_file = dict_file | controller.to_dict()
-        
+
         # save the dict
-        with open(f"{get_data_folder(MAPS_FOLDER)}{self._file_name}.yaml", "w") as file:
-            documents = yaml.dump(dict_file, file)
-        
+        path = f"{get_data_folder(MAPS_FOLDER)}{self._file_name}.yaml"
+        with open(path, "w", encoding="UTF-8") as file:
+            _ = yaml.dump(dict_file, file)
+
         # show saved status
         self._window.set_title(self._window_title)
 
-    def load(self, name: str) -> None:        
+    def load(self, name: str) -> None:
+        """This method sets the name of a map.
+
+        Args:
+            name (str): The map's name.
+        """
         self._file_name = name
 
     def loop(self) -> None:

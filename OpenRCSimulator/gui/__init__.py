@@ -1,3 +1,4 @@
+"""This module defines the app's design"""
 # mode definitions
 SIMULATION = 0
 CREATOR = 1
