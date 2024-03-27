@@ -30,7 +30,7 @@ class Rectangle(Sprite):
         self._c = c
 
         self._clicked_c = c
-        self._clicked = False
+        self._activated = False
 
     def get_size(self) -> Tuple[int, int]:
         """Returns the size of the rectangle.
@@ -61,7 +61,7 @@ class Rectangle(Sprite):
         """
         super().draw()
 
-        c = self._c if not self._clicked else self._clicked_c
+        c = self._c if not self._activated else self._clicked_c
         py.draw.rect(self._surface, c, rect=(self._x, self._y, 
                                              self._w, self._h))
 
@@ -91,4 +91,4 @@ class Rectangle(Sprite):
     def _clicked(self) -> None:
         """Sets the rectangle to clicked state or removes this state.
         """
-        self._clicked = not self._clicked
+        self._activated = not self._activated
