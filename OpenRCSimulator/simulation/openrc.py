@@ -180,14 +180,14 @@ class OpenRC:
         update_pos[1] = -velocity * math.sin(theta) * self._delta
 
         # stop if a collision was detected
-        collision_detected = self._collision(lines, theta)
+        collision_detected = self._collision(lines, theta, update_pos)
         if collision_detected:
             return False, np.zeros_like(self._pos)
 
         # update position and agle
         self._pos += update_pos
 
-        return True, update_pos
+        return True
 
     def _calc_distance(self, lines, sensor_point: List[float]):
         """
@@ -211,14 +211,17 @@ class OpenRC:
 
         return min_distance
 
-    def _collision(self, lines, theta) -> bool:
-        """
-         calculates collision points of car with all lines
-         :param lines: the lines the car collided with
-         :return: the true if a collision was detected
-        """
-        collision = False
+    def _collision(self, lines, theta, update_pos) -> bool:
+        """Calculates the collision of the car with walls,.
 
+        Args:
+            lines (np.array): Array of walls.
+            theta (float): Current angle of the car.
+            update_pos (np.array): Update to the car's position.
+
+        Returns:
+            bool: True if collision is detected.
+        """
         # check if the car hits a wall without a sensor detecting it
         # may occur at corners
         velocity = self._velocity * self._acceleration * self._delta
@@ -228,40 +231,42 @@ class OpenRC:
         vect = vect / np.linalg.norm(vect)
 
         # calc points in sensor directions for second shapely line
-        car = Point(self._pos)  # + update_pos)
+        future_position = Point(self._pos + update_pos)
+        sliding_position = Point(self._pos)
+        collisions = 0
         for wall in lines:
             line = LineString(wall)
             wall = np.asarray(wall)
 
             # check if the car has collided with a wall
-            distance = line.distance(car)
+            distance = line.distance(future_position)
             if distance < CHASSIS_SIZE[1] / 2:
+                collisions += 1
+
                 # calculate the lines direction vector
                 line_vect = [wall[1][0] - wall[0][0], wall[1][1] - wall[0][1]]
                 if line_vect[0] == 0 and line_vect[1] == 0:
                     continue
 
+                # calculate the car's new direction (sliding along a wall)
                 line_vect = line_vect / np.linalg.norm(line_vect)
                 line_vect = line_vect * \
                     np.dot(vect * velocity, line_vect) / \
                     np.dot(line_vect, line_vect)
+                
+                sliding_position = Point(sliding_position.x + line_vect[0], 
+                                         sliding_position.y + line_vect[1])
 
-                # check if the car is within the range of the wall
-                update_x = car.x + line_vect[0]
-                if update_x > min(wall[0][0], wall[1][0]) - CHASSIS_SIZE[0] / 2 and \
-                        update_x < max(wall[0][0], wall[1][0]) + CHASSIS_SIZE[0] / 2:
-                    update_y = car.y + line_vect[1]
-                    if update_y > min(wall[0][1], wall[1][1]) - CHASSIS_SIZE[1] / 2 and \
-                            update_y < max(wall[0][1], wall[1][1]) + CHASSIS_SIZE[1] / 2:
-                        # move car along side the wall
-                        car = Point(car.x + line_vect[0], car.y + line_vect[1])
+        if collisions == 0:
+            return False
 
-                collision = True
+        # only one collision, the car slides along a wall
+        if collisions == 1:
+            self._pos = [sliding_position.x, sliding_position.y]
+            return True
 
-        if collision:
-            self._pos = [car.x, car.y]
-
-        return collision
+        # if the car collides with more than one wall, stop it
+        return True
 
     def drive(self, lines: List):
         """This method simulates one simulation tick. To be accurate with the real time,
@@ -286,9 +291,9 @@ class OpenRC:
                 self._stop = False
 
         # calculate the rotation and movement
+        self._update_sensors(lines)
         if not self._update_state(lines):
             self.hard_stop()
-        self._update_sensors(lines)
 
         # transfer back to pixel data
         x = int(self._pos[0] * CENTIMETER_TO_PIXEL)
