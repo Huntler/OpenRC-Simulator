@@ -32,8 +32,9 @@ class CarController(BaseSubController, MouseListener):
         self.dict_name = "car"
         self._is_paused = False
 
-        self._car = OpenRC(
-            np.array([-CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2]))
+        self._car = OpenRC(np.array([-CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2]))
+        # accelerate, backwards, break, left, right
+        self._controls = np.array([False, False, False, False, False])
 
         # window and surface information
         self._window = window
@@ -52,33 +53,27 @@ class CarController(BaseSubController, MouseListener):
     def accelerate(self):
         """This method calls the simulation to accelerate the car.
         """
-        with MUTEX:
-            self._car.accelerate()
+        self._controls[0] = not self._controls[0]
 
     def slowdown(self):
         """This method calls the simulation to slowdown the car.
         """
-        with MUTEX:
-            self._car.slowdown()
+        self._controls[1] = not self._controls[1]
 
     def turn_left(self):
         """This method calls the simulation to turn the car left.
         """
-        with MUTEX:
-            self._car.turn_left()
+        self._controls[3] = not self._controls[3]
 
     def turn_right(self):
         """This method calls the simulation to trun the car right.
         """
-        with MUTEX:
-            self._car.turn_right()
+        self._controls[4] = not self._controls[4]
 
     def stop(self):
         """This method calls the simulation to stop the car.
         """
-        with MUTEX:
-            self._car.reset_acceleration()
-            self._car.reset_turn()
+        self._controls[2] = not self._controls[2]
 
     def pause(self) -> None:
         """This method pauses the simulation.
@@ -147,11 +142,13 @@ class CarController(BaseSubController, MouseListener):
             # get the simulations info about the car and update the sprite
             if self._is_paused:
                 delta = 0
-
+            
+            # run the simulation
             self._car.set_time_delta(delta)
             walls = [[line.get_start(), line.get_end()] for line in lines]
-            angle, x, y, sensor_lines, distances = self._car.drive(walls)
+            angle, x, y, sensor_lines, distances = self._car.drive(walls, self._controls)
 
+            # update the car's position
             self._sprite_car.set_position((x, y))
             self._sprite_car.set_direction(angle)
             self._sprite_car.set_sensors(sensor_lines)

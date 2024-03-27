@@ -97,21 +97,28 @@ class OpenRC:
     def accelerate(self):
         """This method accelerates the car by a fixed amount.
         """
-        self._velocity += 100
+        self._velocity += 1
+    
+    def accelerate_backwards(self):
+        """Drives the car backwards
+        """
+        self._velocity -= 1
 
-    def slowdown(self):
+    def slowdown(self, road_resistance: float = 1.005):
         """This method slows down the car by a fixed amount.
         """
-        self._velocity -= 100
+        self._velocity /= road_resistance
 
     def turn_left(self):
         """This method turns the car left.
         """
+        # TODO: add acceleration
         self._turn_angle = min(TURNING_BOUNDARIES[1], self._turn_angle + 1)
 
     def turn_right(self):
         """This method turns the car right.
         """
+        # TODO: add acceleration
         self._turn_angle = max(TURNING_BOUNDARIES[0], self._turn_angle - 1)
 
     def set_time_delta(self, delta: float):
@@ -126,7 +133,7 @@ class OpenRC:
         # update the acceleration for the frame which has been drawn in delta time
         self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2
 
-    def _brake(self, brake_const: float = 2):
+    def brake(self, brake_const: float = 2):
         self._velocity /= brake_const
 
     def _update_sensors(self, lines):
@@ -166,6 +173,10 @@ class OpenRC:
 
         # calculate the current velocity
         velocity = self._velocity * self._acceleration
+        print("velocity (internal):", self._velocity)
+        print("velocity (calculated in km/h):", velocity * 0.036)
+        print("acceleration:", self._acceleration)
+        print("turn:", self._turn_angle)
 
         # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
         theta = self._theta + \
@@ -268,12 +279,13 @@ class OpenRC:
         # if the car collides with more than one wall, stop it
         return True
 
-    def drive(self, lines: List):
+    def drive(self, lines: List, controls: np.array):
         """This method simulates one simulation tick. To be accurate with the real time,
         a tick should happen every self.delta seconds. Use the set_time_delta() method.
 
         Args:
             lines (List): A list of points representing the walls on the map.   
+            controls (np.array): The control input of the car (accelerate, backwards, left, right)
 
         Returns:
             Tuple: Current orientation, x, y, sensors, measured distances
@@ -281,14 +293,35 @@ class OpenRC:
         # transferr walls into the simulations coordinate system
         lines = np.array(lines) * PIXEL_TO_CENTIMETER
 
-        if self._stop:
-            self._brake()
+        # apply the controls
+        if controls.any():
+            if controls[0]:
+                self.accelerate()
+            
+            if controls[1]:
+                self.accelerate_backwards()
+            
+            if controls[2]:
+                self.brake()
 
-            # if the kinetic energy is 0 (or lower) then the car has stopped
-            energy = (np.sum(self._velocity) / 2) * WEIGHT
-            if energy <= 1:
-                self.hard_stop()
-                self._stop = False
+            if controls[3]:
+                self.turn_left()
+            
+            if controls[4]:
+                self.turn_right()
+
+        if not controls[0] and not controls[1] and not controls[2]:
+            self.slowdown()
+        
+        if not controls[3] and not controls[4]:
+            self._turn_angle = self._turn_angle / 2
+            if self._turn_angle < 0.5:
+                self.reset_turn()
+
+        # if the kinetic energy is 0 (or lower) then the car has stopped
+        energy = (np.sum(self._velocity) / 2) * WEIGHT
+        if energy <= 1:
+            self.hard_stop()
 
         # calculate the rotation and movement
         self._update_sensors(lines)
