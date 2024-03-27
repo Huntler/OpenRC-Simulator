@@ -97,21 +97,28 @@ class OpenRC:
     def accelerate(self):
         """This method accelerates the car by a fixed amount.
         """
-        self._velocity += 100
+        self._velocity += 1
+    
+    def accelerate_backwards(self):
+        """Drives the car backwards
+        """
+        self._velocity -= 1
 
-    def slowdown(self):
+    def slowdown(self, road_resistance: float = 1.005):
         """This method slows down the car by a fixed amount.
         """
-        self._velocity -= 100
+        self._velocity /= road_resistance
 
     def turn_left(self):
         """This method turns the car left.
         """
+        # TODO: add acceleration
         self._turn_angle = min(TURNING_BOUNDARIES[1], self._turn_angle + 1)
 
     def turn_right(self):
         """This method turns the car right.
         """
+        # TODO: add acceleration
         self._turn_angle = max(TURNING_BOUNDARIES[0], self._turn_angle - 1)
 
     def set_time_delta(self, delta: float):
@@ -126,7 +133,7 @@ class OpenRC:
         # update the acceleration for the frame which has been drawn in delta time
         self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2
 
-    def _brake(self, brake_const: float = 2):
+    def brake(self, brake_const: float = 2):
         self._velocity /= brake_const
 
     def _update_sensors(self, lines):
@@ -166,6 +173,10 @@ class OpenRC:
 
         # calculate the current velocity
         velocity = self._velocity * self._acceleration
+        print("velocity (internal):", self._velocity)
+        print("velocity (calculated in km/h):", velocity * 0.036)
+        print("acceleration:", self._acceleration)
+        print("turn:", self._turn_angle)
 
         # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
         theta = self._theta + \
@@ -180,14 +191,14 @@ class OpenRC:
         update_pos[1] = -velocity * math.sin(theta) * self._delta
 
         # stop if a collision was detected
-        collision_detected = self._collision(lines, theta)
+        collision_detected = self._collision(lines, theta, update_pos)
         if collision_detected:
             return False, np.zeros_like(self._pos)
 
         # update position and agle
         self._pos += update_pos
 
-        return True, update_pos
+        return True
 
     def _calc_distance(self, lines, sensor_point: List[float]):
         """
@@ -211,14 +222,17 @@ class OpenRC:
 
         return min_distance
 
-    def _collision(self, lines, theta) -> bool:
-        """
-         calculates collision points of car with all lines
-         :param lines: the lines the car collided with
-         :return: the true if a collision was detected
-        """
-        collision = False
+    def _collision(self, lines, theta, update_pos) -> bool:
+        """Calculates the collision of the car with walls,.
 
+        Args:
+            lines (np.array): Array of walls.
+            theta (float): Current angle of the car.
+            update_pos (np.array): Update to the car's position.
+
+        Returns:
+            bool: True if collision is detected.
+        """
         # check if the car hits a wall without a sensor detecting it
         # may occur at corners
         velocity = self._velocity * self._acceleration * self._delta
@@ -228,47 +242,50 @@ class OpenRC:
         vect = vect / np.linalg.norm(vect)
 
         # calc points in sensor directions for second shapely line
-        car = Point(self._pos)  # + update_pos)
+        future_position = Point(self._pos + update_pos)
+        sliding_position = Point(self._pos)
+        collisions = 0
         for wall in lines:
             line = LineString(wall)
             wall = np.asarray(wall)
 
             # check if the car has collided with a wall
-            distance = line.distance(car)
+            distance = line.distance(future_position)
             if distance < CHASSIS_SIZE[1] / 2:
+                collisions += 1
+
                 # calculate the lines direction vector
                 line_vect = [wall[1][0] - wall[0][0], wall[1][1] - wall[0][1]]
                 if line_vect[0] == 0 and line_vect[1] == 0:
                     continue
 
+                # calculate the car's new direction (sliding along a wall)
                 line_vect = line_vect / np.linalg.norm(line_vect)
                 line_vect = line_vect * \
                     np.dot(vect * velocity, line_vect) / \
                     np.dot(line_vect, line_vect)
+                
+                sliding_position = Point(sliding_position.x + line_vect[0], 
+                                         sliding_position.y + line_vect[1])
 
-                # check if the car is within the range of the wall
-                update_x = car.x + line_vect[0]
-                if update_x > min(wall[0][0], wall[1][0]) - CHASSIS_SIZE[0] / 2 and \
-                        update_x < max(wall[0][0], wall[1][0]) + CHASSIS_SIZE[0] / 2:
-                    update_y = car.y + line_vect[1]
-                    if update_y > min(wall[0][1], wall[1][1]) - CHASSIS_SIZE[1] / 2 and \
-                            update_y < max(wall[0][1], wall[1][1]) + CHASSIS_SIZE[1] / 2:
-                        # move car along side the wall
-                        car = Point(car.x + line_vect[0], car.y + line_vect[1])
+        if collisions == 0:
+            return False
 
-                collision = True
+        # only one collision, the car slides along a wall
+        if collisions == 1:
+            self._pos = [sliding_position.x, sliding_position.y]
+            return True
 
-        if collision:
-            self._pos = [car.x, car.y]
+        # if the car collides with more than one wall, stop it
+        return True
 
-        return collision
-
-    def drive(self, lines: List):
+    def drive(self, lines: List, controls: np.array):
         """This method simulates one simulation tick. To be accurate with the real time,
         a tick should happen every self.delta seconds. Use the set_time_delta() method.
 
         Args:
             lines (List): A list of points representing the walls on the map.   
+            controls (np.array): The control input of the car (accelerate, backwards, left, right)
 
         Returns:
             Tuple: Current orientation, x, y, sensors, measured distances
@@ -276,19 +293,40 @@ class OpenRC:
         # transferr walls into the simulations coordinate system
         lines = np.array(lines) * PIXEL_TO_CENTIMETER
 
-        if self._stop:
-            self._brake()
+        # apply the controls
+        if controls.any():
+            if controls[0]:
+                self.accelerate()
+            
+            if controls[1]:
+                self.accelerate_backwards()
+            
+            if controls[2]:
+                self.brake()
 
-            # if the kinetic energy is 0 (or lower) then the car has stopped
-            energy = (np.sum(self._velocity) / 2) * WEIGHT
-            if energy <= 1:
-                self.hard_stop()
-                self._stop = False
+            if controls[3]:
+                self.turn_left()
+            
+            if controls[4]:
+                self.turn_right()
+
+        if not controls[0] and not controls[1] and not controls[2]:
+            self.slowdown()
+        
+        if not controls[3] and not controls[4]:
+            self._turn_angle = self._turn_angle / 2
+            if self._turn_angle < 0.5:
+                self.reset_turn()
+
+        # if the kinetic energy is 0 (or lower) then the car has stopped
+        energy = (np.sum(self._velocity) / 2) * WEIGHT
+        if energy <= 1:
+            self.hard_stop()
 
         # calculate the rotation and movement
+        self._update_sensors(lines)
         if not self._update_state(lines):
             self.hard_stop()
-        self._update_sensors(lines)
 
         # transfer back to pixel data
         x = int(self._pos[0] * CENTIMETER_TO_PIXEL)

@@ -73,7 +73,18 @@ class KeyListener(BaseListener):
         Args:
             key (int): The key pressed, compare to py.K_*.
         """
-        raise NotImplementedError
+        pass
+    
+    def on_key_released(self, key: int) -> None:
+        """Key down event.
+
+        Args:
+            key (int): The key release, compare to py.K_*.
+
+        Raises:
+            NotImplementedError: Raises error if not implemented by child class.
+        """
+        pass
 
 
 class WindowListener(BaseListener):

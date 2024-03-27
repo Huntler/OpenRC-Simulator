@@ -227,6 +227,11 @@ class BaseWindow:
                 for object, callback in self._callbacks:
                     if KeyListener.__name__ in self._get_listeners(callback):
                         callback.on_key_pressed(event.key)
+        if event.type == py.KEYUP:
+            # execute a key pressed callback, the name has to be the key name
+            for object, callback in self._callbacks:
+                if KeyListener.__name__ in self._get_listeners(callback):
+                    callback.on_key_released(event.key)
 
         # mouse input
         mouse_pos = py.mouse.get_pos()

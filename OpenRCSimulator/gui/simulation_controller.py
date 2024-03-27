@@ -76,6 +76,10 @@ class SimulationController(BaseController, KeyListener):
     def on_key_pressed(self, key: int) -> None:
         if key in self._callback_register:
             self._callback_register[key]()
+    
+    def on_key_released(self, key: int) -> None:
+        if key in self._callback_register:
+            self._callback_register[key]()
 
     def load(self, map_name: str, car_name: str) -> None:
         """Load the the given map to control the car on. If a car name is given, then the manual control is 
@@ -121,7 +125,6 @@ class SimulationController(BaseController, KeyListener):
         delta = (py.time.get_ticks() - self._t) / 1_000
         self._t = py.time.get_ticks()
 
-        self._wall.loop()
         walls = self._wall.get_walls()
         self._car.loop(delta, walls)
 
