@@ -121,7 +121,6 @@ class SimulationController(BaseController, KeyListener):
         delta = (py.time.get_ticks() - self._t) / 1_000
         self._t = py.time.get_ticks()
 
-        self._wall.loop()
         walls = self._wall.get_walls()
         self._car.loop(delta, walls)
 
