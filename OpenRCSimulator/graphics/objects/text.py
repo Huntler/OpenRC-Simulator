@@ -13,7 +13,7 @@ class Text(Sprite):
     ANCHOR_TOP_LEFT = 0
     ANCHOR_CENTER = 1
 
-    def __init__(self, surface: py.Surface, text: str, x: int, y: int, c: Tuple[int, int, int], 
+    def __init__(self, surface: py.Surface, text: str, x: int, y: int, c: Tuple[int, int, int],
                  font: FontWrapper) -> None:
         """Initialization of a Text sprite.
 

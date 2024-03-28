@@ -24,8 +24,8 @@ class LogService(Thread):
         # set up the service
         socket.setdefaulttimeout(3)
         self._service = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._service.bind((socket.gethostname(), 9975))
-        self._service.listen(1)
+        self._service.bind(("", 9975))
+        self._service.listen(3)
 
     def is_alive(self) -> bool:
         """

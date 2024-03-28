@@ -9,6 +9,7 @@ from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
+from OpenRCSimulator.log.log_consumer import LogConsumer
 from OpenRCSimulator.state import MAPS_FOLDER, MODELS_FOLDER, get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
@@ -36,6 +37,7 @@ class SimulationController(BaseController, KeyListener):
         super().__init__()
         self._t = py.time.get_ticks()
         self._file_name = None
+        self._log = LogConsumer()
 
         self._width, self._height = window_size
         self._center = (self._width // 2, self._height // 2)
@@ -51,6 +53,7 @@ class SimulationController(BaseController, KeyListener):
         self._window.set_title(self._window_title)
 
         self._title_font = self._window.get_font().copy(size=120)
+        self._log.add_log("Created visuals")
 
         # background object (just a colored box)
         background = Rectangle(self._surface, 0, 0,
