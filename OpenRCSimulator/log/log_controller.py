@@ -1,10 +1,12 @@
 """This module shows stats on a separate window."""
-import socket
 from typing import Tuple
 from datetime import datetime
 
 from OpenRCSimulator.graphics.controller import BaseController
+from OpenRCSimulator.log.log_service import LogService
 from OpenRCSimulator.log.log_window import LogWindow
+
+import time
 
 
 class LogController(BaseController):
@@ -13,14 +15,12 @@ class LogController(BaseController):
     Args:
         BaseController (BaseController): Super class.
     """
+
     def __init__(self, window_size: Tuple[int, int]) -> None:
         super().__init__()
 
         # set up the service
-        self._service = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._service.bind((socket.gethostname(), 9975))
-
-        self._consumer = None
+        self._service = LogService(self.add_log)
 
         # set up the window
         self._width, self._height = window_size
@@ -29,8 +29,6 @@ class LogController(BaseController):
         # set up the log
         self._log = 0
         self.add_log("Started logger.")
-        
-        self._service.listen(1)
 
     def add_log(self, text: str) -> None:
         """Adds a log entry to the log window. This method implicitly adds a time stamp prefix.
@@ -48,19 +46,11 @@ class LogController(BaseController):
         self._log += 1
 
     def loop(self) -> None:
-        # let the consumer connect to the logger
-        if not self._consumer:
-            result = self._service.accept()
-            if result:
-                self._consumer = result[0]
-        else:
-            # wait for the consumer to send something to log
-            text = self._consumer.recv(1024).decode()
-            self.add_log(text)
+        time.sleep(1)
+        self.add_log("Alive.")
 
     def stop(self) -> None:
-        super().stop()
-
-        # close the connection to the consumer
-        if self._consumer:
-            self._consumer.close()
+        self.add_log("Stopping LogService.")
+        self._service.stop()
+        self._running = False
+        print("LogService has stopped.")

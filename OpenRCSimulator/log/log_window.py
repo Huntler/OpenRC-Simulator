@@ -35,7 +35,7 @@ class LogWindow(BaseWindow):
         t = Text(self.get_surface(), text, 0, 0,
                  (255, 255, 255), self.get_font())
         t.set_position((self._content_margin[0],
-                        self._content_margin[1] + i * t.get_size()[1]),
+                        self._content_margin[1]),
                        Text.ANCHOR_TOP_LEFT)
 
         self._max_log_entries = (
@@ -49,11 +49,13 @@ class LogWindow(BaseWindow):
             n (int): Number of texts.
         """
         i = max(0, n - self._max_log_entries)
+        print(i, n)
         self.remove_sprite(f"log_{i-1}")
         for j in range(i, n):
             log: Text = self.get_sprite(f"log_{j}")
+            j = n - j
             log.set_position((self._content_margin[0],
-                              self._content_margin[1] + (j + 1) * log.get_size()[1]),
+                              self._content_margin[1] + j * log.get_size()[1]),
                              Text.ANCHOR_TOP_LEFT)
 
     def draw(self) -> None:
