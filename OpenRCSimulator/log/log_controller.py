@@ -6,8 +6,6 @@ from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.log.log_service import LogService
 from OpenRCSimulator.log.log_window import LogWindow
 
-import time
-
 
 class LogController(BaseController):
     """The LogController logs the application's data.
@@ -46,8 +44,7 @@ class LogController(BaseController):
         self._log += 1
 
     def loop(self) -> None:
-        time.sleep(1)
-        self.add_log("Alive.")
+        pass
 
     def stop(self) -> None:
         self.add_log("Stopping LogService.")
