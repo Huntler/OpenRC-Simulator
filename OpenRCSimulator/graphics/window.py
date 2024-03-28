@@ -145,7 +145,7 @@ class BaseWindow:
         Returns:
             Sprite: The sprite.
         """
-        return self._sprites[name]
+        return self._sprites[name][1]
 
     def _update_sprite_list(self) -> None:
         # the sprite list is used to sort sprites corresponding to their
