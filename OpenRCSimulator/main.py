@@ -4,6 +4,7 @@ import sys
 from OpenRCSimulator.gui.configurator_controller import ConfiguratorController
 from OpenRCSimulator.gui.creator_controller import CreatorController
 from OpenRCSimulator.gui.simulation_controller import SimulationController
+from OpenRCSimulator.log.main import start_logging_process
 
 
 def main():
@@ -26,8 +27,13 @@ def main():
                         "controlling the agent.")
     parser.add_argument("--garage", help="Editor to adjust the car measurments and sensors.",
                         action="store_true")
+    parser.add_argument("--no-log", help="Start without logging.",
+                        action="store_true")
 
     args = parser.parse_args()
+
+    if not args.no_log:
+        start_logging_process()
 
     # configure car
     if args.garage:

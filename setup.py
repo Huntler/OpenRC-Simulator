@@ -20,7 +20,8 @@ setup(
     description="Simulator of the OpenRC with interfaces for machine learning.",
     entry_points={
         "console_scripts": [
-            "openrc-sim=OpenRCSimulator.main:main"
+            "openrc-sim=OpenRCSimulator.main:main",
+            "openrc-log=OpenRCSimulator.log.main:main"
         ]
     },
     install_requirements=requirements,

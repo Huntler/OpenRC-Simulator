@@ -136,6 +136,17 @@ class BaseWindow:
         # convert to list and sort
         self._update_sprite_list()
 
+    def get_sprite(self, name: str) -> Sprite:
+        """Returns a registered sprite.
+
+        Args:
+            name (str): Name of the sprite.
+
+        Returns:
+            Sprite: The sprite.
+        """
+        return self._sprites[name]
+
     def _update_sprite_list(self) -> None:
         # the sprite list is used to sort sprites corresponding to their
         # zindex value.
