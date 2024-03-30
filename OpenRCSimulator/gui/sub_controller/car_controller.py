@@ -5,7 +5,6 @@ from time import sleep
 from typing import Dict, Tuple
 import numpy as np
 from OpenRCSimulator.graphics.callback import MouseListener
-from OpenRCSimulator.graphics.window import MUTEX
 from OpenRCSimulator.simulation.openrc import OpenRC
 from OpenRCSimulator.simulation import CHASSIS_SIZE
 from OpenRCSimulator.graphics.objects.car import Car
@@ -32,7 +31,7 @@ class CarController(BaseSubController, MouseListener):
         self.dict_name = "car"
         self._is_paused = False
 
-        self._car = OpenRC(np.array([-CHASSIS_SIZE[0] * 2, -CHASSIS_SIZE[1] * 2]))
+        self._car = OpenRC(x=0, y=0)
         # accelerate, backwards, break, left, right
         self._controls = np.array([False, False, False, False, False])
 
@@ -131,7 +130,8 @@ class CarController(BaseSubController, MouseListener):
         self._sprite_car.set_position(position)
         self._sprite_car.set_direction(direction)
 
-        self._car = OpenRC(np.array([d["x"], d["y"]], dtype=float))
+        self._car = OpenRC(**d)
+
 
     def loop(self, delta, lines) -> None:
         """

@@ -38,6 +38,8 @@ class SimulationController(BaseController, KeyListener):
         self._t = py.time.get_ticks()
         self._file_name = None
         self._log = LogConsumer()
+        self._log.start()
+        self._log.add_log("Attaching simulation to logger.")
 
         self._width, self._height = window_size
         self._center = (self._width // 2, self._height // 2)
@@ -79,7 +81,7 @@ class SimulationController(BaseController, KeyListener):
     def on_key_pressed(self, key: int) -> None:
         if key in self._callback_register:
             self._callback_register[key]()
-    
+
     def on_key_released(self, key: int) -> None:
         if key in self._callback_register:
             self._callback_register[key]()
@@ -97,10 +99,17 @@ class SimulationController(BaseController, KeyListener):
             return
 
         # load the car's position and map
+        car_config = {}
         with open(path, "r", encoding="UTF-8") as file:
             dict_file = yaml.load(file, Loader=yaml.FullLoader)
-            self._car.from_dict(dict_file["car"])
+            car_config = car_config | dict_file["car"]
             self._wall.from_dict(dict_file["walls"])
+
+        # load the car's configuration
+        car_config_file = get_data_folder("") + "car_config.yaml"
+        with open(car_config_file, "r", encoding="UTF-8") as file:
+            car_config = car_config | yaml.load(file, Loader=yaml.FullLoader)
+            self._car.from_dict(car_config)
 
         # load the agent if given [todo]
         path = f"{get_data_folder(MODELS_FOLDER)}/car_{car_name}.pkl"
@@ -111,6 +120,7 @@ class SimulationController(BaseController, KeyListener):
             # change the background text
             self._text_mode.set_text("SIMULATION")
             self._text_mode.set_position((0, 0), Text.ANCHOR_CENTER)
+            self._log.add_log("Simulation mode.")
         else:
             # if no agent is present, load manual controls by enabling key listener
             self._window.set_listener(self)
@@ -122,11 +132,15 @@ class SimulationController(BaseController, KeyListener):
             self._callback_register[py.K_x] = self._car.stop
 
             self._window.set_title(self._window_title + " (Manual Controls)")
+            self._log.add_log("Manual controls mode.")
 
     def loop(self) -> None:
         # calculate the time delta
         delta = (py.time.get_ticks() - self._t) / 1_000
         self._t = py.time.get_ticks()
+
+        if delta > 1_000 / 60:
+            self._log.add_log(f"Simulation is slow. {delta}ms required.")
 
         walls = self._wall.get_walls()
         self._car.loop(delta, walls)

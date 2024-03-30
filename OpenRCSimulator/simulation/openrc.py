@@ -6,38 +6,55 @@ from shapely.geometry import LineString, Point
 import numpy as np
 
 from OpenRCSimulator.graphics import CENTIMETER_TO_PIXEL, PIXEL_TO_CENTIMETER
-from OpenRCSimulator.simulation import CHASSIS_SIZE, INITIAL_THETA, MOTOR_POWER, \
-    SENSOR_DISTANCE, SENSOR_POINTS, TURNING_BOUNDARIES, WEIGHT
+
+
+SENSOR_POINTS = 50
+SENSOR_DISTANCE = 500
 
 
 class OpenRC:
     """This class simulates the racing car based on the car's configuration such as size and weight.
     The car is able to drive forwards, backwards, steer to both sides, and it can break.
     """
-
-    def __init__(self, pixel_pos: np.array, delta: float = 0.1):
+    def __init__(self, x: int, y: int, direction: float = 0, chassis_front: float = 0, chassis_rear: float = 0,
+                 gear_ratio: float = 1, motor_power: float = 10, steering_angle: float = 45,
+                 tire_diameter: float = 5, tire_width: float = 1.5, track_spacing: float = 10, weight: float = 0.5,
+                 wheelbase: float = 15, delta: float = 0.001):
         self._dict_name = "open-rc"
+        self._gear_ratio = gear_ratio
+        self._steering_angle = steering_angle
+        self._motor_power = motor_power
+
+        self._chassis_front = chassis_front
+        self._chassis_rear = chassis_rear
+        self._wheelbase = wheelbase
+        self._track_spacing = track_spacing
+        self._tire_diameter = tire_diameter
+        self._tire_width = tire_width
+
+        self._weight = weight
+    
         # handling coordinate system in pixel diemnsion
         # calculation:
         #  - pixel-radius * 2 to get car's size in pixel
         #  - then divided by the distance of the car's wheels (given in cm)
         #  - results in amount of pixels per meter
-        self._size = CHASSIS_SIZE
-        self._pos = pixel_pos * PIXEL_TO_CENTIMETER
+        self._size = wheelbase + chassis_front + chassis_rear
+        self._pos = np.array([x, y]) * PIXEL_TO_CENTIMETER
 
         # acceleration is calculated based on weight and motor power
         # value in meter per second (already calculated with time)
-        self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2 * delta
+        self._acceleration = math.sqrt(motor_power / weight) / 2 * delta
         self._velocity = 0
         self._turn_angle = 0
 
         # angle to coordinate system's x-axis
-        self._theta = INITIAL_THETA
+        self._theta = direction
 
         # simulation related measuremnets
         self._delta = delta
 
-        # create distance sensorsa
+        # create distance sensors
         self.sensor_lines = np.array([np.zeros(2)
                                      for _ in range(SENSOR_POINTS)])
         self._distances = np.array(
@@ -74,7 +91,7 @@ class OpenRC:
             OpenRC: The copied object.
         """
         delta = self._delta
-        car = OpenRC([0, 0], delta)
+        car = OpenRC(x=0, y=0, delta=delta)
         car.set_position(self._pos)
 
         return car
@@ -113,13 +130,13 @@ class OpenRC:
         """This method turns the car left.
         """
         # TODO: add acceleration
-        self._turn_angle = min(TURNING_BOUNDARIES[1], self._turn_angle + 1)
+        self._turn_angle = min(self._steering_angle, self._turn_angle + 1)
 
     def turn_right(self):
         """This method turns the car right.
         """
         # TODO: add acceleration
-        self._turn_angle = max(TURNING_BOUNDARIES[0], self._turn_angle - 1)
+        self._turn_angle = max(-self._steering_angle, self._turn_angle - 1)
 
     def set_time_delta(self, delta: float):
         """This method sets the delta time between each frame, which is needed to decouple
@@ -131,7 +148,7 @@ class OpenRC:
         self._delta = delta
 
         # update the acceleration for the frame which has been drawn in delta time
-        self._acceleration = math.sqrt(MOTOR_POWER / WEIGHT) / 2
+        self._acceleration = math.sqrt(self._motor_power / self._weight) / 2
 
     def brake(self, brake_const: float = 2):
         self._velocity /= brake_const
@@ -168,15 +185,15 @@ class OpenRC:
     def _update_state(self, lines) -> bool:
         # calculate Pro-Ackerman condition of car turning
         turning_angle = math.radians(180 - 90 - (90 - self._turn_angle))
-        rear_radius = CHASSIS_SIZE[1] / math.tan(
-            turning_angle) - 0.5 * CHASSIS_SIZE[0] if turning_angle != 0 else 0
+        rear_radius = self._wheelbase / math.tan(
+            turning_angle) - 0.5 * self._track_spacing if turning_angle != 0 else 0
 
         # calculate the current velocity
         velocity = self._velocity * self._acceleration
-        print("velocity (internal):", self._velocity)
-        print("velocity (calculated in km/h):", velocity * 0.036)
-        print("acceleration:", self._acceleration)
-        print("turn:", self._turn_angle)
+        #print("velocity (internal):", self._velocity)
+        #print("velocity (calculated in km/h):", velocity * 0.036)
+        #print("acceleration:", self._acceleration)
+        #print("turn:", self._turn_angle)
 
         # calculate the vehicles angle emplyoing the distance traveled: distance = velocity * time
         theta = self._theta + \
@@ -251,7 +268,7 @@ class OpenRC:
 
             # check if the car has collided with a wall
             distance = line.distance(future_position)
-            if distance < CHASSIS_SIZE[1] / 2:
+            if distance < self._size / 2:
                 collisions += 1
 
                 # calculate the lines direction vector
@@ -319,7 +336,7 @@ class OpenRC:
                 self.reset_turn()
 
         # if the kinetic energy is 0 (or lower) then the car has stopped
-        energy = (np.sum(self._velocity) / 2) * WEIGHT
+        energy = (np.sum(self._velocity) / 2) * self._weight
         if energy <= 1:
             self.hard_stop()
 
