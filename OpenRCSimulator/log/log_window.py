@@ -49,7 +49,6 @@ class LogWindow(BaseWindow):
             n (int): Number of texts.
         """
         i = max(0, n - self._max_log_entries)
-        print(i, n)
         self.remove_sprite(f"log_{i-1}")
         for j in range(i, n):
             log: Text = self.get_sprite(f"log_{j}")

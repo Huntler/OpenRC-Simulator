@@ -18,14 +18,15 @@ class LogController(BaseController):
         super().__init__()
 
         # set up the service
+        self._log = 0
         self._service = LogService(self.add_log)
+        self._service.start()
 
         # set up the window
         self._width, self._height = window_size
         self._window = LogWindow(window_size=window_size)
 
         # set up the log
-        self._log = 0
         self.add_log("Started logger.")
 
     def add_log(self, text: str) -> None:
@@ -39,7 +40,8 @@ class LogController(BaseController):
 
         # create the log entry
         log_time = datetime.now()
-        prefix = f"{log_time.hour}:{log_time.minute}:{log_time.second} - "
+        seconds = log_time.second if log_time.second > 9 else "0" + str(log_time.second)
+        prefix = f"{log_time.hour}:{log_time.minute}:{seconds} - "
         self._window.add_text(prefix + text, self._log)
         self._log += 1
 
