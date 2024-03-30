@@ -2,7 +2,7 @@
 import argparse
 import sys
 from OpenRCSimulator.gui.configurator_controller import ConfiguratorController
-from OpenRCSimulator.gui.creator_controller import CreatorController
+from OpenRCSimulator.creator.creator_controller import CreatorController
 from OpenRCSimulator.gui.simulation_controller import SimulationController
 from OpenRCSimulator.log.main import start_logging_process
 

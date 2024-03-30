@@ -45,7 +45,8 @@ class ShortcutController(BaseSubController, KeyListener):
 
     def on_key_pressed(self, key: int) -> None:
         if key in self._callback_registry:
-            self._callback_registry[key]()
+            for callback in self._callback_registry[key].items():
+                callback[1]()
 
     def _update_positions(self) -> None:
         """Updates the positions by changing the y coordinate depending on the amount of 
@@ -69,7 +70,7 @@ class ShortcutController(BaseSubController, KeyListener):
             print(section_height, entry_y)
 
     def add_shortcut(self, name: str, callback, title: str, key: int,
-                     can_toggle: bool = False) -> None:
+                     can_toggle: bool = False, silent: bool = False) -> None:
         """This method adds a shortcut to the controller.
 
         Args:
@@ -78,19 +79,23 @@ class ShortcutController(BaseSubController, KeyListener):
             title (str): The text shown on scree.
             key (int): The key to press.
             can_toggle (bool, optional): Can be enabled and disabled, if true. Defaults to False.
+            silent (bool, optional): Show the shortcut as text on screen. Defaults to False.
         """
-        # add the shortcut text and callback
-        shortcut = Text(self._surface, title, 0, 0,
-                        SHORTCUT_TEXT_COLOR, self._font_entry)
-        self._window.add_sprite(name, shortcut)
-
+        # register the shortcut
         callback = callback if not can_toggle else self._toggle(name, callback)
-        self._callback_registry[key] = callback
+        reg_dict = self._callback_registry.get(key, {})
+        reg_dict[name] = callback
+        self._callback_registry[key] = reg_dict
 
-        self._entries[name] = (len(self._entries) + 1, shortcut, key)
+        if not silent:
+            # add the shortcut text and callback
+            shortcut = Text(self._surface, title, 0, 0,
+                            SHORTCUT_TEXT_COLOR, self._font_entry)
+            self._window.add_sprite(name, shortcut)
+            self._entries[name] = (len(self._entries) + 1, shortcut, key)
 
-        # calculate start display height of shortcut section
-        self._update_positions()
+            # calculate start display height of shortcut section
+            self._update_positions()
 
     def remove_shortcut(self, name: str) -> None:
         """Removes a registered shortcut based on the given name.
@@ -102,7 +107,7 @@ class ShortcutController(BaseSubController, KeyListener):
         self._toggled.pop(num - 1)
 
         del self._entries[name]
-        del self._callback_registry[key]
+        del self._callback_registry[key][name]
 
     def untoggle_all(self) -> None:
         """Untoggles all shortcuts which can be toggled.

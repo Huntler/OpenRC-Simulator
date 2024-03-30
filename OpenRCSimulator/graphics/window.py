@@ -34,7 +34,8 @@ class BaseWindow:
 
         # define the screen on which all sprites are rendered
         self._flags = flags  # py.FULLSCREEN | py.HWSURFACE | py.DOUBLEBUF# | py.SCALED
-        self._screen = py.display.set_mode(self._window_size, self._flags)
+        self._title = title
+        self._surface = py.display.set_mode(self._window_size, self._flags)
         py.display.set_caption(title)
         self._font = FontWrapper(name="dejavusansmono", size=14)
 
@@ -52,6 +53,14 @@ class BaseWindow:
         # sprite containers
         self._sprites = {}
         self._sprite_list = []
+    
+    def get_title(self) -> str:
+        """Returns the window's title.
+
+        Returns:
+            str: The window's title.
+        """
+        return self._title
 
     def set_title(self, title: str) -> None:
         """Sets the window's title
@@ -79,7 +88,7 @@ class BaseWindow:
         Returns:
             py.Surface: The pygames surface of this window.
         """
-        return self._screen
+        return self._surface
 
     def get_window_size(self) -> Tuple[int, int]:
         """The window's size.
