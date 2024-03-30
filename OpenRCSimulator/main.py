@@ -1,6 +1,7 @@
 """This module handles the app's startup and starting configuration."""
 import argparse
 import sys
+import time
 from OpenRCSimulator.gui.configurator_controller import ConfiguratorController
 from OpenRCSimulator.creator.creator_controller import CreatorController
 from OpenRCSimulator.gui.simulation_controller import SimulationController
@@ -34,6 +35,7 @@ def main():
 
     if not args.no_log:
         start_logging_process()
+        time.sleep(5)
 
     # configure car
     if args.garage:
