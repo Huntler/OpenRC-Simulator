@@ -80,6 +80,7 @@ class BaseController(Thread):
         self._running = False
 
         if self._logging:
+            self._log.add_log("kys")
             self._log.stop()
 
 

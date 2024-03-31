@@ -1,5 +1,5 @@
 """This module shows stats on a separate window."""
-import time
+import sys
 from typing import Tuple
 from datetime import datetime
 
@@ -48,8 +48,13 @@ class LogController(BaseController):
     def loop(self) -> None:
         self._service.receive()
 
+        if not self._service.is_alive():
+            self.stop()
+
     def stop(self) -> None:
         self.add_log("Stopping LogService.")
         self._service.stop()
         self._running = False
         print("LogService has stopped.")
+
+        self._window.stop()

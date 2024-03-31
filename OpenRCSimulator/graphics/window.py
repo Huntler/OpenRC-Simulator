@@ -53,7 +53,7 @@ class BaseWindow:
         # sprite containers
         self._sprites = {}
         self._sprite_list = []
-    
+
     def get_title(self) -> str:
         """Returns the window's title.
 
@@ -217,7 +217,7 @@ class BaseWindow:
         This method is used to handle GUI events.
         """
         if event.type == py.QUIT:
-            self._running = False
+            self.stop()
 
             for object, callback in self._callbacks:
                 if WindowListener.__name__ in self._get_listeners(callback):
@@ -269,6 +269,11 @@ class BaseWindow:
             for object, callback in self._callbacks:
                 if MouseListener.__name__ in self._get_listeners(callback):
                     callback.on_movement(self._mous_pos, delta)
+
+    def stop(self) -> None:
+        """Stops the UI thread.
+        """
+        self._running = False
 
     def draw(self) -> None:
         """

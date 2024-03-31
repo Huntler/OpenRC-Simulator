@@ -13,13 +13,22 @@ class LogService:
         """
 
         self._consumer = None
+        self._alive = True
         self._callback = receive_callback
 
         # set up the service
         # socket.setdefaulttimeout(3)
         self._service = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._service.bind(("", 9975))
-        self._service.listen(3)
+        self._service.listen(1)
+    
+    def is_alive(self) -> bool:
+        """Returns state of the log service.
+
+        Returns:
+            bool: Log service alive?
+        """
+        return self._alive
 
     def receive(self) -> None:
         """This function waits for a consumer to connect and then waits
@@ -31,9 +40,12 @@ class LogService:
         else:
             # wait for the consumer to send something to log
             text = self._consumer.recv(1024).decode()
+            if text == "kys":
+                self._alive = False
+                self.stop()
+                return
+            
             self._callback(text)
-
-        print("Service has stopped.")
 
     def stop(self) -> None:
         """
