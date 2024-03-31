@@ -1,11 +1,9 @@
 """This module logs to the LogService."""
+import queue
 from threading import Thread
 from multiprocessing import Lock
 import socket
 import time
-
-
-MUTEX = Lock()
 
 
 class LogConsumer(Thread):
@@ -21,7 +19,7 @@ class LogConsumer(Thread):
 
         # connect to the server on local computer
         self._service = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._send_queue = []
+        self._send_queue = queue.SimpleQueue()
 
     def run(self) -> None:
         # try to connect to the server
@@ -33,12 +31,8 @@ class LogConsumer(Thread):
         self._running = True
         while self._running:
             # check if something to log is in the queue
-            if len(self._send_queue) > 0:
-                self._service.send(self._send_queue[0].encode())
-
-                # entry was send, remove from queue
-                self._send_queue.pop(0)
-            time.sleep(0.3)
+            text = self._send_queue.get()
+            self._service.send(text.encode())
 
     def add_log(self, text: str) -> None:
         """Adds a log entry to the queue, which will be logged async.
@@ -46,5 +40,9 @@ class LogConsumer(Thread):
         Args:
             text (str): Text to log.
         """
-        with MUTEX:
-            self._send_queue.append(text)
+        self._send_queue.put_nowait(text)
+
+    def stop(self) -> None:
+        """Gently stops the LogConsumer thread.
+        """
+        self._running = False

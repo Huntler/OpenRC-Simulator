@@ -22,6 +22,7 @@ class LogService(Thread):
         self._callback = receive_callback
 
         # set up the service
+        # socket.setdefaulttimeout(3)
         self._service = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._service.bind(("", 9975))
         self._service.listen(3)

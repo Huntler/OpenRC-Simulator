@@ -4,6 +4,7 @@ from threading import Thread
 import sys
 
 from OpenRCSimulator.graphics.callback import WindowListener
+from OpenRCSimulator.log.log_consumer import LogConsumer
 
 
 class DummyListener(WindowListener):
@@ -25,7 +26,7 @@ class BaseController(Thread):
 
     QUIT = "quit_app"
 
-    def __init__(self) -> None:
+    def __init__(self, disable_logging: bool = False) -> None:
         super(BaseController, self).__init__(
             group=None, target=None, name="ControllerThread")
 
@@ -34,10 +35,17 @@ class BaseController(Thread):
         self._listener = DummyListener()
         self._listener.on_quit = self.stop
 
+        self._logging = not disable_logging
+        if self._logging:
+            self._log = LogConsumer()
+
     def boot(self) -> None:
         """
         This method is important, because with this, the controller and GUI will be started.
         """
+        if self._logging:
+            self._log.start()
+
         self.start()
         self._window.set_listener(self._listener)
         self._window.start()
@@ -70,6 +78,9 @@ class BaseController(Thread):
         This method gently stops the thread by ending its loop.
         """
         self._running = False
+
+        if self._logging:
+            self._log.stop()
 
 
 if __name__ == '__main__':

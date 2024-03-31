@@ -1,4 +1,5 @@
 """This module shows stats on a separate window."""
+import time
 from typing import Tuple
 from datetime import datetime
 
@@ -15,7 +16,7 @@ class LogController(BaseController):
     """
 
     def __init__(self, window_size: Tuple[int, int]) -> None:
-        super().__init__()
+        super().__init__(disable_logging=True)
 
         # set up the service
         self._log = 0
@@ -46,6 +47,8 @@ class LogController(BaseController):
         self._log += 1
 
     def loop(self) -> None:
+        # TODO run logservice in this thread on this loop
+        time.sleep(300)
         pass
 
     def stop(self) -> None:

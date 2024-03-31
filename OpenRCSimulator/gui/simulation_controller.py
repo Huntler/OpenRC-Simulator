@@ -9,7 +9,6 @@ from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
 from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
-from OpenRCSimulator.log.log_consumer import LogConsumer
 from OpenRCSimulator.state import MAPS_FOLDER, MODELS_FOLDER, get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
@@ -37,8 +36,6 @@ class SimulationController(BaseController, KeyListener):
         super().__init__()
         self._t = py.time.get_ticks()
         self._file_name = None
-        self._log = LogConsumer()
-        self._log.start()
         self._log.add_log("Attaching simulation to logger.")
 
         self._width, self._height = window_size
