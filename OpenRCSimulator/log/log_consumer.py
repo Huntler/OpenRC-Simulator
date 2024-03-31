@@ -1,9 +1,7 @@
 """This module logs to the LogService."""
 import queue
 from threading import Thread
-from multiprocessing import Lock
 import socket
-import time
 
 
 class LogConsumer(Thread):
@@ -31,6 +29,7 @@ class LogConsumer(Thread):
         self._running = True
         while self._running:
             # check if something to log is in the queue
+            # this call blocks the loop untile there is something in the queue
             text = self._send_queue.get()
             self._service.send(text.encode())
 

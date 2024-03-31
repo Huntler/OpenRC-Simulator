@@ -21,7 +21,6 @@ class LogController(BaseController):
         # set up the service
         self._log = 0
         self._service = LogService(self.add_log)
-        self._service.start()
 
         # set up the window
         self._width, self._height = window_size
@@ -47,9 +46,7 @@ class LogController(BaseController):
         self._log += 1
 
     def loop(self) -> None:
-        # TODO run logservice in this thread on this loop
-        time.sleep(300)
-        pass
+        self._service.receive()
 
     def stop(self) -> None:
         self.add_log("Stopping LogService.")
