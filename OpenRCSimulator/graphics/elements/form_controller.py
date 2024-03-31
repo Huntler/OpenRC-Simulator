@@ -15,7 +15,7 @@ from OpenRCSimulator.gui import FORM_TITLE_SEPARATION, FORM_BACKGROUND_COLOR, \
 class FormListener:
     """A class listening to changes of a FormController."""
 
-    def on_form_change(self, name: str, value: Any) -> None:
+    def on_form_change(self, name: str, value: Any, input_finished: bool) -> None:
         """This method is executed by a corresponding FormController."""
         raise NotImplementedError
 
@@ -37,6 +37,7 @@ class FormController(BaseSubController, TextListener):
         self._window = window
         self._surface = self._window.get_surface()
         self._listener = listener
+        self._active_name = None
 
         # configure the form
         self._elements: Dict[str: Tuple[int, Text, TextField]] = {}
@@ -76,20 +77,29 @@ class FormController(BaseSubController, TextListener):
                 return
 
             # get the register name of the active element
-            name = ""
-            for name, tuple_object in self._elements.items():
-                _, _, element = tuple_object
-                if element == ui_element:
-                    break
+            if not self._active_name:
+                for name, tuple_object in self._elements.items():
+                    _, _, element = tuple_object
+                    if element == ui_element:
+                        self._active_name = name
+                        break
 
             # inform the upper controller that something has changed
             value = ui_element.get_text()
             if ui_element.filter == TextField.FILTER_NUMBERS and value != "":
                 value = float(value)
-            self._listener.on_form_change(name, value)
+            self._listener.on_form_change(self._active_name, value, False)
 
     def on_text_end(self, ui_element: TextField) -> None:
         ui_element.deactivate()
+
+        if self._active_name:
+            value = ui_element.get_text()
+            if ui_element.filter == TextField.FILTER_NUMBERS and value != "":
+                value = float(value)
+
+            self._listener.on_form_change(self._active_name, value, True)
+            self._active_name = None
 
     def _activate_element(self) -> None:
         """Deactivate input fields if a new one gets selected.

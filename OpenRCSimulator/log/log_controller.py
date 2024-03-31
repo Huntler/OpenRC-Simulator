@@ -1,5 +1,4 @@
 """This module shows stats on a separate window."""
-import sys
 from typing import Tuple
 from datetime import datetime
 

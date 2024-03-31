@@ -1,11 +1,9 @@
 """This module manages a shortcut controller which can be added to any controller."""
-from typing import Callable, Dict
+from typing import Callable, Dict, Tuple
 from OpenRCSimulator.graphics.callback import KeyListener
 from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.graphics.sub_controller import BaseSubController
 from OpenRCSimulator.graphics.window import BaseWindow
-from OpenRCSimulator.gui import SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE, \
-    SHORTCUT_ENTRY_SEPARATION
 
 
 class ShortcutController(BaseSubController, KeyListener):
@@ -17,7 +15,8 @@ class ShortcutController(BaseSubController, KeyListener):
         KeyListener (KeyListener): This controller reacts to key pressed events.
     """
 
-    def __init__(self, window: BaseWindow) -> None:
+    def __init__(self, window: BaseWindow, text_color: Tuple = (255, 255, 255),
+                 active_text_color: Tuple = (255, 200, 200), entry_separation: float = 0) -> None:
         super().__init__()
 
         self._entries = {}
@@ -30,17 +29,22 @@ class ShortcutController(BaseSubController, KeyListener):
         self._ww, self._wh = window.get_window_size()
         self._surface = window.get_surface()
 
+        # define colors
+        self._text_color = text_color
+        self._active_color = active_text_color
+
         # define fonts
         self._font_title = window.get_font().copy(size=16)
         self._font_entry = window.get_font().copy(size=14)
 
         # get font heights
+        self._entry_separation = entry_separation
         self._title_height = self._font_title.unpack().size("Example")[1]
         self._entry_height = self._font_entry.unpack().size("Example")[1]
 
         # create title object
         self._title = Text(self._surface, "Shortcuts", 0, 0,
-                           SHORTCUT_TEXT_COLOR, self._font_title)
+                           self._text_color, self._font_title)
         self._window.add_sprite("text_storage", self._title)
 
     def on_key_pressed(self, key: int) -> None:
@@ -57,7 +61,7 @@ class ShortcutController(BaseSubController, KeyListener):
 
         # calculate start display height of shortcut section
         section_height = self._wh - (self._title_height + (
-            len(self._entries) * (self._entry_height + SHORTCUT_ENTRY_SEPARATION))) - 20
+            len(self._entries) * (self._entry_height + self._entry_separation))) - 20
         self._title.set_position((20, section_height),
                                  anchor=Text.ANCHOR_TOP_LEFT)
 
@@ -65,7 +69,7 @@ class ShortcutController(BaseSubController, KeyListener):
         entry_list = sorted(
             [_ for _ in self._entries.values()], key=lambda x: x[0])
         for i, entry, _ in entry_list:
-            entry_y = section_height + SHORTCUT_ENTRY_SEPARATION * i + self._entry_height * i
+            entry_y = section_height + self._entry_separation * i + self._entry_height * i
             entry.set_position((20, entry_y), Text.ANCHOR_TOP_LEFT)
             print(section_height, entry_y)
 
@@ -90,7 +94,7 @@ class ShortcutController(BaseSubController, KeyListener):
         if not silent:
             # add the shortcut text and callback
             shortcut = Text(self._surface, title, 0, 0,
-                            SHORTCUT_TEXT_COLOR, self._font_entry)
+                            self._text_color, self._font_entry)
             self._window.add_sprite(name, shortcut)
             self._entries[name] = (len(self._entries) + 1, shortcut, key)
 
@@ -113,7 +117,7 @@ class ShortcutController(BaseSubController, KeyListener):
         """Untoggles all shortcuts which can be toggled.
         """
         for name in self._toggled:
-            self._entries[name][1].set_color(SHORTCUT_TEXT_COLOR)
+            self._entries[name][1].set_color(self._text_color)
 
         self._toggled = []
 
@@ -122,10 +126,10 @@ class ShortcutController(BaseSubController, KeyListener):
             _, entry, _ = self._entries[name]
             if name not in self._toggled:
                 self._toggled.append(name)
-                entry.set_color(SHORTCUT_TEXT_COLOR_ACTIVE)
+                entry.set_color(self._active_color)
             else:
                 self._toggled.remove(name)
-                entry.set_color(SHORTCUT_TEXT_COLOR)
+                entry.set_color(self._text_color)
 
             func()
 

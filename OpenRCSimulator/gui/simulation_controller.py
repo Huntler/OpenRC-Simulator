@@ -7,7 +7,7 @@ import yaml
 from OpenRCSimulator.graphics.callback import KeyListener
 from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.gui.sub_controller.car_controller import CarController
-from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
+from OpenRCSimulator.graphics.elements.shortcut_controller import ShortcutController
 from OpenRCSimulator.gui.sub_controller.wall_controller import WallController
 from OpenRCSimulator.state import MAPS_FOLDER, MODELS_FOLDER, get_data_folder
 from OpenRCSimulator.graphics.controller import BaseController

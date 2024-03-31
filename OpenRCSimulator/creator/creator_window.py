@@ -6,8 +6,8 @@ import pygame as py
 from OpenRCSimulator.graphics.objects.rectangle import Rectangle
 from OpenRCSimulator.graphics.objects.text import Text
 from OpenRCSimulator.graphics.window import BaseWindow
-from OpenRCSimulator.gui import BACKGROUND_COLOR, MODE_TEXT_COLOR
-from OpenRCSimulator.gui.sub_controller.shortcut_controller import ShortcutController
+from OpenRCSimulator.gui import BACKGROUND_COLOR, MODE_TEXT_COLOR, SHORTCUT_ENTRY_SEPARATION, SHORTCUT_TEXT_COLOR, SHORTCUT_TEXT_COLOR_ACTIVE
+from OpenRCSimulator.graphics.elements.shortcut_controller import ShortcutController
 
 
 CREATOR_PLACE_WALL = "place_wall"
@@ -39,7 +39,9 @@ class CreatorWindow(BaseWindow):
         self.add_sprite("text_mode", text_mode, zindex=98)
 
         # add shortcuts controller
-        self._shortcuts = ShortcutController(self)
+        self._shortcuts = ShortcutController(self, text_color=SHORTCUT_TEXT_COLOR,
+                                             active_text_color=SHORTCUT_TEXT_COLOR_ACTIVE,
+                                             entry_separation=SHORTCUT_ENTRY_SEPARATION)
 
     def draw(self) -> None:
         pass
