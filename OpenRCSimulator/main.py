@@ -35,7 +35,7 @@ def main():
 
     if not args.no_log:
         start_logging_process()
-        time.sleep(5)
+        time.sleep(2)
 
     # configure car
     if args.garage:

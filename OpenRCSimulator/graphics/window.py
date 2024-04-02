@@ -159,7 +159,8 @@ class BaseWindow:
     def _update_sprite_list(self) -> None:
         # the sprite list is used to sort sprites corresponding to their
         # zindex value.
-        def comp(sprite): return sprite[0]
+        def comp(sprite):
+            return sprite[0]
         self._sprite_list = list(self._sprites.values())
         self._sprite_list.sort(key=comp, reverse=True)
 

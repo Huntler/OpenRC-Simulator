@@ -23,8 +23,10 @@ class LogConsumer(Thread):
         # try to connect to the server
         try:
             self._service.connect(("", 9975))
+            self._connected = True
         except ConnectionRefusedError as e:
             print("Unable to connect to LogService: " + e.strerror)
+            self._connected = False
 
         self._running = True
         while self._running:
@@ -39,9 +41,17 @@ class LogConsumer(Thread):
         Args:
             text (str): Text to log.
         """
-        self._send_queue.put_nowait(text)
+        self._send_queue.put(text)
 
     def stop(self) -> None:
         """Gently stops the LogConsumer thread.
         """
+        if not self._connected:
+            self._running = False
+            return
+
+        # send kys messages
+        self._service.send("kys".encode())
+
+        # exit the consumer loop
         self._running = False

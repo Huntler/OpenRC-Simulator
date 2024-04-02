@@ -1,10 +1,14 @@
 """This module defines the base controller. """
 from multiprocessing.spawn import freeze_support
 from threading import Thread
+from threading import Lock
 import sys
 
 from OpenRCSimulator.graphics.callback import WindowListener
 from OpenRCSimulator.log.log_consumer import LogConsumer
+
+
+MUTEX = Lock()
 
 
 class DummyListener(WindowListener):
@@ -30,7 +34,7 @@ class BaseController(Thread):
         super(BaseController, self).__init__(
             group=None, target=None, name="ControllerThread")
 
-        self._running = False
+        self.__running = False
         self._window = None
         self._listener = DummyListener()
         self._listener.on_quit = self.stop
@@ -54,14 +58,14 @@ class BaseController(Thread):
         """
         This method checks if the controller thread is still alive.
         """
-        return self._running
+        return self.__running
 
     def run(self) -> None:
         """
         This is the main loop which is started by the thread parent class.
         """
-        self._running = True
-        while self._running:
+        self.__running = True
+        while self.__running:
             self.loop()
 
         print("Controller has stopped.")
@@ -77,10 +81,10 @@ class BaseController(Thread):
         """
         This method gently stops the thread by ending its loop.
         """
-        self._running = False
+        with MUTEX:
+            self.__running = False
 
         if self._logging:
-            self._log.add_log("kys")
             self._log.stop()
 
 
